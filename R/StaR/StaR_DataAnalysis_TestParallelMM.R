@@ -26,14 +26,17 @@ source("StaR_MixedModels.R")
 source("StaR_Anovas.R")
 source("StaR_PlotStats.R")
 
+
+##### PARALLEL Library ! Or Snow !
+
+
+
 #designs = c(1,2,3,4,5,11,12,13,14,15,16)
-#designs = c(11,12,13,14,15,16)
-#designs = c(1,2,3,4,5)
-designs = 13
+designs = 3
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
-bReloadRData = FALSE
+bReloadRData = TRUE
 bReloadMatlabFile = FALSE
 bReprepMatlabData = FALSE
 bSaveOnDiskImages = FALSE
@@ -43,8 +46,8 @@ bAnova = FALSE
 bMixedModels = TRUE
 
 # Support only 1 at the time for now... Please "FALSE" others.
-bERSP = FALSE
-bERP = TRUE 
+bERSP = TRUE #TRUE
+bERP = FALSE #FALSE
 
 nbPoints = 0
 if(bERSP)
@@ -172,19 +175,90 @@ for(i in designs)
   {
     # -- Mixed Models --
     # mixedmodels.all = 3D; H | V | Full
-    mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign)
+    mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign, cluster = cl)
     
+    
+    cl <- makeCluster(8) 
+    clusterExport(cl, list("lmer", "STATS_DESIGNS_MM", "STATS_DESIGNS_MM_RESTRICTED", "iDesign"))
+    
+    tic()
+    print(paste("Doing - lmer (fullData) : ", format(STATS_DESIGNS_MM[[iDesign]])))
+    #mixedmodels.full <- lapply(fullData, FUN = function(x) {lmer(STATS_DESIGNS_MM[[iDesign]], x)})
+    mixedmodels.full <- parLapply(cl = cl, fullData, fun = function(x) {lmer(STATS_DESIGNS_MM[[iDesign]], x)})
+    toc()
+    
+    tic()
+    print(paste("Doing - lmer (fullData) : ", format(STATS_DESIGNS_MM_RESTRICTED)))
+    #mixedmodels.restricted <- lapply(fullData, FUN = function(x) {lmer(STATS_DESIGNS_MM_RESTRICTED, x)})
+    mixedmodels.restricted <- parLapply(cl = cl, fullData, fun = function(x) {lmer(STATS_DESIGNS_MM_RESTRICTED, x)})
+    toc()
+    
+    stopCluster(cl)
+    
+    mmFull <- mixedmodels.full
+    mmRestricted <- mixedmodels.restricted 
+    
+    tic()
+    print(paste("Doing - KRmodcomp & anova (full & restricted models) : ", format(STATS_DESIGNS_MM_RESTRICTED), " vs ", format(STATS_DESIGNS_MM[[iDesign]])))
+    mmFull <- mixedmodels.all[[1]]
+    mmRestricted <- mixedmodels.all[[2]]
+    
+    mmFits_lmer.kr <- list()
+    mmFits_lmer.anova <- list()
+#     for(i in 1:nbPoints)
+#     {
+#       #mmFits_lmer.kr[[i]] <- KRmodcomp(mmFull[[i]], mmRestricted[[i]])
+#       mmFits_lmer.anova[[i]] <- anova(mmFull[[i]], mmRestricted[[i]])
+#       
+#       if(i %% 100 == 0)
+#         print(i)
+#     }
+    
+    save(mmFull, mmRestricted, file="KRTest.RData")
+    
+    library(foreach)
+    library(doMC)
+    registerDoMC(10)
+    
+    print(paste("Doing - anova on Full & Restricted"))
+    tic()
+    mmFits_lmer.anovas <- foreach(i=1:nbPoints, .combine=rbind) %do%
+    { anova(mmFull[[i]], mmRestricted[[i]]) }
+    toc()
+    
+    print(paste("Doing - KRmodcomp on Full & Restricted"))
+    tic()
+    mmFits_lmer.kr <- foreach(i=1:nbPoints, .combine=rbind) %do%
+    { KRmodcomp(mmFull[[i]], mmRestricted[[i]]) }
+    toc()
+    
+    save(mmFits_lmer.kr,mmFits_lmer.anovas, file="Results.RData")
+    
+    #submmFull <- mmFull[1:10]
+    #submmRestricted <- mmRestricted[1:10]
+    
+    #cl <- makeCluster(8) 
+    #clusterExport(cl, list("KRmodcomp"))
+
+    tic()
+    #mmFits_lmer.anovas <- parSapply(cl = cl, mmFull, mmRestricted, FUN = anova)
+    comb <- data.frame(f=submmFull, r=submmRestricted)
+    submFits_lmer.kr <- clusterMap(cl = cl, FUN = KRmodcomp, submmFull, submmRestricted)
+    toc()
+    stopCluster(cl)
+    
+    print("Done!")
     #mixedmodels.all <- staR_MMlme(fullData = fullData, subData = subDataset, iDesign = iDesign)
     #save() # Save on disk.
     
     # -- Summary --
     # mixedmodels.summary = 3D; H | V | Full
     #mixedmodels.summary <- staR_MM_Summary(mixedmodels.all, iDesign)
-    mixedmodels.summary <- staR_MMKRComp(mixedmodels.all[[1]], mixedmodels.all[[2]])
     #anovas <- NULL # Free memory.
     
     # -- pVals --    
-    mixedmodels.ps <- staR_mmPVals(mixedmodels.summary, iDesign, 0.05)
+    #pVals <- lapply(mmFits_lmer.kr, FUN = function(x) {x$'p.value'})
+    mixedmodels.ps <- staR_mmPVals(mmFits_lmer.kr, iDesign, 0.05)
     mixedmodels.pVals <- mixedmodels.ps[[1]]
     mixedmodels.pSignificants <- mixedmodels.ps[[2]]
     #mixedmodels.ps <- staR_MM_PVals(mixedmodels.summaries, iDesign, 0.05)
@@ -192,7 +266,6 @@ for(i in designs)
     #mixedmodels.pSignificants <- mixedmodels.ps[[2]]
     
     # -- Plot Stats --
-    plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})))
     hStats <- plotStats(mixedmodels.pSignificants, timeData)
     
     # -- pVals Correction --

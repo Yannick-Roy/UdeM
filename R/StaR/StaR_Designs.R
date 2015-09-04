@@ -42,8 +42,8 @@ STATS_SUB_DESIGNS[[11]] = list(values ~ (conditions), values ~ (groups))
 STATS_SUB_DESIGNS[[12]] = list(values ~ (sessions), values ~ (groups))
 STATS_SUB_DESIGNS[[13]] = list(values ~ (motions), values ~ (groups))
 STATS_SUB_DESIGNS[[14]] = list(values ~ (orders), values ~ (groups))
-STATS_SUB_DESIGNS[[15]] = list(values ~ (motions), values ~ (sessions))
-STATS_SUB_DESIGNS[[16]] = list(values ~ (orders), values ~ (sessions))
+STATS_SUB_DESIGNS[[15]] = list(values ~ (sessions), values ~ (motions))
+STATS_SUB_DESIGNS[[16]] = list(values ~ (sessions), values ~ (orders))
 
 #================================================================================================================================
 ################################  ==================== MIXED MODELS  ==================== #######################################
@@ -65,21 +65,21 @@ STATS_DESIGNS_MM[[17]] = values ~ (groups * sessions * motions) + (1|subjects)
 STATS_DESIGNS_MM[[18]] = values ~ (groups * sessions * orders) + (1|subjects)
 STATS_DESIGNS_MM[[19]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
 
-STATS_DESIGNS_MM[[21]] = values ~ (conditions) + Error(subjects/(conditions)) + (1|subjects)
-STATS_DESIGNS_MM[[22]] = values ~ (sessions) + Error(subjects/(sessions)) + (1|subjects)
-STATS_DESIGNS_MM[[23]] = values ~ (motions) + Error(subjects/(motions)) + (1|subjects)
-STATS_DESIGNS_MM[[24]] = values ~ (orders) + Error(subjects/(orders)) + (1|subjects)
-STATS_DESIGNS_MM[[25]] = values ~ (groups) + Error(subjects/(groups)) + (1|subjects)
+STATS_DESIGNS_MM[[21]] = values ~ (conditions) + (1|subjects)
+STATS_DESIGNS_MM[[22]] = values ~ (sessions) + (1|subjects)
+STATS_DESIGNS_MM[[23]] = values ~ (motions) + (1|subjects)
+STATS_DESIGNS_MM[[24]] = values ~ (orders) + (1|subjects)
+STATS_DESIGNS_MM[[25]] = values ~ (groups) + (1|subjects)
 
-STATS_DESIGNS_MM[[31]] = values ~ (groups * conditions) + Error(subjects/(groups * conditions)) + (1|subjects)
-STATS_DESIGNS_MM[[32]] = values ~ (groups * sessions) + Error(subjects/(groups * sessions)) + (1|subjects)
-STATS_DESIGNS_MM[[33]] = values ~ (groups * motions) + Error(subjects/(groups * motions)) + (1|subjects)
-STATS_DESIGNS_MM[[34]] = values ~ (groups * orders) + Error(subjects/(groups * orders)) + (1|subjects)
-STATS_DESIGNS_MM[[35]] = values ~ (sessions * motions) + Error(subjects/(sessions * motions)) + (1|subjects)
-STATS_DESIGNS_MM[[36]] = values ~ (sessions * orders) + Error(subjects/(sessions * orders)) + (1|subjects)
-STATS_DESIGNS_MM[[37]] = values ~ (groups * sessions * motions) + Error(subjects/(groups * sessions * motions)) + (1|subjects)
-STATS_DESIGNS_MM[[38]] = values ~ (groups * sessions * orders) + Error(subjects/(groups * sessions * orders)) + (1|subjects)
-STATS_DESIGNS_MM[[39]] = values ~ (groups * sessions * motions * orders) + Error(subjects/(groups * sessions * motions * orders)) + (1|subjects)
+STATS_DESIGNS_MM[[31]] = values ~ (groups * conditions) + (1|subjects)
+STATS_DESIGNS_MM[[32]] = values ~ (groups * sessions) + (1|subjects)
+STATS_DESIGNS_MM[[33]] = values ~ (groups * motions) + (1|subjects)
+STATS_DESIGNS_MM[[34]] = values ~ (groups * orders) + (1|subjects)
+STATS_DESIGNS_MM[[35]] = values ~ (sessions * motions) + (1|subjects)
+STATS_DESIGNS_MM[[36]] = values ~ (sessions * orders) + (1|subjects)
+STATS_DESIGNS_MM[[37]] = values ~ (groups * sessions * motions) + (1|subjects)
+STATS_DESIGNS_MM[[38]] = values ~ (groups * sessions * orders) + (1|subjects)
+STATS_DESIGNS_MM[[39]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
 
 STATS_SUB_DESIGNS_MM <- list()
 STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|subjects), values ~ (groups) + (1|subjects))
@@ -89,5 +89,7 @@ STATS_SUB_DESIGNS_MM[[14]] = list(values ~ (orders) + (1|subjects), values ~ (gr
 STATS_SUB_DESIGNS_MM[[15]] = list(values ~ (motions) + (1|subjects), values ~ (sessions) + (1|subjects))
 STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (orders) + (1|subjects), values ~ (sessions) + (1|subjects))
 
+STATS_DESIGNS_MM_RESTRICTED = values ~ 1 * (1 | subjects)
+STATS_DESIGNS_MM[[99]] = values ~ 1 * (1 | subjects) #Bug...
 
 STATS_DESIGNS_RND = ~1|subjects

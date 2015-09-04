@@ -171,7 +171,13 @@ plotStats <- function(pVals, timeVals, bShowPlot = TRUE)
       
       # Keep that dataframe... seems to have a bug with nested loops!
       curDF <- data.frame(yVals = yVal, xVals = timeVals)
-      hPlot[[i]][[j]] <- ggplot() + geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF) + theme(legend.position = "none") + geom_rect(data = pMasks, alpha = 0.3, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
+      hPlot[[i]][[j]] <- ggplot() + geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF) + theme(legend.position = "none")
+      
+      # If at least 1 mask, paint it. (to avoid crash...)
+      if(length(pMasks$xminimums) > 0)
+      {
+        hPlot[[i]][[j]] <- hPlot[[i]][[j]] + geom_rect(data = pMasks, alpha = 0.3, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
+      }
     }
   }
   

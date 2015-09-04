@@ -1,3 +1,11 @@
+##########################################################################
+# *** aov() shouldn't be used for unbalanced design ! ***
+# http://r.789695.n4.nabble.com/lm-ANOVA-vs-AOV-td819452.html
+# http://www.r-statistics.com/tag/unbalanced-design/
+#
+##########################################################################
+
+
 library(tictoc)
 library(fdrtool)
 
@@ -25,11 +33,12 @@ staR_InvertDimensions <- function(array2D)
 ###########################       ANOVAs      #############################
 ###########################################################################
 # Calculate FullData Anovas.
-staR_Anova <- function(fullData, subData = NULL, iDesign = 1, nbPoints = 1536)
+staR_Anova <- function(fullData, subData = NULL, iDesign = 1, nbPoints = 1536, func = 'aov')
 {
   print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign]])))
   tic()
-  anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign]], x)})
+  if(func == 'aov') { anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign]], x)}) }
+  else if(func == 'anova') { anovas.full <- lapply(fullData, FUN = function(x) {anova(STATS_DESIGNS[[iDesign]], x)}) }
   toc()
   print("Done!")
   
