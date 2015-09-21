@@ -29,7 +29,7 @@ source("StaR_PlotStats.R")
 #designs = c(1,2,3,4,5,11,12,13,14,15,16)
 #designs = c(11,12,13,14,15,16)
 #designs = c(1,2,3,4,5)
-designs = 13
+designs = 12
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -39,8 +39,10 @@ bReprepMatlabData = FALSE
 bSaveOnDiskImages = FALSE
 bSaveOnDiskData = FALSE
 
-bAnova = FALSE
-bMixedModels = TRUE
+bSmallSamples = TRUE
+
+bAnova = TRUE
+bMixedModels = FALSE
 
 # Support only 1 at the time for now... Please "FALSE" others.
 bERSP = FALSE
@@ -60,17 +62,19 @@ if(bERP)
 dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-dirPlotsPath <- "~/Documents/Playground/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
 dirPlots <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlots)
-  
+
+hTitles <- list()  
+
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
 for(i in designs)
 {
   iDesign = i
   
   # Prep Plot Series !
-  grid.arrange(textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=30)))
+  grid.arrange(textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=30)))
   if(bSaveOnDiskImages)
   {
     dev.copy2pdf(file = paste(dirPlots, "/Title_", i, ".pdf", sep = ""))
@@ -91,11 +95,11 @@ for(i in designs)
   {
     if(bERP)
     {
-      matlabData <- staR_fillFromMatlab("~/Documents/Playground/RMatlab_Data/export_mpt_erp_d1.mat", "MPT", fullData, nbPoints)
+      matlabData <- staR_fillFromMatlab("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d1.mat", "MPT", fullData, nbPoints)
     }
     if(bERSP)
     {
-      matlabData <- staR_fillFromMatlab("~/Documents/Playground/RMatlab_Data/export_mpt.mat", "MPT", fullData, nbPoints)
+      matlabData <- staR_fillFromMatlab("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat", "MPT", fullData, nbPoints)
     }
     
     fullData = matlabData[[1]]
@@ -106,8 +110,24 @@ for(i in designs)
     
     if(length(matlabData) >= 3)
       {if(length(matlabData[[3]]) >= 1)
-        {freqData = matlabData[[3]][1,]}}
+      {freqData = matlabData[[3]][1,]}}
+    
+    if(bSmallSamples)
+    {
+      lowLimit <- which(timeData > 0)[1]
+      highLimit <- which(timeData < 600)
+      highLimit <- highLimit[length(highLimit) - 1]
+      
+      fullData <- fullData[lowLimit:highLimit]
+      timeData <- timeData[lowLimit:highLimit]
+      
+      #freqData
+      #timeVals <- timeVals[lowLimit:highLimit]
+    }
   }
+  
+  # Mainly because of Small Samples. But anyway nbPoints can't be different from fullData.
+  nbPoints = length(fullData)
   
   # Sub select, according to current stats.
   if(bReloadRData)
@@ -140,21 +160,26 @@ for(i in designs)
   if(bAnova)
   {
     # -- Anova --
+    AnovaFunc = 'ez'
     # anovas.all = 3D; H | V | Full
-    anovas.all <- staR_Anova(fullData = fullData, subData = subDataset, iDesign = iDesign, nbPoints, func = 'anova')
+    #anovas.result <- staR_Anova(fullData = fullData, subData = subDataset, iDesign = iDesign, nbPoints, func = AnovaFunc)
+    anovas.result <- staR_Anova(fullData = fullData, subData = NULL, iDesign = iDesign, nbPoints, func = AnovaFunc)
+    anovas.all <- anovas.result[1:3]
+    hTitles[[3]] <- anovas.result[[4]]
     #save(anovas.all, file = "RAnovas.RData") # Save on disk.
     
     # -- Summary --
     # anovas.summaries = 3D; H | V | Full
-    anovas.summaries <- staR_Summary(anovas.all, iDesign)
+    anovas.summaries <- staR_Summary(anovas.all, iDesign, func = AnovaFunc)
     #anovas.all <- NULL # Free memory.
     
     # -- pVals --
-    anovas.ps <- staR_PVals(anovas.summaries, iDesign, 0.05)
+    anovas.ps <- staR_PVals(anovas.summaries, iDesign, 0.05, func = AnovaFunc)
     anovas.pVals <- anovas.ps[[1]]
     anovas.pSignificants <- anovas.ps[[2]]
   
     # -- Plot Stats --
+    plot(unlist(anovas.pVals[[1]][[1]]), type="l")
     if(bERP) { hStats <- plotStats(anovas.pSignificants, timeData) }
     if(bERSP) { hStats <- plotStats_ERSP(anovas.pSignificants, timeData) }
         
@@ -171,16 +196,17 @@ for(i in designs)
   if(bMixedModels)
   {
     # -- Mixed Models --
+    MMFunc = "lmer"
     # mixedmodels.all = 3D; H | V | Full
-    mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign)
-    
+    mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign, func = MMFunc)
+    hTitles[[3]] <- "Mixed Models..."
     #mixedmodels.all <- staR_MMlme(fullData = fullData, subData = subDataset, iDesign = iDesign)
     #save() # Save on disk.
     
     # -- Summary --
     # mixedmodels.summary = 3D; H | V | Full
     #mixedmodels.summary <- staR_MM_Summary(mixedmodels.all, iDesign)
-    mixedmodels.summary <- staR_MMKRComp(mixedmodels.all[[1]], mixedmodels.all[[2]])
+    mixedmodels.summary <- staR_MMKRComp(mixedmodels.all[[3]][[1]], mixedmodels.all[[3]][[2]])
     #anovas <- NULL # Free memory.
     
     # -- pVals --    
@@ -192,7 +218,7 @@ for(i in designs)
     #mixedmodels.pSignificants <- mixedmodels.ps[[2]]
     
     # -- Plot Stats --
-    plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})))
+    plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
     hStats <- plotStats(mixedmodels.pSignificants, timeData)
     
     # -- pVals Correction --
@@ -242,17 +268,17 @@ for(i in designs)
   
   if(length(hRows) == 1) 
   {
-    grid.arrange(hRows[[1]], top=textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=20,font=3)))
+    grid.arrange(hRows[[1]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
   }
   
   if(length(hRows) == 2) 
   {
-    grid.arrange(hRows[[1]], hRows[[2]], top=textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=20,font=3)))
+    grid.arrange(hRows[[1]], hRows[[2]], top=textGrob(staR_getDesignName(iDesignb, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
   }
   
   if(length(hRows) == 3) 
   {
-    grid.arrange(hRows[[1]], hRows[[2]], hRows[[3]], top=textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=20,font=3)))
+    grid.arrange(hRows[[1]], hRows[[2]], hRows[[3]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
   }
   
   if(bSaveOnDiskImages)
@@ -268,19 +294,19 @@ for(i in designs)
   {
     if(length(hStats[[3]]) == 1)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), top=textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     if(length(hStats[[3]]) == 2)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), top=textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     if(length(hStats[[3]]) == 3)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), top=textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     if(length(hStats[[3]]) == 4)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), ggplotGrob(hStats[[3]][[4]]), top=textGrob(staR_getDesignName(iDesign), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), ggplotGrob(hStats[[3]][[4]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     
     if(bSaveOnDiskImages)

@@ -443,11 +443,6 @@ staR_getDesignMatrix <- function(iDesign)
   designMatrix
 }
 
-staR_getDesignName <- function(iDesign)
-{
-  paste("ANOVA : ", format(STATS_DESIGNS[[iDesign]]))
-}
-
 staR_FDR <- function(pVals)
 {
   p.adjust(p = pVals, method="fdr")

@@ -44,7 +44,7 @@ plotData <- function(data, params, timeVals, bShowPlot = TRUE)
         #hData[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + theme(legend.position="none")#axis.line=element_blank(),axis.text.x=element_blank(), 
         hDataList[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + 
           theme(legend.position="none", axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank()) +
-          geom_vline(xintercept = 0, colour="black", linetype = "longdash") + ylim(-0.5, 0.6)
+          geom_vline(xintercept = 0, colour="black", linetype = "longdash") + ylim(-0.5, 0.7) + geom_ribbon(aes(x=times, ymin=means-sdes, ymax=means+sdes), alpha = 0.3, fill="orange", data=params[[i]][[j]])
         
         #scale_x_continuous(limits = c(-500, 2000)) #coord_cartesian(xlim = c(2000, -500)) 
         
@@ -150,33 +150,39 @@ plotStats <- function(pVals, timeVals, bShowPlot = TRUE)
   if(is.null(timeVals)) {timeVals = seq(1, 1536)}
   
   hPlot <- list()
-  for(i in 1:length(pVals))
-  { 
-    hPlot[[i]] <- list()
-    for(j in 1:length(pVals[[i]]))
-    {
-      yVal <- unlist(pVals[[i]][[j]])
-      pMasks <- getSignifMasks(yVal)
-      
-      # From pMasks Indexes to real value indices (e.g. [-1000, 2000] vs [1, 1536])
-      if(!is.null(pMasks$xminimums) && !is.null(pMasks$xmaximums))
+  if(length(pVals) > 0)
+  {
+    for(i in 1:length(pVals))
+    { 
+      hPlot[[i]] <- list()
+      if(length(pVals[[i]]) > 0)
       {
-        pMasks$xminimums <- timeVals[pMasks$xminimums]
-        pMasks$xmaximums <- timeVals[pMasks$xmaximums]
-      }
-      else
-      {
-        print("... pMasks - NULL ... ")
-      }
-      
-      # Keep that dataframe... seems to have a bug with nested loops!
-      curDF <- data.frame(yVals = yVal, xVals = timeVals)
-      hPlot[[i]][[j]] <- ggplot() + geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF) + theme(legend.position = "none")
-      
-      # If at least 1 mask, paint it. (to avoid crash...)
-      if(length(pMasks$xminimums) > 0)
-      {
-        hPlot[[i]][[j]] <- hPlot[[i]][[j]] + geom_rect(data = pMasks, alpha = 0.3, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
+        for(j in 1:length(pVals[[i]]))
+        {
+          yVal <- unlist(pVals[[i]][[j]])
+          pMasks <- getSignifMasks(yVal)
+          
+          # From pMasks Indexes to real value indices (e.g. [-1000, 2000] vs [1, 1536])
+          if(!is.null(pMasks$xminimums) && !is.null(pMasks$xmaximums))
+          {
+            pMasks$xminimums <- timeVals[pMasks$xminimums]
+            pMasks$xmaximums <- timeVals[pMasks$xmaximums]
+          }
+          else
+          {
+            print("... pMasks - NULL ... ")
+          }
+          
+          # Keep that dataframe... seems to have a bug with nested loops!
+          curDF <- data.frame(yVals = yVal, xVals = timeVals)
+          hPlot[[i]][[j]] <- ggplot() + geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF) + theme(legend.position = "none")
+          
+          # If at least 1 mask, paint it. (to avoid crash...)
+          if(length(pMasks$xminimums) > 0)
+          {
+            hPlot[[i]][[j]] <- hPlot[[i]][[j]] + geom_rect(data = pMasks, alpha = 0.3, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
+          }
+        }
       }
     }
   }

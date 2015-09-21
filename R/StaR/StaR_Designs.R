@@ -93,3 +93,22 @@ STATS_DESIGNS_MM_RESTRICTED = values ~ 1 * (1 | subjects)
 STATS_DESIGNS_MM[[99]] = values ~ 1 * (1 | subjects) #Bug...
 
 STATS_DESIGNS_RND = ~1|subjects
+
+#==================================================================
+
+staR_getDesignName <- function(iDesign, bAnova, bMixedModels, Afunc = "aov")
+{
+  title = "N/A"
+  
+  if(bAnova)
+  {
+    title <- paste("ANOVA (", Afunc, ") : ", format(STATS_DESIGNS[[iDesign]]))
+  }
+  
+  if(bMixedModels)
+  {
+    title <-paste("Mixed Models : ", format(STATS_DESIGNS_MM[[iDesign]]))
+  }
+  
+  title
+}

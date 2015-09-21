@@ -243,15 +243,13 @@ staR_getDistParams <- function(data, timeVals, iDesign)
     dfParamsList[[i]] <- list()
     for(j in 1:designMatrix$nbCol)
     {
-      xSD <- lapply(data[[i]][[j]], stde)
+      xSDE <- lapply(data[[i]][[j]], stde)
       xMean <- lapply(data[[i]][[j]], mean)
       xMax <- lapply(data[[i]][[j]], max)
       xMin <- lapply(data[[i]][[j]], min)
       
       if(is.null(timeVals)) {timeVals = seq(1, length(data[[i]][[j]]))}
-      print(min(timeVals))
-      print(max(timeVals))
-      dfParamsList[[i]][[j]]  <- data.frame(times = timeVals, means = unlist(xMean), sds = unlist(xSD), maxs = unlist(xMax), mins = unlist(xMin))
+      dfParamsList[[i]][[j]]  <- data.frame(times = timeVals, means = unlist(xMean), sdes = unlist(xSDE), maxs = unlist(xMax), mins = unlist(xMin))
     }
   }
   
