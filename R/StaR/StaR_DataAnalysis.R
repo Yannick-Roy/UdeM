@@ -9,8 +9,10 @@ library(pbkrtest)
 library(lme4)
 library(nlme)
 library(parallel)
+library(ez)
 require(timeSeries)
 require(reshape2)
+
 
 #require(fdrtool)
 #require(tictoc)
@@ -34,15 +36,22 @@ designs = 12
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
 bReloadRData = FALSE
-bReloadMatlabFile = FALSE
-bReprepMatlabData = FALSE
+bReloadMatlabFile = TRUE
+bReprepMatlabData = TRUE
 bSaveOnDiskImages = FALSE
 bSaveOnDiskData = FALSE
 
 bSmallSamples = TRUE
 
-bAnova = TRUE
-bMixedModels = FALSE
+#######################
+# Stats !
+#######################
+bAnova = FALSE
+bMixedModels = TRUE
+
+AnovaFunc = 'aov' # ez, aov, Anova
+MMFunc = 'lmer'
+#######################
 
 # Support only 1 at the time for now... Please "FALSE" others.
 bERSP = FALSE
@@ -57,6 +66,8 @@ if(bERP)
 {
   nbPoints = 1536
 }
+
+bOnlyFullAnalysis = TRUE
 
 # Clear Plots.
 dev.off()
@@ -160,12 +171,12 @@ for(i in designs)
   if(bAnova)
   {
     # -- Anova --
-    AnovaFunc = 'ez'
     # anovas.all = 3D; H | V | Full
     #anovas.result <- staR_Anova(fullData = fullData, subData = subDataset, iDesign = iDesign, nbPoints, func = AnovaFunc)
     anovas.result <- staR_Anova(fullData = fullData, subData = NULL, iDesign = iDesign, nbPoints, func = AnovaFunc)
     anovas.all <- anovas.result[1:3]
     hTitles[[3]] <- anovas.result[[4]]
+
     #save(anovas.all, file = "RAnovas.RData") # Save on disk.
     
     # -- Summary --
@@ -179,7 +190,7 @@ for(i in designs)
     anovas.pSignificants <- anovas.ps[[2]]
   
     # -- Plot Stats --
-    plot(unlist(anovas.pVals[[1]][[1]]), type="l")
+    #plot(unlist(anovas.pVals[[1]][[1]]), type="l")
     if(bERP) { hStats <- plotStats(anovas.pSignificants, timeData) }
     if(bERSP) { hStats <- plotStats_ERSP(anovas.pSignificants, timeData) }
         
@@ -196,7 +207,6 @@ for(i in designs)
   if(bMixedModels)
   {
     # -- Mixed Models --
-    MMFunc = "lmer"
     # mixedmodels.all = 3D; H | V | Full
     mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign, func = MMFunc)
     hTitles[[3]] <- "Mixed Models..."
@@ -204,10 +214,39 @@ for(i in designs)
     #save() # Save on disk.
     
     # -- Summary --
+    mixedmodels.summary <- list()
+    mixedmodels.summary[[1]] <- list()
+    mixedmodels.summary[[2]] <- list()
+    mixedmodels.summary[[3]] <- list()
     # mixedmodels.summary = 3D; H | V | Full
     #mixedmodels.summary <- staR_MM_Summary(mixedmodels.all, iDesign)
-    mixedmodels.summary <- staR_MMKRComp(mixedmodels.all[[3]][[1]], mixedmodels.all[[3]][[2]])
+    mixedmodels.summaryTemp <- staR_MMKRComp(mixedmodels.all[[3]][[1]], mixedmodels.all[[3]][[2]])
     #anovas <- NULL # Free memory.
+    mixedmodels.summary[[3]][[1]] <- mixedmodels.summaryTemp
+
+    #mixedmodels.summary[[1]][[1]] <- staR_MMKRComp(mixedmodels.all[[1]][[1]][[1]], mixedmodels.all[[1]][[2]][[1]])
+    #mixedmodels.summary[[1]][[2]] <- staR_MMKRComp(mixedmodels.all[[1]][[1]][[2]], mixedmodels.all[[1]][[2]][[2]])
+    #mixedmodels.summary[[2]][[1]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[1]], mixedmodels.all[[2]][[2]][[1]])
+    #mixedmodels.summary[[2]][[2]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[2]], mixedmodels.all[[2]][[2]][[2]])
+    #mixedmodels.summary[[2]][[3]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[3]], mixedmodels.all[[2]][[2]][[3]])
+    #mixedmodels.summary[[2]][[4]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[4]], mixedmodels.all[[2]][[2]][[4]])
+    #################################################
+    ## First Dimension should be 3:
+    ## 1 - Horizontals | Rows (graphs are vertical, right side)
+    ## 2 - Verticals | Cols (graphs are horizontal, bottom line)
+    ## 3 - Full model with interactions.
+    ######
+    ## With mixed models you also have the restricted model 
+    ## to compare wth to get the p-value.
+    ## mixedmodels.all[[1]]                  --> Rows.
+    ## mixedmodels.all[[1]][[1]]             --> First Row.
+    ## mixedmodels.all[[1]][[1]][[1]]        --> Full model (first row)
+    ## mixedmodels.all[[1]][[1]][[1]][[1]]   --> First pixel, full model, first row.
+    ##
+    ## ** PAS TOUT A FAIT... D2 = ful vs restricted. **
+    ## Inverted dimension for calcul
+    ##
+    #################################################
     
     # -- pVals --    
     mixedmodels.ps <- staR_mmPVals(mixedmodels.summary, iDesign, 0.05)
@@ -233,58 +272,63 @@ for(i in designs)
   if(bERSP) { hData <- plotData_ERSP(subData, paramsList, timeData) }
   
   # -- Plot All --
-  designMatrix <- staR_getDesignMatrix(iDesign)
-  
-  hRows <- list()
-  for(i in 1:designMatrix$nbRow)
+  if(bOnlyFullAnalysis == FALSE)
   {
-    for(j in 1:designMatrix$nbCol)
+    designMatrix <- staR_getDesignMatrix(iDesign)
+    
+    hRows <- list()
+    for(i in 1:designMatrix$nbRow)
     {
-      if(j > 1)
+      for(j in 1:designMatrix$nbCol)
       {
-        hRows[[i]] <- cbind(hRows[[i]], ggplotGrob(hData[[i]][[j]]), size = "last")
+        if(j > 1)
+        {
+          hRows[[i]] <- cbind(hRows[[i]], ggplotGrob(hData[[i]][[j]]), size = "last")
+        }
+        else
+        {
+          hRows[[i]] <- ggplotGrob(hData[[i]][[j]])
+        }
       }
-      else
+      hRows[[i]] <- cbind(hRows[[i]], ggplotGrob(hStats[[1]][[i]]), size = "last")
+    }
+    
+    if(designMatrix$nbRow > 1)
+    {
+      nbRows <- length(hRows)
+      hRows[[nbRows + 1]] <- ggplotGrob(hStats[[2]][[1]])
+      for(j in 2:designMatrix$nbCol)
       {
-        hRows[[i]] <- ggplotGrob(hData[[i]][[j]])
+        hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[2]][[j]]), size = "last")
+      }
+      if(iDesign >= 11 && iDesign <= 16)
+      {
+        #hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[3]]), size = "last")
+        print("Modify me... Utilizing the first graph of D3.")
+        hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[1]]), size = "last")
       }
     }
-    hRows[[i]] <- cbind(hRows[[i]], ggplotGrob(hStats[[1]][[i]]), size = "last")
-  }
-  
-  if(designMatrix$nbRow > 1)
-  {
-    nbRows <- length(hRows)
-    hRows[[nbRows + 1]] <- ggplotGrob(hStats[[2]][[1]])
-    for(j in 2:designMatrix$nbCol)
+    
+    if(length(hRows) == 1) 
     {
-      hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[2]][[j]]), size = "last")
+      grid.arrange(hRows[[1]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
-    if(iDesign >= 11 && iDesign <= 16)
+    
+    if(length(hRows) == 2) 
     {
-      hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[3]]), size = "last")
+      grid.arrange(hRows[[1]], hRows[[2]], top=textGrob(staR_getDesignName(iDesignb, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
-  }
-  
-  if(length(hRows) == 1) 
-  {
-    grid.arrange(hRows[[1]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
-  }
-  
-  if(length(hRows) == 2) 
-  {
-    grid.arrange(hRows[[1]], hRows[[2]], top=textGrob(staR_getDesignName(iDesignb, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
-  }
-  
-  if(length(hRows) == 3) 
-  {
-    grid.arrange(hRows[[1]], hRows[[2]], hRows[[3]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
-  }
-  
-  if(bSaveOnDiskImages)
-  {
-    dev.copy2pdf(file = paste(dirPlots, "/Data_", i, ".pdf", sep = ""))
-    dev.off()
+    
+    if(length(hRows) == 3) 
+    {
+      grid.arrange(hRows[[1]], hRows[[2]], hRows[[3]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
+    }
+    
+    if(bSaveOnDiskImages)
+    {
+      dev.copy2pdf(file = paste(dirPlots, "/Data_", i, ".pdf", sep = ""))
+      dev.off()
+    }
   }
   
   ##################################

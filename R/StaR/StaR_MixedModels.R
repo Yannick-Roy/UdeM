@@ -31,7 +31,7 @@ staR_InvertDimensions <- function(array2D)
 ########################       MixedModels      ###########################
 ###########################################################################
 # Calculate FullData lmer
-staR_MMlmer <- function(fullData, subData = NULL, iDesign = 1, cluster = NULL)
+staR_MMlmer <- function(fullData, subData = NULL, iDesign = 1, cluster = NULL, func = "lmer")
 {
   cl <- makeCluster(8) 
   clusterExport(cl, list("lmer", "STATS_DESIGNS_MM", "STATS_DESIGNS_MM_RESTRICTED", "iDesign"))
@@ -364,11 +364,25 @@ staR_mmPVals <- function(summaries, iDesign, sigthreshold = 0.05)
   print(paste("Doing - PVals : ", format(STATS_DESIGNS_MM[[iDesign]])))
   tic()
   
-  if(iDesign >= 1 && iDesign <= 5)
+  for(i in 1:length(summaries))
   {
-    mixedmodels.pVals[[1]] <- list()
-    mixedmodels.pVals[[1]][[1]] <- lapply(summaries, FUN = function(x) {x$'p.value'[[1]]})          
+    mixedmodels.pVals[[i]] <- list()
+    if(length(summaries[[i]]) > 0)
+    {
+      for(j in 1:length(summaries[[i]]))
+      {
+        mixedmodels.pVals[[i]][[j]] <- list()
+        
+        mixedmodels.pVals[[i]][[j]] <- lapply(summaries[[i]][[j]], FUN = function(x) {x$'p.value'[[1]]}) 
+      }
+    }
   }
+  
+  #if(iDesign >= 1 && iDesign <= 5)
+ # {
+ #   mixedmodels.pVals[[1]] <- list()
+ #   mixedmodels.pVals[[1]][[1]] <- lapply(summaries, FUN = function(x) {x$'p.value'[[1]]})          
+ # }
   
 #   if(iDesign >= 11 && iDesign <= 16)
 #   {
@@ -402,10 +416,13 @@ staR_mmPVals <- function(summaries, iDesign, sigthreshold = 0.05)
   for(i in 1:length(mixedmodels.pSignif))
   {
     print(paste(length(mixedmodels.pSignif), i))
-    for(j in 1:length(mixedmodels.pSignif[[i]]))
+    if(length(mixedmodels.pSignif[[i]]) > 0)
     {
-      mixedmodels.pSignif[[i]][[j]][mixedmodels.pSignif[[i]][[j]] < sigthreshold] <- 0 #'Signif.'
-      mixedmodels.pSignif[[i]][[j]][mixedmodels.pSignif[[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
+      for(j in 1:length(mixedmodels.pSignif[[i]]))
+      {
+        mixedmodels.pSignif[[i]][[j]][mixedmodels.pSignif[[i]][[j]] < sigthreshold] <- 0 #'Signif.'
+        mixedmodels.pSignif[[i]][[j]][mixedmodels.pSignif[[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
+      }
     }
   }
   
