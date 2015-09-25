@@ -8,6 +8,7 @@
 
 library(tictoc)
 library(fdrtool)
+library(ez)
 
 source("StaR_Designs.R")
 

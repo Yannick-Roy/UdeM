@@ -31,7 +31,7 @@ source("StaR_PlotStats.R")
 #designs = c(1,2,3,4,5,11,12,13,14,15,16)
 #designs = c(11,12,13,14,15,16)
 #designs = c(1,2,3,4,5)
-designs = 31
+designs = 11
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -41,13 +41,14 @@ bReprepMatlabData = FALSE
 bSaveOnDiskImages = FALSE
 bSaveOnDiskData = FALSE
 
-bSmallSamples = TRUE
+bSmallSamples = FALSE
 
 #######################
 # Stats !
 #######################
-bAnova = TRUE
+bAnova = FALSE
 bMixedModels = FALSE
+bTTests = TRUE
 
 AnovaFunc = 'aov' # ez, aov, Anova
 MMFunc = 'lme' # lmer, lme
@@ -145,9 +146,7 @@ for(i in designs)
   {
     print("Select Data from File...")
     #load
-  }
-  else
-  {
+  } else {
     print("Select Data...")
     retVal <- staR_selectData(fullData, iDesign)
     subDataset = retVal[[1]]
@@ -163,6 +162,52 @@ for(i in designs)
   if(bERSP) {timeVals <- seq(1, nbPoints)}
   if(bERP) {timeVals <- timeData}
   paramsList <- staR_getDistParams(subData, timeVals, iDesign)
+  
+  ##################################
+  ############# ANOVAS #############
+  ##################################
+  if(bTTests)
+  {
+    sigthreshold = 0.05
+    
+    # Get condition #1
+    sub_ax <- lapply(fullData, subset, conditions == "SOM" & groups == "3")
+    # Subset only the values
+    sub_ax <- lapply(sub_ax, function(x) x$values)
+    
+    # Get condition #2
+    sub_bx <- lapply(fullData, subset, conditions == "SOM" & groups == "4")
+    # Subset only the values
+    sub_bx <- lapply(sub_bx, function(x) x$values)
+    
+    ttests.pVals <- list()
+    ttests.pVals[[1]] <- list()
+    ttests.pVals[[2]] <- list()
+    ttests.pVals[[3]] <- list()
+    
+    # T-Test
+    ttests.tVals <- mapply(function(x,y) {(t.test(x, y, paired = TRUE))$statistic}, sub_ax, sub_bx)
+    ttests.pVals[[3]][[1]] <- mapply(function(x,y) {(t.test(x, y, paired = TRUE))$'p.value'}, sub_ax, sub_bx)
+    
+    ttests.pSignificants <- ttests.pVals
+    for(i in 1:length(ttests.pSignificants))
+    {
+      print(paste(length(ttests.pSignificants), i))
+      if(length(ttests.pSignificants[[i]]) > 0)
+      {
+        for(j in 1:length(ttests.pSignificants[[i]]))
+        {
+          ttests.pSignificants[[i]][[j]][ttests.pSignificants[[i]][[j]] < sigthreshold] <- 0 #'Signif.'
+          ttests.pSignificants[[i]][[j]][ttests.pSignificants[[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
+        }
+      }
+    }
+    
+    if(bERP) { hStatsResults <- plotStats(ttests.pSignificants, timeData) }
+    if(bERSP) { hStatsResults <- plotStats_ERSP(ttests.pSignificants, timeData) }
+    hStats <- hStatsResults[[1]]
+    hStatsLayers <- hStatsResults[[2]]
+  }
   
   ##################################
   ############# ANOVAS #############
@@ -190,8 +235,8 @@ for(i in designs)
   
     # -- Plot Stats --
     #plot(unlist(anovas.pVals[[1]][[1]]), type="l")
-    if(bERP) { hStats <- plotStats(anovas.pSignificants, timeData) }
-    if(bERSP) { hStats <- plotStats_ERSP(anovas.pSignificants, timeData) }
+    if(bERP) { hStats <- plotStats(anovas.pSignificants, timeData)[[1]] }
+    if(bERSP) { hStats <- plotStats_ERSP(anovas.pSignificants, timeData)[[1]] }
         
     # -- pVals Correction --
     #anovas.cps <- staR_FDR(anovas.ps)
@@ -267,7 +312,7 @@ for(i in designs)
     
     # -- Plot Stats --
     #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
-    hStats <- plotStats(mixedmodels.pSignificants, timeData)
+    hStats <- plotStats(mixedmodels.pSignificants, timeData)[[1]]
     
     # -- pVals Correction --
     #anovas.cps <- staR_FDR(anovas.ps)

@@ -46,7 +46,7 @@ STATS_SUB_DESIGNS[[15]] = list(values ~ (sessions), values ~ (motions))
 STATS_SUB_DESIGNS[[16]] = list(values ~ (sessions), values ~ (orders))
 
 
-STATS_SUB_DESIGNS_ez[[11]] = ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions)) #, within = .(sessions)
+#STATS_SUB_DESIGNS_ez[[11]] = ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions)) #, within = .(sessions)
 #================================================================================================================================
 ################################  ==================== MIXED MODELS  ==================== #######################################
 #================================================================================================================================
