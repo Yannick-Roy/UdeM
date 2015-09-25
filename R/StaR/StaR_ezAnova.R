@@ -28,13 +28,8 @@ source("StaR_MixedModels.R")
 source("StaR_Anovas.R")
 source("StaR_PlotStats.R")
 
-#designs = c(1,2,3,4,5,11,12,13,14,15,16)
-#designs = c(11,12,13,14,15,16)
-#designs = c(1,2,3,4,5)
-designs = 31
+designs = 11
 
-#fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
-#iDesign = 13
 bReloadRData = FALSE
 bReloadMatlabFile = FALSE
 bReprepMatlabData = FALSE
@@ -43,15 +38,7 @@ bSaveOnDiskData = FALSE
 
 bSmallSamples = TRUE
 
-#######################
-# Stats !
-#######################
-bAnova = TRUE
-bMixedModels = FALSE
-
-AnovaFunc = 'aov' # ez, aov, Anova
-MMFunc = 'lme' # lmer, lme
-#######################
+iDesign = 11
 
 # Support only 1 at the time for now... Please "FALSE" others.
 bERSP = FALSE
@@ -60,7 +47,7 @@ bERP = TRUE
 nbPoints = 0
 if(bERSP)
 {
- nbPoints = 54000
+  nbPoints = 54000
 }
 if(bERP)
 {
@@ -78,6 +65,8 @@ dirPlots <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlots)
 
 hTitles <- list()  
+
+designs = iDesign
 
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
 for(i in designs)
@@ -116,12 +105,12 @@ for(i in designs)
     fullData = matlabData[[1]]
     
     if(length(matlabData) >= 3)
-      {if(length(matlabData[[2]]) >= 1)
-        {timeData = matlabData[[2]][1,]}}
+    {if(length(matlabData[[2]]) >= 1)
+    {timeData = matlabData[[2]][1,]}}
     
     if(length(matlabData) >= 3)
-      {if(length(matlabData[[3]]) >= 1)
-      {freqData = matlabData[[3]][1,]}}
+    {if(length(matlabData[[3]]) >= 1)
+    {freqData = matlabData[[3]][1,]}}
     
     if(bSmallSamples)
     {
@@ -167,111 +156,35 @@ for(i in designs)
   ##################################
   ############# ANOVAS #############
   ##################################
-  if(bAnova)
-  {
-    # -- Anova --
-    # anovas.all = 3D; H | V | Full
-    #anovas.result <- staR_Anova(fullData = fullData, subData = subDataset, iDesign = iDesign, nbPoints, func = AnovaFunc)
-    anovas.result <- staR_Anova(fullData = fullData, subData = NULL, iDesign = iDesign, nbPoints, func = AnovaFunc)
-    anovas.all <- anovas.result[1:3]
-    hTitles[[3]] <- anovas.result[[4]]
-
-    #save(anovas.all, file = "RAnovas.RData") # Save on disk.
+  # -- Anova --
+  # anovas.all = 3D; H | V | Full
+  anovas.result <- staR_Anova(fullData = fullData, subData = NULL, iDesign = iDesign, nbPoints, func = "ez")
+  anovas.all <- anovas.result[1:3]
+  hTitles[[3]] <- anovas.result[[4]]
     
-    # -- Summary --
-    # anovas.summaries = 3D; H | V | Full
-    anovas.summaries <- staR_Summary(anovas.all, iDesign, func = AnovaFunc)
-    #anovas.all <- NULL # Free memory.
-    
-    # -- pVals --
-    anovas.ps <- staR_PVals(anovas.summaries, iDesign, 0.05, func = AnovaFunc)
-    anovas.pVals <- anovas.ps[[1]]
-    anovas.pSignificants <- anovas.ps[[2]]
+  #save(anovas.all, file = "RAnovas.RData") # Save on disk.
   
+  # -- Summary --
+  # anovas.summaries = 3D; H | V | Full
+  anovas.summaries <- staR_Summary(anovas.all, iDesign, func = "ez")
+  #anovas.all <- NULL # Free memory.
+    
+  # -- pVals --
+  anovas.ps <- staR_PVals(anovas.summaries, iDesign, 0.05, func = "ez")
+  anovas.pVals <- anovas.ps[[1]]
+  anovas.pSignificants <- anovas.ps[[2]]
+    
     # -- Plot Stats --
     #plot(unlist(anovas.pVals[[1]][[1]]), type="l")
     if(bERP) { hStats <- plotStats(anovas.pSignificants, timeData) }
     if(bERSP) { hStats <- plotStats_ERSP(anovas.pSignificants, timeData) }
-        
+    
     # -- pVals Correction --
     #anovas.cps <- staR_FDR(anovas.ps)
     
     # -- post-hoc Comparaison --
     #TukeyHSD(anovas.all)
   }  
-  
-  ##################################
-  ########## Mixed Models ##########
-  ##################################
-  if(bMixedModels)
-  {
-    # -- Mixed Models --
-    # mixedmodels.all = 3D; H | V | Full
-    hTitles[[3]] <- "Mixed Models..."
-    if(MMFunc == "lmer")
-    {
-      mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign, func = MMFunc)
-    }
-    else
-    {
-      mixedmodels.all <- staR_MMlme(fullData = fullData, subData = subDataset, iDesign = iDesign)
-    }
-    #save() # Save on disk.
-    
-    # -- Summary --
-    mixedmodels.summary <- list()
-    mixedmodels.summary[[1]] <- list()
-    mixedmodels.summary[[2]] <- list()
-    mixedmodels.summary[[3]] <- list()
-    # mixedmodels.summary = 3D; H | V | Full
-    #mixedmodels.summary <- staR_MM_Summary(mixedmodels.all, iDesign)
-    if(MMFunc == "lmer") {
-      mixedmodels.summaryTemp <- staR_MMKRComp(mixedmodels.all[[3]][[1]], mixedmodels.all[[3]][[2]])
-    } else {
-      mixedmodels.summaryTemp <- lapply(mixedmodels.all[[3]], anova)   
-    }
-    #anovas <- NULL # Free memory.
-    mixedmodels.summary[[3]][[1]] <- mixedmodels.summaryTemp
-
-    #mixedmodels.summary[[1]][[1]] <- staR_MMKRComp(mixedmodels.all[[1]][[1]][[1]], mixedmodels.all[[1]][[2]][[1]])
-    #mixedmodels.summary[[1]][[2]] <- staR_MMKRComp(mixedmodels.all[[1]][[1]][[2]], mixedmodels.all[[1]][[2]][[2]])
-    #mixedmodels.summary[[2]][[1]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[1]], mixedmodels.all[[2]][[2]][[1]])
-    #mixedmodels.summary[[2]][[2]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[2]], mixedmodels.all[[2]][[2]][[2]])
-    #mixedmodels.summary[[2]][[3]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[3]], mixedmodels.all[[2]][[2]][[3]])
-    #mixedmodels.summary[[2]][[4]] <- staR_MMKRComp(mixedmodels.all[[2]][[1]][[4]], mixedmodels.all[[2]][[2]][[4]])
-    #################################################
-    ## First Dimension should be 3:
-    ## 1 - Horizontals | Rows (graphs are vertical, right side)
-    ## 2 - Verticals | Cols (graphs are horizontal, bottom line)
-    ## 3 - Full model with interactions.
-    ######
-    ## With mixed models you also have the restricted model 
-    ## to compare wth to get the p-value.
-    ## mixedmodels.all[[1]]                  --> Rows.
-    ## mixedmodels.all[[1]][[1]]             --> First Row.
-    ## mixedmodels.all[[1]][[1]][[1]]        --> Full model (first row)
-    ## mixedmodels.all[[1]][[1]][[1]][[1]]   --> First pixel, full model, first row.
-    ##
-    ## ** PAS TOUT A FAIT... D2 = ful vs restricted. **
-    ## Inverted dimension for calcul
-    ##
-    #################################################
-    
-    # -- pVals --    
-    mixedmodels.ps <- staR_mmPVals(mixedmodels.summary, iDesign, 0.05, func = MMFunc)
-    mixedmodels.pVals <- mixedmodels.ps[[1]]
-    mixedmodels.pSignificants <- mixedmodels.ps[[2]]
-    #mixedmodels.ps <- staR_MM_PVals(mixedmodels.summaries, iDesign, 0.05)
-    #mixedmodels.pVals <- mixedmodels.ps[[1]]
-    #mixedmodels.pSignificants <- mixedmodels.ps[[2]]
-    
-    # -- Plot Stats --
-    #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
-    hStats <- plotStats(mixedmodels.pSignificants, timeData)
-    
-    # -- pVals Correction --
-    #anovas.cps <- staR_FDR(anovas.ps)
-  }
   
   ##################################
   ########### PLOT DATA ############

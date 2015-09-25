@@ -271,20 +271,13 @@ staR_MMlmer <- function(fullData, subData = NULL, iDesign = 1, cluster = NULL, f
 
 staR_MMlme <- function(fullData, subData = NULL, iDesign = 1)
 {
-  cl <- makeCluster(8) 
-  clusterExport(cl, list("lme", "STATS_DESIGNS", "STATS_DESIGNS_RND", "iDesign"))
-  
+  print(paste("Doing - lme (fullData) : ", format(STATS_DESIGNS_MM[[iDesign]]), " random=", format(STATS_DESIGNS_RND)))
   tic()
-  print(paste("Doing - lme (fullData) : ", format(STATS_DESIGNS[[iDesign]]), " random=", format(STATS_DESIGNS_RND)))
-  
-  mixedmodels.full <- parLapply(cl = cl, fullData, fun = function(x) {lme(STATS_DESIGNS[[iDesign]], random=STATS_DESIGNS_RND, x)})
+  a <- lme(values ~ (conditions), random = ~1|subjects, fullData[[1]])
+  #mixedmodels.full <- lapply(fullData, FUN = function(x) {lme(STATS_DESIGNS[[iDesign]], random=STATS_DESIGNS_RND, x)})
   toc()
-  
-  stopCluster(cl)
-  
-  mixedmodels.subH <- list()
-  mixedmodels.subV <- list()
-  
+  print("Done!")
+ 
   print("Done!")
   
   t <- list(mixedmodels.subH, mixedmodels.subV, mixedmodels.full)
@@ -362,7 +355,7 @@ staR_MMKRComp <- function(fullModel, restrictedModel)
 ###########################################################################
 ###########################       P-VALS      #############################
 ###########################################################################
-staR_mmPVals <- function(summaries, iDesign, sigthreshold = 0.05, func = "lmer")
+staR_mmPVals <- function(summaries, iDesign, sigthreshold = 0.05)
 {
   mixedmodels.pVals <- list()
   
@@ -371,37 +364,20 @@ staR_mmPVals <- function(summaries, iDesign, sigthreshold = 0.05, func = "lmer")
   print(paste("Doing - PVals : ", format(STATS_DESIGNS_MM[[iDesign]])))
   tic()
   
-  if(func == "lmer")
+  for(i in 1:length(summaries))
   {
-    print("... lmer ...")
-    for(i in 1:length(summaries))
+    mixedmodels.pVals[[i]] <- list()
+    if(length(summaries[[i]]) > 0)
     {
-      mixedmodels.pVals[[i]] <- list()
-      if(length(summaries[[i]]) > 0)
+      for(j in 1:length(summaries[[i]]))
       {
-        for(j in 1:length(summaries[[i]]))
-        {
-          mixedmodels.pVals[[i]][[j]] <- list()
-          
-          if(func == "lmer")
-          {
-            mixedmodels.pVals[[i]][[j]] <- lapply(summaries[[i]][[j]], FUN = function(x) {x$'p.value'[[1]]}) 
-          }
-          else
-          {
-            #mixedmodels.pVals[[i]][[j]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[1]]$'p-value'[[1]]}) 
-          }
-        }
+        mixedmodels.pVals[[i]][[j]] <- list()
+        
+        mixedmodels.pVals[[i]][[j]] <- lapply(summaries[[i]][[j]], FUN = function(x) {x$'p.value'[[1]]}) 
       }
     }
-  } else {
-    print("... lme ...")
-    mixedmodels.pVals[[3]] <- list()
-    mixedmodels.pVals[[3]][[1]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x$'p-value'[[2]]}) 
-    mixedmodels.pVals[[3]][[2]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x$'p-value'[[3]]}) 
-    mixedmodels.pVals[[3]][[3]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x$'p-value'[[4]]}) 
-    print("... done ...")
   }
+  
   #if(iDesign >= 1 && iDesign <= 5)
  # {
  #   mixedmodels.pVals[[1]] <- list()

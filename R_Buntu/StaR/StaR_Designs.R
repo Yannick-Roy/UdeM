@@ -45,8 +45,6 @@ STATS_SUB_DESIGNS[[14]] = list(values ~ (orders), values ~ (groups))
 STATS_SUB_DESIGNS[[15]] = list(values ~ (sessions), values ~ (motions))
 STATS_SUB_DESIGNS[[16]] = list(values ~ (sessions), values ~ (orders))
 
-
-STATS_SUB_DESIGNS_ez[[11]] = ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions)) #, within = .(sessions)
 #================================================================================================================================
 ################################  ==================== MIXED MODELS  ==================== #######################################
 #================================================================================================================================
@@ -98,7 +96,7 @@ STATS_DESIGNS_RND = ~1|subjects
 
 #==================================================================
 
-staR_getDesignName <- function(iDesign, bAnova, bMixedModels, Afunc = "aov", MMfunc = "lmer")
+staR_getDesignName <- function(iDesign, bAnova, bMixedModels, Afunc = "aov")
 {
   title = "N/A"
   
@@ -109,10 +107,8 @@ staR_getDesignName <- function(iDesign, bAnova, bMixedModels, Afunc = "aov", MMf
   
   if(bMixedModels)
   {
-    if(MMfunc == "lmer") {title <- paste("Mixed Models (", MMfunc, ") : ", format(STATS_DESIGNS_MM[[iDesign]]))}
-    if(MMfunc == "lme") {title <- paste("Mixed Models (", MMfunc, ") : ", format(STATS_DESIGNS[[iDesign]]), "\n ", format(STATS_DESIGNS_RND))}
+    title <-paste("Mixed Models : ", format(STATS_DESIGNS_MM[[iDesign]]))
   }
   
-  subTitle <- gsub("[+]", "\n +", title)
-  subTitle
+  title
 }

@@ -39,7 +39,14 @@ staR_Anova <- function(fullData, subData = NULL, iDesign = 1, nbPoints = 1536, f
   tic()
   if(func == 'aov') { anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign]], x)}) }
   else if(func == 'anova') { anovas.full <- lapply(fullData, FUN = function(x) {anova(STATS_DESIGNS[[iDesign]], x)}) }
-  else if(func == 'ez') { anovas.full <- lapply(fullData, FUN = function(x) {STATS_DESIGNS_ez[[iDesign]]}) }
+  else if(func == 'ez') { anovas.full <- lapply(fullData, FUN = function(x) {    
+    rt_anova = ezANOVA(
+    data = x
+    , dv = values
+    , wid = subjects
+    , within = .(sessions)
+    , between = groups
+    )}) }
   
   anovas.titles.full = paste(func, " : ",  format(STATS_DESIGNS[[iDesign]]))
   toc()
@@ -290,55 +297,6 @@ staR_PVals <- function(summaries, iDesign, sigthreshold = 0.05, func = 'aov')
     if(func == 'aov') {anovas.pVals[[3]][[2]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[1]]$'Pr(>F)'[[2]]})}
     if(func == 'ez') {anovas.pVals[[3]][[2]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[2]]})}
     if(func == 'aov') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[1]]$'Pr(>F)'[[3]]})}
-    if(func == 'ez') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[3]]})}
-  }
-#   
-#   if(iDesign >= 21 && iDesign <= 26)
-#   {
-#     print(paste("Doing - PVals (Full)"))
-#     anovas.pVals[[3]] <- list()
-#     if(func == 'aov') {anovas.pVals[[3]][[1]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[1]][[1]]$'Pr(>F)'[[1]]})}
-#     #if(func == 'ez') {anovas.pVals[[3]][[1]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[1]]})}
-#     if(func == 'aov') {anovas.pVals[[3]][[2]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[1]]})}
-#     #if(func == 'ez') {anovas.pVals[[3]][[2]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[2]]})}
-#     if(func == 'aov') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[2]]})}
-#     #if(func == 'ez') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[3]]})}
-#   }
-  
-  if(iDesign >= 31 && iDesign <= 36)
-  {
-#     # subH            
-#     anovas.pVals[[1]] <- list()
-#     if(length(summaries[[1]]) > 0)
-#     {
-#       for(i in 1:length(summaries[[1]]))
-#       {
-#         print(paste("Doing - PVals (Horizontal) : ", i, "/", length(summaries[[1]])))
-#         if(func == 'aov') {anovas.pVals[[1]][[i]] <- lapply(summaries[[1]][[i]], FUN = function(x) {x[[1]]$'Pr(>F)'[[1]]})}
-#         #else if(func == 'ez') {anovas.pVals[[1]][[i]] <- lapply(summaries[[1]][[i]], FUN = function(x) {x$ANOVA$p[[1]]})}
-#       }
-#     }
-#     
-#     # subV
-#     anovas.pVals[[2]] <- list()
-#     if(length(summaries[[2]]) > 0)
-#     {
-#       for(i in 1:length(summaries[[2]]))
-#       {
-#         print(paste("Doing - PVals (Vertical) : ", i, "/", length(summaries[[2]])))
-#         if(func == 'aov') {anovas.pVals[[2]][[i]] <- lapply(summaries[[2]][[i]], FUN = function(x) {x[[1]]$'Pr(>F)'[[1]]})}
-#         else if(func == 'ez') {anovas.pVals[[2]][[1]] <- lapply(summaries[[2]][[i]], FUN = function(x) {x$ANOVA$p[[1]]})}
-#       }
-#     }
-    # Full
-    # Should put "else if", but morning rage with stupid bug.. ya know.
-    print(paste("Doing - PVals (Full)"))
-    anovas.pVals[[3]] <- list()
-    if(func == 'aov') {anovas.pVals[[3]][[1]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[1]][[1]]$'Pr(>F)'[[1]]})}
-    if(func == 'ez') {anovas.pVals[[3]][[1]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[1]]})}
-    if(func == 'aov') {anovas.pVals[[3]][[2]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[1]]})}
-    if(func == 'ez') {anovas.pVals[[3]][[2]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[2]]})}
-    if(func == 'aov') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[2]]})}
     if(func == 'ez') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[3]]})}
   }
   

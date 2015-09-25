@@ -101,8 +101,6 @@ staR_selectData <- function(fullData, iDesign)
   subDataset <- list() 
   subDataset[[1]] <- list()
   
-  if(iDesign > 20) {iDesign <- iDesign - 20}
-  
   if(iDesign == 1)
   {
     subDataset[[1]][[1]] <- lapply(fullData, subset, conditions == "FOF")    

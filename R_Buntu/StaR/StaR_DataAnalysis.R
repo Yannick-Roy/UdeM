@@ -31,13 +31,13 @@ source("StaR_PlotStats.R")
 #designs = c(1,2,3,4,5,11,12,13,14,15,16)
 #designs = c(11,12,13,14,15,16)
 #designs = c(1,2,3,4,5)
-designs = 31
+designs = 12
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
 bReloadRData = FALSE
-bReloadMatlabFile = FALSE
-bReprepMatlabData = FALSE
+bReloadMatlabFile = TRUE
+bReprepMatlabData = TRUE
 bSaveOnDiskImages = FALSE
 bSaveOnDiskData = FALSE
 
@@ -46,11 +46,11 @@ bSmallSamples = TRUE
 #######################
 # Stats !
 #######################
-bAnova = TRUE
-bMixedModels = FALSE
+bAnova = FALSE
+bMixedModels = TRUE
 
 AnovaFunc = 'aov' # ez, aov, Anova
-MMFunc = 'lme' # lmer, lme
+MMFunc = 'lmer'
 #######################
 
 # Support only 1 at the time for now... Please "FALSE" others.
@@ -70,7 +70,7 @@ if(bERP)
 bOnlyFullAnalysis = TRUE
 
 # Clear Plots.
-#dev.off()
+dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
 dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
@@ -85,7 +85,7 @@ for(i in designs)
   iDesign = i
   
   # Prep Plot Series !
-  grid.arrange(textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=30)))
+  grid.arrange(textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=30)))
   if(bSaveOnDiskImages)
   {
     dev.copy2pdf(file = paste(dirPlots, "/Title_", i, ".pdf", sep = ""))
@@ -158,6 +158,7 @@ for(i in designs)
     }
   }
   
+  # Get mean, max, min, etc.
   print("Get Params (mean, min, max, ...)")
   #paramsList <- staR_getDistParams(subData, timeData, iDesign)
   if(bERSP) {timeVals <- seq(1, nbPoints)}
@@ -207,15 +208,9 @@ for(i in designs)
   {
     # -- Mixed Models --
     # mixedmodels.all = 3D; H | V | Full
+    mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign, func = MMFunc)
     hTitles[[3]] <- "Mixed Models..."
-    if(MMFunc == "lmer")
-    {
-      mixedmodels.all <- staR_MMlmer(fullData = fullData, subData = subDataset, iDesign = iDesign, func = MMFunc)
-    }
-    else
-    {
-      mixedmodels.all <- staR_MMlme(fullData = fullData, subData = subDataset, iDesign = iDesign)
-    }
+    #mixedmodels.all <- staR_MMlme(fullData = fullData, subData = subDataset, iDesign = iDesign)
     #save() # Save on disk.
     
     # -- Summary --
@@ -225,11 +220,7 @@ for(i in designs)
     mixedmodels.summary[[3]] <- list()
     # mixedmodels.summary = 3D; H | V | Full
     #mixedmodels.summary <- staR_MM_Summary(mixedmodels.all, iDesign)
-    if(MMFunc == "lmer") {
-      mixedmodels.summaryTemp <- staR_MMKRComp(mixedmodels.all[[3]][[1]], mixedmodels.all[[3]][[2]])
-    } else {
-      mixedmodels.summaryTemp <- lapply(mixedmodels.all[[3]], anova)   
-    }
+    mixedmodels.summaryTemp <- staR_MMKRComp(mixedmodels.all[[3]][[1]], mixedmodels.all[[3]][[2]])
     #anovas <- NULL # Free memory.
     mixedmodels.summary[[3]][[1]] <- mixedmodels.summaryTemp
 
@@ -258,7 +249,7 @@ for(i in designs)
     #################################################
     
     # -- pVals --    
-    mixedmodels.ps <- staR_mmPVals(mixedmodels.summary, iDesign, 0.05, func = MMFunc)
+    mixedmodels.ps <- staR_mmPVals(mixedmodels.summary, iDesign, 0.05)
     mixedmodels.pVals <- mixedmodels.ps[[1]]
     mixedmodels.pSignificants <- mixedmodels.ps[[2]]
     #mixedmodels.ps <- staR_MM_PVals(mixedmodels.summaries, iDesign, 0.05)
@@ -266,7 +257,7 @@ for(i in designs)
     #mixedmodels.pSignificants <- mixedmodels.ps[[2]]
     
     # -- Plot Stats --
-    #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
+    plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
     hStats <- plotStats(mixedmodels.pSignificants, timeData)
     
     # -- pVals Correction --
@@ -320,17 +311,17 @@ for(i in designs)
     
     if(length(hRows) == 1) 
     {
-      grid.arrange(hRows[[1]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(hRows[[1]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     
     if(length(hRows) == 2) 
     {
-      grid.arrange(hRows[[1]], hRows[[2]], top=textGrob(staR_getDesignName(iDesignb, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(hRows[[1]], hRows[[2]], top=textGrob(staR_getDesignName(iDesignb, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     
     if(length(hRows) == 3) 
     {
-      grid.arrange(hRows[[1]], hRows[[2]], hRows[[3]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(hRows[[1]], hRows[[2]], hRows[[3]], top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     
     if(bSaveOnDiskImages)
@@ -343,23 +334,23 @@ for(i in designs)
   ##################################
   ###### PLOT COMPLEX DESIGN #######
   ##################################
-  if((iDesign >= 11 && iDesign <= 19) || (iDesign >= 31 && iDesign <= 39))
+  if(iDesign >= 11 && iDesign <= 19)
   {
     if(length(hStats[[3]]) == 1)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     if(length(hStats[[3]]) == 2)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     if(length(hStats[[3]]) == 3)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     if(length(hStats[[3]]) == 4)
     {
-      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), ggplotGrob(hStats[[3]][[4]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc, MMfunc = MMFunc), gp=gpar(fontsize=20,font=3)))
+      grid.arrange(ggplotGrob(hStats[[3]][[1]]), ggplotGrob(hStats[[3]][[2]]), ggplotGrob(hStats[[3]][[3]]), ggplotGrob(hStats[[3]][[4]]), top=textGrob(staR_getDesignName(iDesign, bAnova, bMixedModels, Afunc = AnovaFunc), gp=gpar(fontsize=20,font=3)))
     }
     
     if(bSaveOnDiskImages)
