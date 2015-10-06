@@ -1,6 +1,12 @@
 ##########################################################################
 # More info on lmer vs lme 
 # https://freshbiostats.wordpress.com/2013/07/28/mixed-models-in-r-lme4-nlme-both/
+# http://r.789695.n4.nabble.com/lme-vs-lmer-how-do-they-differ-td2534332.html
+# http://stats.stackexchange.com/questions/5344/how-to-choose-nlme-or-lme4-r-library-for-mixed-effects-models
+# 
+
+# Why no p-Value with lmer ?
+# https://stat.ethz.ch/pipermail/r-help/2006-May/094765.html
 ##########################################################################
 library(tictoc)
 library(fdrtool)
@@ -477,9 +483,9 @@ staR_getDesignMatrix <- function(iDesign)
   if(iDesign == 15) {designMatrix = data.frame("nbCol" = 3, "nbRow" = 2)} # Sessions * Motions
   if(iDesign == 16) {designMatrix = data.frame("nbCol" = 3, "nbRow" = 2)} # Sessions * Orders
   
-  #STATS_DESIGNS[[17]] = values ~ (groups * sessions * motions)
-  #STATS_DESIGNS[[18]] = values ~ (groups * sessions * orders)
-  #STATS_DESIGNS[[19]] = values ~ (groups * sessions * motions * orders)
+  if(iDesign == 17) {designMatrix = data.frame("nbCol" = 1, "nbRow" = 1)} # (groups * sessions * motions)
+  if(iDesign == 18) {designMatrix = data.frame("nbCol" = 1, "nbRow" = 1)} # (groups * sessions * orders)
+  if(iDesign == 19) {designMatrix = data.frame("nbCol" = 1, "nbRow" = 1)} # (groups * sessions * motions * orders)
   
   designMatrix
 }

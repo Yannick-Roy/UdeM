@@ -31,13 +31,13 @@ source("StaR_PlotStats.R")
 #designs = c(1,2,3,4,5,11,12,13,14,15,16)
 #designs = c(11,12,13,14,15,16)
 #designs = c(1,2,3,4,5)
-designs = 11
+designs = 31
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
 bReloadRData = FALSE
-bReloadMatlabFile = FALSE
-bReprepMatlabData = FALSE
+bReloadMatlabFile = TRUE
+bReprepMatlabData = TRUE
 bSaveOnDiskImages = FALSE
 bSaveOnDiskData = FALSE
 
@@ -46,9 +46,9 @@ bSmallSamples = FALSE
 #######################
 # Stats !
 #######################
-bAnova = FALSE
+bAnova = TRUE
 bMixedModels = FALSE
-bTTests = TRUE
+bTTests = FALSE
 
 AnovaFunc = 'aov' # ez, aov, Anova
 MMFunc = 'lme' # lmer, lme
@@ -229,20 +229,23 @@ for(i in designs)
     #anovas.all <- NULL # Free memory.
     
     # -- pVals --
-    anovas.ps <- staR_PVals(anovas.summaries, iDesign, 0.05, func = AnovaFunc)
-    anovas.pVals <- anovas.ps[[1]]
-    anovas.pSignificants <- anovas.ps[[2]]
-  
+    anovas.pVals <- staR_PVals(anovas.summaries, iDesign, func = AnovaFunc)
+    anovas.pSignificants <- staR_PSignificants(anovas.pVals, 0.05)
+    
+    # -- pVals Correction --
+    anovas.cps <- staR_FDR(anovas.pVals)
+    anovas.pSignificantsCorr <- staR_PSignificants(anovas.pVals, 0.05)
+    
+    # -- post-hoc Comparaison --
+    #TukeyHSD(anovas.all)
+    
     # -- Plot Stats --
     #plot(unlist(anovas.pVals[[1]][[1]]), type="l")
     if(bERP) { hStats <- plotStats(anovas.pSignificants, timeData)[[1]] }
     if(bERSP) { hStats <- plotStats_ERSP(anovas.pSignificants, timeData)[[1]] }
-        
-    # -- pVals Correction --
-    #anovas.cps <- staR_FDR(anovas.ps)
     
-    # -- post-hoc Comparaison --
-    #TukeyHSD(anovas.all)
+    if(bERP) { hStatsCorr <- plotStats(anovas.pSignificantsCorr, timeData)[[1]] }
+    if(bERSP) { hStatsCorr <- plotStats_ERSP(anovas.pSignificantsCorr, timeData)[[1]] }
   }  
   
   ##################################

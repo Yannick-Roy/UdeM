@@ -215,17 +215,21 @@ staR_selectData <- function(fullData, iDesign)
 #     subDataset[[11]] <- lapply(fullData, subset, orders == "SO" & motions == "M" & sessions == 3)
 #     subDataset[[12]] <- lapply(fullData, subset, orders == "SO" & motions == "F" & sessions == 3)
 #   } 
-  
-  dsDataList <- list()
-  for(i in 1:length(subDataset))
+  if(iDesign <= 16)
   {
-    dsDataList[[i]] <- list()
-    for(j in 1:length(subDataset[[i]]))
-    {  
-      dsDataList[[i]][[j]] <- lapply(subDataset[[i]][[j]], FUN = function(x) {x$value})
+    dsDataList <- list()
+    for(i in 1:length(subDataset))
+    {
+      dsDataList[[i]] <- list()
+      for(j in 1:length(subDataset[[i]]))
+      {  
+        dsDataList[[i]][[j]] <- lapply(subDataset[[i]][[j]], FUN = function(x) {x$value})
+      }
     }
+  }else{
+    subDataset <- list()
+    dsDataList <- list()
   }
-  
   retVal = list(subDataset, dsDataList)
 }
 
@@ -240,18 +244,24 @@ staR_getDistParams <- function(data, timeVals, iDesign)
   designMatrix <- staR_getDesignMatrix(iDesign)
   
   dfParamsList <- list()
-  for(i in 1:designMatrix$nbRow)
+  if(designMatrix$nbRow > 1)
   {
-    dfParamsList[[i]] <- list()
-    for(j in 1:designMatrix$nbCol)
+    for(i in 1:designMatrix$nbRow)
     {
-      xSDE <- lapply(data[[i]][[j]], stde)
-      xMean <- lapply(data[[i]][[j]], mean)
-      xMax <- lapply(data[[i]][[j]], max)
-      xMin <- lapply(data[[i]][[j]], min)
-      
-      if(is.null(timeVals)) {timeVals = seq(1, length(data[[i]][[j]]))}
-      dfParamsList[[i]][[j]]  <- data.frame(times = timeVals, means = unlist(xMean), sdes = unlist(xSDE), maxs = unlist(xMax), mins = unlist(xMin))
+      dfParamsList[[i]] <- list()
+      if(designMatrix$nbCol > 1)
+      {
+        for(j in 1:designMatrix$nbCol)
+        {
+          xSDE <- lapply(data[[i]][[j]], stde)
+          xMean <- lapply(data[[i]][[j]], mean)
+          xMax <- lapply(data[[i]][[j]], max)
+          xMin <- lapply(data[[i]][[j]], min)
+          
+          if(is.null(timeVals)) {timeVals = seq(1, length(data[[i]][[j]]))}
+          dfParamsList[[i]][[j]]  <- data.frame(times = timeVals, means = unlist(xMean), sdes = unlist(xSDE), maxs = unlist(xMax), mins = unlist(xMin))
+        }
+      }
     }
   }
   

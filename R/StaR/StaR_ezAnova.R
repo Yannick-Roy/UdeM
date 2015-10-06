@@ -31,8 +31,8 @@ source("StaR_PlotStats.R")
 designs = 11
 
 bReloadRData = FALSE
-bReloadMatlabFile = FALSE
-bReprepMatlabData = FALSE
+bReloadMatlabFile = TRUE
+bReprepMatlabData = TRUE
 bSaveOnDiskImages = FALSE
 bSaveOnDiskData = FALSE
 

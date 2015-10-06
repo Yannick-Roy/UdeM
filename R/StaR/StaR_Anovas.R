@@ -40,7 +40,7 @@ staR_Anova <- function(fullData, subData = NULL, iDesign = 1, nbPoints = 1536, f
   tic()
   if(func == 'aov') { anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign]], x)}) }
   else if(func == 'anova') { anovas.full <- lapply(fullData, FUN = function(x) {anova(STATS_DESIGNS[[iDesign]], x)}) }
-  else if(func == 'ez') { anovas.full <- lapply(fullData, FUN = function(x) {STATS_DESIGNS_ez[[iDesign]]}) }
+  else if(func == 'ez') { anovas.full <- lapply(fullData, FUN = function(x) {ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions))})} #{STATS_DESIGNS_ez[[iDesign]]}) }
   
   anovas.titles.full = paste(func, " : ",  format(STATS_DESIGNS[[iDesign]]))
   toc()
@@ -241,7 +241,7 @@ staR_Summary <- function(data, iDesign = 1,  func = 'aov')
 ###########################################################################
 ###########################       P-VALS      #############################
 ###########################################################################
-staR_PVals <- function(summaries, iDesign, sigthreshold = 0.05, func = 'aov')
+staR_PVals <- function(summaries, iDesign, func = 'aov')
 {
   anovas.pVals <- list()
   
@@ -342,29 +342,35 @@ staR_PVals <- function(summaries, iDesign, sigthreshold = 0.05, func = 'aov')
     if(func == 'aov') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]][[1]], FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[2]]})}
     if(func == 'ez') {anovas.pVals[[3]][[3]] <- lapply(summaries[[3]], FUN = function(x) {x$ANOVA$p[[3]]})}
   }
+
+  toc()
+  print("Done!")
   
+  anovas.pVals
+}
+
+staR_PSignificants <- function(pVals, sigthreshold)
+{
   print(paste("Doing - PSignif."))
   
-  anovas.pSignif <- anovas.pVals
-  for(i in 1:length(anovas.pSignif))
+  pSignif <- pVals
+  for(i in 1:length(pSignif))
   {
-    print(paste(length(anovas.pSignif), i))
-    if(length(anovas.pSignif[[i]]) > 0)
+    print(paste(length(pSignif), i))
+    if(length(pSignif[[i]]) > 0)
     {
-      for(j in 1:length(anovas.pSignif[[i]]))
+      for(j in 1:length(pSignif[[i]]))
       {
-        anovas.pSignif[[i]][[j]][anovas.pSignif[[i]][[j]] < sigthreshold] <- 0 #'Signif.'
-        anovas.pSignif[[i]][[j]][anovas.pSignif[[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
+        pSignif[[i]][[j]][pSignif[[i]][[j]] < sigthreshold] <- 0 #'Signif.'
+        pSignif[[i]][[j]][pSignif[[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
       }
     }
   }
   
-  toc()
-  print("Done!")
+  print("Done !")
   
-  retVal <- list(anovas.pVals, anovas.pSignif)
+  pSignif
 }
-
 ###########################################################################
 ##########################       Designs      #############################
 ###########################################################################
@@ -386,14 +392,25 @@ staR_getDesignMatrix <- function(iDesign)
   if(iDesign == 15) {designMatrix = data.frame("nbCol" = 3, "nbRow" = 2)} # Sessions * Motions
   if(iDesign == 16) {designMatrix = data.frame("nbCol" = 3, "nbRow" = 2)} # Sessions * Orders
   
-  #STATS_DESIGNS[[17]] = values ~ (groups * sessions * motions)
-  #STATS_DESIGNS[[18]] = values ~ (groups * sessions * orders)
-  #STATS_DESIGNS[[19]] = values ~ (groups * sessions * motions * orders)
+  if(iDesign == 17) {designMatrix = data.frame("nbCol" = 1, "nbRow" = 1)} # (groups * sessions * motions)
+  if(iDesign == 18) {designMatrix = data.frame("nbCol" = 1, "nbRow" = 1)} # (groups * sessions * orders)
+  if(iDesign == 19) {designMatrix = data.frame("nbCol" = 1, "nbRow" = 1)} # (groups * sessions * motions * orders)
   
   designMatrix
 }
 
 staR_FDR <- function(pVals)
 {
-  p.adjust(p = pVals, method="fdr")
+  pValsCorrected <- list()
+  for(i in 1:length(pVals)) 
+  {
+    pValsCorrected[[i]] <- list()
+    if(length(pVals[[i]]) > 0)
+    {
+      for(j in 1:length(pVals[[i]])) 
+      {
+        pValsCorrected[[i]][[j]] <- p.adjust(p = pVals[[i]][[j]], method = "fdr")
+      }
+    }
+  }
 }

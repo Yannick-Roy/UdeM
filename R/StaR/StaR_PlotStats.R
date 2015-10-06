@@ -29,42 +29,46 @@ plotData <- function(data, params, timeVals, bShowPlot = TRUE)
   
   hDataList <- NULL
   
-  if(length(data) != length(params)) {print("======= ERROR in plotData() : length(data) != length(params) ========")}
-  else
+  if(length(data) > 0)
   {
-    for(i in 1:length(data))
-    { if(length(data[[i]]) != length(params[[i]])) {print("======= ERROR in plotData() : length(data[[i]]) != length(params[[i]]) ========")} }
-    
-    hDataList <- list()
-    for(i in 1:length(data))
+    if(length(data) != length(params)) {print("======= ERROR in plotData() : length(data) != length(params) ========")}
+    else
     {
-      hDataList[[i]] <- list()
-      for(j in 1:length(data[[i]]))
+      for(i in 1:length(data))
+      { if(length(data[[i]]) != length(params[[i]])) {print("======= ERROR in plotData() : length(data[[i]]) != length(params[[i]]) ========")} }
+      
+      hDataList <- list()
+      for(i in 1:length(data))
       {
-        #hData[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + theme(legend.position="none")#axis.line=element_blank(),axis.text.x=element_blank(), 
-        hDataList[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + 
-          theme(legend.position="none", axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank()) +
-          geom_vline(xintercept = 0, colour="black", linetype = "longdash") + ylim(-0.5, 0.7) + geom_ribbon(aes(x=times, ymin=means-sdes, ymax=means+sdes), alpha = 0.3, fill="orange", data=params[[i]][[j]])
-        
-        #scale_x_continuous(limits = c(-500, 2000)) #coord_cartesian(xlim = c(2000, -500)) 
-        
-        # Empty Plot !
-#           theme(axis.line=element_blank(),axis.text.x=element_blank(),
-#                 axis.text.y=element_blank(),axis.ticks=element_blank(),
-#                 axis.title.x=element_blank(),
-#                 axis.title.y=element_blank(),legend.position="none",
-#                 panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-#                 panel.grid.minor=element_blank(),plot.background=element_blank())
-      }      
+        hDataList[[i]] <- list()
+        for(j in 1:length(data[[i]]))
+        {
+          #hData[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + theme(legend.position="none")#axis.line=element_blank(),axis.text.x=element_blank(), 
+          hDataList[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + 
+            theme(legend.position="none", axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank()) +
+            geom_vline(xintercept = 0, colour="black", linetype = "longdash") + ylim(-0.5, 0.7) + geom_ribbon(aes(x=times, ymin=means-sdes, ymax=means+sdes), alpha = 0.3, fill="orange", data=params[[i]][[j]])
+          
+          #scale_x_continuous(limits = c(-500, 2000)) #coord_cartesian(xlim = c(2000, -500)) 
+          
+          # Empty Plot !
+  #           theme(axis.line=element_blank(),axis.text.x=element_blank(),
+  #                 axis.text.y=element_blank(),axis.ticks=element_blank(),
+  #                 axis.title.x=element_blank(),
+  #                 axis.title.y=element_blank(),legend.position="none",
+  #                 panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+  #                 panel.grid.minor=element_blank(),plot.background=element_blank())
+        }      
+      }
+      
+      #hData1 <- cbind(ggplotGrob(hData[[1]]), ggplotGrob(hData[[2]]), ggplotGrob(hData[[3]]), size = "last")
+      #hData2 <- cbind(ggplotGrob(hData[[5]]), ggplotGrob(hData[[6]]), ggplotGrob(hData[[7]]), ggplotGrob(hData[[8]]), size = "last")
+      #hData3 <- cbind(ggplotGrob(hData[[9]]), ggplotGrob(hData[[10]]), ggplotGrob(hData[[11]]), ggplotGrob(hData[[12]]), size = "last")
+      
+      #if(bShowPlot == TRUE) {grid.arrange(hDataList)}
     }
-    
-    #hData1 <- cbind(ggplotGrob(hData[[1]]), ggplotGrob(hData[[2]]), ggplotGrob(hData[[3]]), size = "last")
-    #hData2 <- cbind(ggplotGrob(hData[[5]]), ggplotGrob(hData[[6]]), ggplotGrob(hData[[7]]), ggplotGrob(hData[[8]]), size = "last")
-    #hData3 <- cbind(ggplotGrob(hData[[9]]), ggplotGrob(hData[[10]]), ggplotGrob(hData[[11]]), ggplotGrob(hData[[12]]), size = "last")
-    
-    #if(bShowPlot == TRUE) {grid.arrange(hDataList)}
-  }
-  
+  }else{
+    print("No data...")
+  }  
   toc()
   print("Done!")
   
@@ -142,7 +146,7 @@ plotData_ERSP <- function(data, params, timeVals, bShowPlot = TRUE)
 ###########################################################################
 #########################       Plot Data !     ###########################
 ###########################################################################
-plotStats <- function(pVals, timeVals, bShowPlot = TRUE)
+plotStats <- function(pVals, timeVals, titles, bShowPlot = TRUE)
 {
   print("Plotting Stats...")
   tic()  
@@ -180,7 +184,7 @@ plotStats <- function(pVals, timeVals, bShowPlot = TRUE)
           hLayers[[i]] <- list()
           hLayers[[i]][[j]] <- list()
           hLayers[[i]][[j]] <- geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF)
-          hPlot[[i]][[j]] <- ggplot() + hLayers[[i]][[j]] + theme(legend.position = "none")
+          hPlot[[i]][[j]] <- ggplot() + hLayers[[i]][[j]] + theme(legend.position = "none", plot.title = element_text(lineheight=.8, face="bold")) + ggtitle(titles[[i]][[j]])
           
           # If at least 1 mask, paint it. (to avoid crash...)
           if(length(pMasks$xminimums) > 0)
@@ -203,7 +207,7 @@ plotStats <- function(pVals, timeVals, bShowPlot = TRUE)
 }
 
 
-plotStats_ERSP <- function(pVals, timeVals, bShowPlot = TRUE)
+plotStats_ERSP <- function(pVals, timeVals, titles, bShowPlot = TRUE)
 {
   print("Plotting Stats...")
   tic()  
@@ -217,6 +221,8 @@ plotStats_ERSP <- function(pVals, timeVals, bShowPlot = TRUE)
     for(j in 1:length(pVals[[i]]))
     {
       yVal <- unlist(pVals[[i]][[j]])
+      if(!is.null(yVal))
+      {
 #       pMasks <- getSignifMasks(yVal)
 #       
 #       # From pMasks Indexes to real value indices (e.g. [-1000, 2000] vs [1, 1536])
@@ -230,21 +236,24 @@ plotStats_ERSP <- function(pVals, timeVals, bShowPlot = TRUE)
 #         print("... pMasks - NULL ... ")
 #       }
       
-tmat <- t(matrix(yVal, nrow = 135, ncol = 400))
-gg <- ggplot(melt(tmat), aes(x=Var1, y=Var2, fill=value)) + geom_tile()
-gg <- gg + geom_raster()
-#gg <- gg + coord_equal()
-gg <- gg + scale_fill_gradient(low="red", high="blue")
-#gg <- gg + scale_fill_gradientn(limits = c(-3,3), colours = c("blue","green","red")) #low="red", high="yellow")
-#gg <- gg + scale_fill_gradientn(colours =c("blue", "red"))#, trans = "log")
-#gg <- gg + scale_colour_gradient(trans = "log")
-gg <- gg + scale_x_continuous(expand = c(0, 0))
-gg <- gg + scale_y_continuous(expand = c(0, 0))
-gg <- gg + theme_bw()
-gg <- gg + theme(legend.position="none", axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank())
-
-hPlot[[i]][[j]] <- gg
+      print(i)
+      print(j)
+      tmat <- t(matrix(yVal, nrow = 135, ncol = 400))
+      gg <- ggplot(melt(tmat), aes(x=Var1, y=Var2, fill=value)) + geom_tile()
+      gg <- gg + geom_raster()
+      #gg <- gg + coord_equal()
+      gg <- gg + scale_fill_gradient(low="red", high="blue")
+      #gg <- gg + scale_fill_gradientn(limits = c(-3,3), colours = c("blue","green","red")) #low="red", high="yellow")
+      #gg <- gg + scale_fill_gradientn(colours =c("blue", "red"))#, trans = "log")
+      #gg <- gg + scale_colour_gradient(trans = "log")
+      gg <- gg + scale_x_continuous(expand = c(0, 0))
+      gg <- gg + scale_y_continuous(expand = c(0, 0))
+      gg <- gg + theme_bw()
+      gg <- gg + theme(legend.position="none", plot.title = element_text(lineheight=.8, face="bold"), axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank()) + ggtitle(titles[[i]][[j]])
+      
+      hPlot[[i]][[j]] <- gg
       #hPlot[[i]][[j]] <- ggplot() + geom_line(aes(y = yVal, x = timeVals, colour = "sin")) + theme(legend.position = "none") + geom_rect(data =  pMasks, alpha = 0.3, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
+      }
     }
   }
   
