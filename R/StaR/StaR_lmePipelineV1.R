@@ -28,19 +28,28 @@ source("StaR_Anovas.R")
 source("StaR_MixedModels.R")
 source("StaR_PlotStats.R")
 
-designs = 1#c(1,2,3,4)#,5,11,12,13) #,14,15,16,17,18)
+#designs = c(1,2,3,4,5,11,12,13) #,14,15,16,17,18)
+designs = c(13,14)#,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
 bReloadRData = FALSE
-bReloadMatlabFile = TRUE
-bReprepMatlabData = TRUE
+
+bLoadMatlabFile = TRUE
+bPrepMatlabData = TRUE
+
+bSampleMatlabData = TRUE
+bSmallSamples = TRUE
+
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData = FALSE
 
-bSmallSamples = FALSE
-
 bOnlyFullAnalysis = TRUE
+
+ersp_dims <- c(400, 135) # Default
+nbPoints = 0 # Need real value (runtime)
+timeData = 0 # Need real value (runtime)
+freqData = 0 # Need real value (runtime)
 
 # Clear Plots.
 #dev.off()
@@ -53,31 +62,114 @@ dir.create(dirPlotsFullPath)
 hTitles <- list()  
 
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-for(curDesign in designs)
+for(curAnalysis in 1:2)
 {
-  for(curAnalysis in 1:2)
+  if(curAnalysis == 1) # ERP
   {
-    if(curAnalysis == 1) # ERP
-    {
-      bERSP = FALSE
-      bERP = TRUE 
-    }
-    if(curAnalysis == 2) # ERSP
-    {
-      bERSP = TRUE
-      bERP = FALSE
-    }
-    
-    nbPoints = 0
-    if(bERSP)
-    {
-      nbPoints = 54000
-    }
+    bERSP = FALSE
+    bERP = TRUE 
+  }
+  if(curAnalysis == 2) # ERSP
+  {
+    bERSP = TRUE
+    bERP = FALSE
+  }
+  
+  if(bERSP)
+  {
+    nbPoints = 54000
+  }
+  if(bERP)
+  {
+    nbPoints = 1536
+  }
+  
+  ########################################################################
+  ################################ DATA ################################## 
+  ########################################################################
+  # Formatting the "Wide structure" for stats.
+  if(bPrepMatlabData)
+  {
+    fullData <- staR_prepData()
+  }
+  
+  # Fill "Wide structure" with real data.
+  if(bLoadMatlabFile)
+  {
     if(bERP)
     {
-      nbPoints = 1536
+      matlabData <- staR_fillFromMatlab("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d1.mat", "MPT", fullData, nbPoints)
+    }
+    if(bERSP)
+    {
+      matlabData <- staR_fillFromMatlab("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat", "MPT", fullData, nbPoints)
+    }
+    fullData = matlabData[[1]]
+    fullData.original = fullData
+    
+    if(length(matlabData) >= 3)
+    {if(length(matlabData[[2]]) >= 1)
+    {timeData = matlabData[[2]][1,]}}
+    
+    if(length(matlabData) >= 3)
+    {if(length(matlabData[[3]]) >= 1)
+    {freqData = matlabData[[3]][1,]}}
+  } 
+  
+  if(bSmallSamples)
+  {
+    if(bERP)
+    {
+      lowLimit <- which(timeData > 0)[1]
+      highLimit <- which(timeData < 600)
+      highLimit <- highLimit[length(highLimit) - 1]
+      
+      fullData <- fullData[lowLimit:highLimit]
+      timeData <- timeData[lowLimit:highLimit]
     }
     
+    #freqData
+    #timeVals <- timeVals[lowLimit:highLimit]
+    if(bERSP)
+    {
+      # Time
+      lowLimit_time <- which(timeData > 50)[1] # From 50ms
+      highLimit_time <- which(timeData < 400)  # To 500ms
+      highLimit_time <- highLimit_time[length(highLimit_time) - 1]
+      
+      # Freq
+      lowLimit_freq <- which(freqData > 10)[1] # From 10Hz
+      highLimit_freq <- which(freqData < 13)   # To 15Hz
+      highLimit_freq <- highLimit_freq[length(highLimit_freq) - 1]
+      
+      # TODO : Fix this, not the real "sub squarre in the matrix!"
+      dataIndices <- NULL
+      for(i in lowLimit_freq:highLimit_freq)
+      {
+        #print(paste("lowLimit_time : ", lowLimit_time))
+        #print(paste("lowLimit_time : ", highLimit_time))
+        #print(paste("length(timeData)", length(timeData)))
+        dataIndices <- c(dataIndices, seq(i * length(timeData) + lowLimit_time, i * length(timeData) + lowLimit_time + (highLimit_time - lowLimit_time)))
+      }
+      
+      # Sub Time & Freq
+      timeData <- timeData[lowLimit_time:highLimit_time]
+      freqData <- freqData[lowLimit_freq:highLimit_freq]
+      fullData <- fullData[dataIndices]
+    }
+    
+    print(paste("Data subsampled ! ", length(fullData)))
+  }
+  
+  # Mainly because of Small Samples. But anyway nbPoints can't be different from fullData.
+  nbPoints = length(fullData)
+  ersp_dims <- c(length(timeData), length(freqData))
+  
+  #############################################################
+  ###### Loop for Designs !
+  #############################################################
+  for(curDesign in designs)
+  {
     iDesign = curDesign
     #iDesign = designs
     dirPlots <- paste(dirPlotsFullPath, "/Design_NA_", iDesign, sep = "")
@@ -93,53 +185,6 @@ for(curDesign in designs)
       dev.off()
       Sys.sleep(5)
     }
-    
-    ########################################################################
-    ################################ DATA ################################## 
-    ########################################################################
-    # Formatting the "Wide structure" for stats.
-    if(bReprepMatlabData)
-    {
-      fullData <- staR_prepData()
-    }
-    
-    # Fill "Wide structure" with real data.
-    if(bReloadMatlabFile)
-    {
-      if(bERP)
-      {
-        matlabData <- staR_fillFromMatlab("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d1.mat", "MPT", fullData, nbPoints)
-      }
-      if(bERSP)
-      {
-        matlabData <- staR_fillFromMatlab("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat", "MPT", fullData, nbPoints)
-      }
-      fullData = matlabData[[1]]
-      
-      if(length(matlabData) >= 3)
-      {if(length(matlabData[[2]]) >= 1)
-      {timeData = matlabData[[2]][1,]}}
-      
-      if(length(matlabData) >= 3)
-      {if(length(matlabData[[3]]) >= 1)
-      {freqData = matlabData[[3]][1,]}}
-      
-      if(bSmallSamples)
-      {
-        lowLimit <- which(timeData > 0)[1]
-        highLimit <- which(timeData < 600)
-        highLimit <- highLimit[length(highLimit) - 1]
-        
-        fullData <- fullData[lowLimit:highLimit]
-        timeData <- timeData[lowLimit:highLimit]
-        
-        #freqData
-        #timeVals <- timeVals[lowLimit:highLimit]
-      }
-    }
-    
-    # Mainly because of Small Samples. But anyway nbPoints can't be different from fullData.
-    nbPoints = length(fullData)
     
     # Sub select, according to current stats.
     if(bReloadRData)
@@ -260,14 +305,14 @@ for(curDesign in designs)
     #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
     hStats <- plotStats(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]]
     if(bERP) { hStats <- plotStats(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]] }
-    if(bERSP) { hStats <- plotStats_ERSP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]] }
+    if(bERSP) { hStats <- plotStats_ERSP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle, ersp_dims)}
     
     ########################################################################
     ############################## PLOT DATA ############################### 
     ########################################################################
     # -- Plot Data --
     hData <- plotData(subData, paramsList, timeData)
-    if(bERSP) { hData <- plotData_ERSP(subData, paramsList, timeData) }
+    if(bERSP) { hData <- plotData_ERSP(subData, paramsList, timeData, ersp_dims) }
     
     bOnlyFullAnalysis = TRUE
     

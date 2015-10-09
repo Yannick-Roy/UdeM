@@ -75,7 +75,7 @@ plotData <- function(data, params, timeVals, bShowPlot = TRUE)
   hDataList
 }
 
-plotData_ERSP <- function(data, params, timeVals, bShowPlot = TRUE)
+plotData_ERSP <- function(data, params, timeVals, dims = c(400,135), bShowPlot = TRUE)
 {
   print("plotData_ERSP() : ...")
   tic()
@@ -101,7 +101,7 @@ plotData_ERSP <- function(data, params, timeVals, bShowPlot = TRUE)
         
         #hData <- levelplot(t(matrix(unlist(paramsList[[2]][[1]]$means), nrow = 135, ncol = 400)))
         #hData <- ggplot(melt(tmat), aes(x=Var1, y=Var2, fill=value)) + geom_tile()
-        tmat <- t(matrix(unlist(params[[i]][[j]]$means), nrow = 135, ncol = 400))
+        tmat <- t(matrix(unlist(params[[i]][[j]]$means), nrow = dims[[2]], ncol = dims[[1]]))
         tmat2 <- tmat + 5 
         gg <- ggplot(melt(tmat2), aes(x=Var1, y=Var2, fill=value))
         gg <- gg + geom_raster()
@@ -207,7 +207,7 @@ plotStats <- function(pVals, timeVals, titles, bShowPlot = TRUE)
 }
 
 
-plotStats_ERSP <- function(pVals, timeVals, titles, bShowPlot = TRUE)
+plotStats_ERSP <- function(pVals, timeVals, titles, dims = c(400,135), bShowPlot = TRUE)
 {
   print("Plotting Stats...")
   tic()  
@@ -238,7 +238,7 @@ plotStats_ERSP <- function(pVals, timeVals, titles, bShowPlot = TRUE)
       
       print(i)
       print(j)
-      tmat <- t(matrix(yVal, nrow = 135, ncol = 400))
+      tmat <- t(matrix(yVal, nrow = dims[[2]], ncol = dims[[1]]))
       gg <- ggplot(melt(tmat), aes(x=Var1, y=Var2, fill=value)) + geom_tile()
       gg <- gg + geom_raster()
       #gg <- gg + coord_equal()
