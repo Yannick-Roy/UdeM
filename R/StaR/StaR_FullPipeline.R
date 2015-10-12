@@ -28,7 +28,7 @@ source("StaR_Anovas.R")
 source("StaR_MixedModels.R")
 source("StaR_PlotStats.R")
 
-designs = 2#c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 19#c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -50,7 +50,7 @@ nbPoints = 0 # Need real value (runtime)
 timeData = 0 # Need real value (runtime)
 freqData = 0 # Need real value (runtime)
 
-stats.function = "lmer"
+stats.function = "aov"
 
 # Clear Plots.
 #dev.off()
@@ -302,23 +302,28 @@ for(curAnalysis in 1:2)
       #else if(func == 'anova') { anovas.full <- lapply(fullData, FUN = function(x) {anova(STATS_DESIGNS[[iDesign]], x)}) }
       #else if(func == 'ez') { anovas.full <- lapply(fullData, FUN = function(x) {ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions))})} #{STATS_DESIGNS_ez[[iDesign]]}) }
       
-      anovas.full.titles = paste(func, " : ",  format(STATS_DESIGNS[[iDesign + 20]]))
+      anovas.full.titles = paste(stats.function, " : ",  format(STATS_DESIGNS[[iDesign + 20]]))
       toc()
       print("Done!")
       
       print(paste("Doing - Summary (full) : ", format(STATS_DESIGNS[[iDesign + 20]])))      
       anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
       
-      anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[1]]})
-      
       print(paste("Doing - PVals (Full)"))
-      anovas.pVals <- list()
-      anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'})
+      anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[1]]})
+      
+      
+      #anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'})
       #anovas.pVals[[2]] <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[2]]})
       #anovas.pVals[[3]] <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[3]]})
       
-      mixedmodels.pVals[[3]] <- anovas.pVals
-      mixedmodels.pValsTitle[[3]] <- anovas.full.titles
+      mixedmodels.pVals <- list()
+      mixedmodels.pVals[[3]] <- list()
+      mixedmodels.pValsTitle <- list()
+      mixedmodels.pValsTitle[[3]] <- list()
+      
+      mixedmodels.pVals[[3]][[1]] <- anovas.pVals
+      mixedmodels.pValsTitle[[3]][[1]] <- anovas.full.titles
     }
     
     
