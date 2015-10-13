@@ -10,6 +10,7 @@ library(lme4)
 library(nlme)
 library(parallel)
 library(ez)
+library(stringr)
 require(timeSeries)
 require(reshape2)
 
@@ -296,34 +297,65 @@ for(curAnalysis in 1:2)
     
     if(stats.function == "aov")
     {
-      print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign + 20]])))
+      cl <- makeCluster(8) 
+      clusterExport(cl, list("aov", "STATS_DESIGNS", "iDesign"))
+      
       tic()
-      anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
+      print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign + 20]])))
+      anovas.full <- parLapply(cl = cl, fullData, fun = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
       #else if(func == 'anova') { anovas.full <- lapply(fullData, FUN = function(x) {anova(STATS_DESIGNS[[iDesign]], x)}) }
       #else if(func == 'ez') { anovas.full <- lapply(fullData, FUN = function(x) {ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions))})} #{STATS_DESIGNS_ez[[iDesign]]}) }
+      print("Done!")
+      toc()
+      
+      stopCluster(cl)
       
       anovas.full.titles = paste(stats.function, " : ",  format(STATS_DESIGNS[[iDesign + 20]]))
-      toc()
-      print("Done!")
       
       print(paste("Doing - Summary (full) : ", format(STATS_DESIGNS[[iDesign + 20]])))      
       anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
       
       print(paste("Doing - PVals (Full)"))
-      anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[1]]})
+      #anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[2]][[1]]$'Pr(>F)'[[1]]})
       
+      anovas.full.vals <- lapply(anovas.full.summary, FUN = function(x){
+        pVals <- list()
+        full.titles <- list()
+        
+        for(i in 1:length(x))
+        {
+          for(j in 1:length(x[[i]]))
+          {
+            pVals[[i]] <- list()
+            full.titles[[i]] <- list()
+            n <- length(x[[i]][[1]]$`Pr(>F)`)
+  
+            pVals[[i]] <- x[[i]][[1]]$`Pr(>F)`[1:(n-1)]
+            full.titles[[i]] <- lapply(row.names(x[[i]][[1]])[1:(n-1)], FUN = function(x) {str_replace_all(string=x, pattern=" ", repl="")})
+          }
+        }
+        
+        #list(pVals, full.titles)
+        list(unlist(lapply(pVals, unlist)), unlist(lapply(full.titles, unlist)))})
       
-      #anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'})
-      #anovas.pVals[[2]] <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[2]]})
-      #anovas.pVals[[3]] <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[3]]})
+     # unlist(lapply(anovas.full.vals[[1]][[1]], unlist))
+     # unlist(lapply(anovas.full.vals[[1]][[2]], unlist))
       
+      anovas.pVals <- list()
+      anovas.pValsTitle <- list()
+      for(i in 1:length(anovas.full.vals[[1]][[1]]))
+      {
+        anovas.pVals[[i]] <- lapply(anovas.full.vals, FUN = function(x){ x[[1]][[i]] })
+        anovas.pValsTitle[[i]] <- lapply(anovas.full.vals, FUN = function(x){ x[[2]][[i]] })
+      }
+    
       mixedmodels.pVals <- list()
       mixedmodels.pVals[[3]] <- list()
       mixedmodels.pValsTitle <- list()
       mixedmodels.pValsTitle[[3]] <- list()
       
-      mixedmodels.pVals[[3]][[1]] <- anovas.pVals
-      mixedmodels.pValsTitle[[3]][[1]] <- anovas.full.titles
+      mixedmodels.pVals[[3]] <- anovas.pVals
+      mixedmodels.pValsTitle[[3]] <- lapply(anovas.pValsTitle, unique)
     }
     
     
@@ -334,6 +366,7 @@ for(curAnalysis in 1:2)
     {
       for(i in 1:length(mixedmodels.pVals[[3]]))
       {
+        print(paste("plot #", i, " of ", length(mixedmodels.pVals[[3]])))
         plot(unlist(mixedmodels.pVals[[3]][[i]]), type="l", log="y", ylim = c(0.001, 1))
         title(main = mixedmodels.pValsTitle[[3]][[i]])
         abline(h = sigthreshold)
@@ -342,7 +375,7 @@ for(curAnalysis in 1:2)
         {
           dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
           dev.off()
-          Sys.sleep(20)
+          Sys.sleep(15)
         }
       }
     }
@@ -365,7 +398,7 @@ for(curAnalysis in 1:2)
     print("Done!")
     
     #save() # Save on disk.
-    save(fullData, timeData, freqData, subData, iDesign, paramsList, mixedmodels.pVals, mixedmodels.pSignificants, mixedmodels.pValsTitle, file = paste(dirPlots, "/Workspace.RData", sep=""))
+    #save(fullData, timeData, freqData, subData, iDesign, paramsList, mixedmodels.pVals, mixedmodels.pSignificants, mixedmodels.pValsTitle, file = paste(dirPlots, "/Workspace.RData", sep=""))
     
     # -- Plot Stats --
     #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
