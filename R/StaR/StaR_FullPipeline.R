@@ -355,7 +355,7 @@ for(curAnalysis in 1:2)
       mixedmodels.pValsTitle[[3]] <- list()
       
       mixedmodels.pVals[[3]] <- anovas.pVals
-      mixedmodels.pValsTitle[[3]] <- lapply(anovas.pValsTitle, unique)
+      mixedmodels.pValsTitle[[3]] <- unlist(lapply(anovas.pValsTitle, unique))
     }
     
     
