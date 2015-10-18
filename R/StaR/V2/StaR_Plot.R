@@ -178,31 +178,11 @@ plotStats_ERP <- function(pVals, timeVals, titles = NULL, bShowPlot = TRUE)
           for(k in 1:length(pVals[[i]][[j]]))
           {
             yVal <- unlist(pVals[[i]][[j]][[k]])
-            pMasks <- getSignifMasks(yVal)
             
-            # From pMasks Indexes to real value indices (e.g. [-1000, 2000] vs [1, 1536])
-            if(!is.null(pMasks$xminimums) && !is.null(pMasks$xmaximums))
-            {
-              pMasks$xminimums <- timeVals[pMasks$xminimums]
-              pMasks$xmaximums <- timeVals[pMasks$xmaximums]
-            }
-            else
-            {
-              print("... pMasks - NULL ... ")
-            }
+            hResults <- plotStats_ERP_Graph(yVal, titles[[i]][[j]][[k]], timeVals)
             
-            # Keep that dataframe... seems to have a bug with nested loops!
-            curDF <- data.frame(yVals = yVal, xVals = timeVals)
-  
-            hLayers[[i]][[j]][[k]] <- geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF)
-            hPlot[[i]][[j]][[k]] <- ggplot() + hLayers[[i]][[j]] + theme(legend.position = "none", plot.title = element_text(lineheight=.8, face="bold")) + ggtitle(titles[[i]][[j]])
-            
-            # If at least 1 mask, paint it. (to avoid crash...)
-            if(length(pMasks$xminimums) > 0)
-            {
-              hLayers[[i]][[j]][[k]] <- geom_rect(data = pMasks, alpha = 0.15, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
-              hPlot[[i]][[j]][[k]] <- hPlot[[i]][[j]][[k]] + hLayers[[i]][[j]][[k]]
-            }
+            hLayers[[i]][[j]][[k]] <- hResults[[1]]
+            hPlot[[i]][[j]][[k]] <- hResults[[2]]
           }
         }
       }
@@ -216,6 +196,39 @@ plotStats_ERP <- function(pVals, timeVals, titles = NULL, bShowPlot = TRUE)
   
   PlotRes <- list(hPlot, hLayers)
   PlotRes
+}
+
+plotStats_ERP_Graph <- function(yVal, yTitle, xTimeVals)
+{
+  print(paste("ERP_Graph -", yTitle))
+  
+  pMasks <- getSignifMasks(yVal)
+  
+  # From pMasks Indexes to real value indices (e.g. [-1000, 2000] vs [1, 1536])
+  if(!is.null(pMasks$xminimums) && !is.null(pMasks$xmaximums))
+  {
+    pMasks$xminimums <- xTimeVals[pMasks$xminimums]
+    pMasks$xmaximums <- xTimeVals[pMasks$xmaximums]
+  }
+  else
+  {
+    print("... pMasks - NULL ... ")
+  }
+  
+  # Keep that dataframe... seems to have a bug with nested loops!
+  curDF <- data.frame(yVals = yVal, xVals = xTimeVals)
+  
+  hLayer <- geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF)
+  hPlot <- ggplot() + hLayer + theme(legend.position = "none", plot.title = element_text(lineheight=.8, face="bold")) + ggtitle(yTitle)
+  
+  # If at least 1 mask, paint it. (to avoid crash...)
+  if(length(pMasks$xminimums) > 0)
+  {
+    hLayer <- geom_rect(data = pMasks, alpha = 0.15, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
+    hPlot <- hPlot + hLayer
+  }
+  
+  list(hLayer, hPlot)
 }
 
 

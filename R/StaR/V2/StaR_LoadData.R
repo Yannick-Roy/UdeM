@@ -100,9 +100,9 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, nbPoints = 153
 # Sub sample the big dataset for testing. (speed)
 staR_SmallSamples <- function(fullData, times, freqs, dataType)
 {
-  fullData <- list()
-  timeData <- list()
-  freqData <- list()
+  if(is.null(fullData)) {fullData <- list()}
+  if(is.null(times)) {timeData <- list()} else { timeData <- times}
+  if(is.null(freqs)) {freqData <- list()} else { freqData <- freqs}
   
   if(dataType == "ERP")
   {
