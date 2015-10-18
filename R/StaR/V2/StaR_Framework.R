@@ -6,6 +6,7 @@ library(zoo)
 library(lattice)
 library(parallel)
 library(ez)
+library(stringr)
 require(timeSeries)
 require(reshape2)
 require(tictoc)
@@ -24,7 +25,7 @@ source("StaR_LoadData.R")
 source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 
-designs = 2#c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 19#c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -57,7 +58,8 @@ sigthreshold = 0.05
 #dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
+#dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
 dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlotsFullPath)
 
@@ -150,9 +152,12 @@ curAnalysis = 1
     subData = retVal[[2]]
     print("Done !")
     
-    print("Get Params (mean, min, max, ...)")
-    paramsList <- staR_getDistParams(subData, timeData, iDesign)
-    print("Done !")
+    if(length(subData) > 0)
+    {
+      print("Get Params (mean, min, max, ...)")
+      paramsList <- staR_getDistParams(subData, timeData, iDesign)
+      print("Done !")
+    }
     
     #############################################################
     ###### Stats !
@@ -167,10 +172,13 @@ curAnalysis = 1
       } else if(stats.function == "aov")
       {
         #stats.aov.results <- staR_aov(fullData, iDesign)
+        cl <- makeCluster(8) 
+        clusterExport(cl, list("aov", "STATS_DESIGNS", "iDesign"))
         
         print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign + 20]])))
         tic()
-        anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
+        anovas.full <- parLapply(cl = cl, fullData, fun = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
+        #anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
         #else if(func == 'anova') { anovas.full <- lapply(fullData, FUN = function(x) {anova(STATS_DESIGNS[[iDesign]], x)}) }
         #else if(func == 'ez') { anovas.full <- lapply(fullData, FUN = function(x) {ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions))})} #{STATS_DESIGNS_ez[[iDesign]]}) }
         
@@ -178,19 +186,51 @@ curAnalysis = 1
         toc()
         print("Done!")
         
+        stopCluster(cl)
+        
         print(paste("Doing - Summary (full) : ", format(STATS_DESIGNS[[iDesign + 20]])))      
         anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
         
         anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[1]]})
         
         print(paste("Doing - PVals (Full)"))
-        anovas.pVals <- list()
-        anovas.pVals <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'})
-        #anovas.pVals[[2]] <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[2]]})
-        #anovas.pVals[[3]] <- lapply(anovas.full.summary, FUN = function(x) {x[[1]]$'Pr(>F)'[[3]]})
+        anovas.full.vals <- lapply(anovas.full.summary, FUN = function(x){
+          pVals <- list()
+          full.titles <- list()
+          
+          for(i in 1:length(x))
+          {
+            for(j in 1:length(x[[i]]))
+            {
+              pVals[[i]] <- list()
+              full.titles[[i]] <- list()
+              n <- length(x[[i]][[1]]$`Pr(>F)`)
+              
+              pVals[[i]] <- x[[i]][[1]]$`Pr(>F)`[1:(n-1)]
+              full.titles[[i]] <- lapply(row.names(x[[i]][[1]])[1:(n-1)], FUN = function(x) {str_replace_all(string=x, pattern=" ", repl="")})
+            }
+          }
+          #list(pVals, full.titles)
+          list(unlist(lapply(pVals, unlist)), unlist(lapply(full.titles, unlist)))})
         
-        stats.pVals <- stats.aov.results[[1]]
-        stats.pTitles <- stats.aov.results[[2]]
+        # unlist(lapply(anovas.full.vals[[1]][[1]], unlist))
+        # unlist(lapply(anovas.full.vals[[1]][[2]], unlist))
+        
+        anovas.pVals <- list()
+        anovas.pValsTitle <- list()
+        for(i in 1:length(anovas.full.vals[[1]][[1]]))
+        {
+          anovas.pVals[[i]] <- lapply(anovas.full.vals, FUN = function(x){ x[[1]][[i]] })
+          anovas.pValsTitle[[i]] <- lapply(anovas.full.vals, FUN = function(x){ x[[2]][[i]] })
+        }
+        
+        mixedmodels.pVals <- list()
+        mixedmodels.pVals[[3]] <- list()
+        mixedmodels.pValsTitle <- list()
+        mixedmodels.pValsTitle[[3]] <- list()
+        
+        mixedmodels.pVals[[3]] <- anovas.pVals
+        mixedmodels.pValsTitle[[3]] <- unlist(lapply(anovas.pValsTitle, unique))
       }
       
       #############################################################
