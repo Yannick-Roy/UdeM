@@ -41,7 +41,7 @@ bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
 
 bFullStatsAnalysis = TRUE   # Full report on all the data.
-bSubDataAnalysis = FALSE     # Multiple plots with data.
+bSubDataAnalysis = TRUE     # Multiple plots with data.
 
 ersp_dims <- c(400, 135) # Default
 nbPoints = 0 # Need real value (runtime)
@@ -171,17 +171,131 @@ curAnalysis = 1
     #############################################################
     if(stats.bCompute == TRUE)
     {
-      stats.pVals <- list()
-      
       if(stats.function == "lme")
       {
   
       } else if(stats.function == "aov")
       {
-        stats.aov.retVal <- staR_aov(fullData, iDesign)
+        if(bFullStatsAnalysis)
+        {
+          stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
         
-        stats.fullAnalysis.pVals <- stats.aov.retVal[[1]]
-        stats.fullAnalysis.pTitles <- stats.aov.retVal[[2]]
+          stats.fullAnalysis.pVals <- stats.fullAnalysis.aov.retVal[[1]]
+          stats.fullAnalysis.pTitles <- stats.fullAnalysis.aov.retVal[[2]]
+        }
+        
+        if(bSubDataAnalysis)
+        {
+          #stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
+          subData <- subDataset
+          hDataset <- list()
+          vDataset <- list()
+          for(p in 1:nbPoints)  # Points
+          {
+            ## -----------------------
+            ## -- Horizontal (Rows) --
+            ## -----------------------
+            hDataset[[p]] <- list()
+            if(length(subData) > 0)
+            {
+              for(i in 1:length(subData)) # Layers
+              {
+                hDataset[[p]][[i]] <- list()
+                if(length(subData[[i]]) > 0)
+                {
+                  for(j in 1:length(subData[[i]])) # Rows
+                  {
+                    hDataset[[p]][[i]][[j]] <- list()
+                    if(length(subData[[i]][[j]]) > 0)
+                    {
+                      for(k in 1:length(subData[[i]][[j]])) # Cols
+                      { 
+                        print(paste(p, " (h) - ", i, j, k))
+                        # -- Horizontal --
+                        #a[[k]][[i]] <- rbind(subData[[i]][[j]][[k]], subData[[i]][[j]][[k]], subData[[i]][[j]][[k]], subData[[i]][[j]][[k]])
+                        if(k == 1) {hDataset[[p]][[i]][[j]] <- subData[[i]][[j]][[k]][[p]]}
+                        else {hDataset[[p]][[i]][[j]] <- rbind(hDataset[[p]][[i]][[j]], subData[[i]][[j]][[k]][[p]])}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            ## -----------------------
+            ## -- Vertival (Cols) --
+            ## -----------------------
+            vDataset[[p]] <- list()
+            if(length(subData) > 0)
+            {
+              for(i in 1:length(subData)) # Layers
+              {
+                vDataset[[p]][[i]] <- list()
+                if(length(subData[[i]]) > 0)
+                {
+                  for(k in 1:length(subData[[i]][[1]])) # Cols
+                  {
+                    vDataset[[p]][[i]][[k]] <- list()
+                    for(j in 1:length(subData[[i]])) # Rows
+                    {
+                      print(paste(p, " (v) - ", i, j, k))
+                      # -- Vertical --
+                      if(j == 1) {vDataset[[p]][[i]][[k]] <- subData[[i]][[j]][[k]][[p]]}
+                      else {vDataset[[p]][[i]][[k]] <- rbind(vDataset[[p]][[i]][[k]], subData[[i]][[j]][[k]][[p]])}
+                    }
+                  }
+                }
+              }
+            }
+          }
+          
+          stats.subAnalysis.hData <- staR_InvertDimensions3D(hDataset)
+          stats.subAnalysis.vData <- staR_InvertDimensions3D(vDataset)
+          
+          stats.subAnalysis.combinedData <- list()
+          stats.subAnalysis.combinedData[[1]] <- stats.subAnalysis.hData # Rows.
+          stats.subAnalysis.combinedData[[2]] <- stats.subAnalysis.vData # Cols.
+          
+          #stats.subAnalysis.aov.retVal <- staR_aov(stats.subAnalysis.hData[[1]][[1]], iDesign)
+          
+          stats.subAnalysis.pVals <- list()
+          stats.subAnalysis.pTitles <- list()
+          for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols (1 - Horizontal | 2 - Vertical)
+          {
+            if(length(stats.subAnalysis.combinedData[[curDim]]) > 0)
+            {
+              stats.subAnalysis.pVals[[curDim]] <- list()
+              stats.subAnalysis.pTitles[[curDim]] <- list()
+              for(i in 1:length(stats.subAnalysis.combinedData[[curDim]])) # Layers
+              {
+                stats.subAnalysis.pVals[[curDim]][[i]] <- list()
+                stats.subAnalysis.pTitles[[curDim]][[i]] <- list()
+                for(j in 1:length(stats.subAnalysis.combinedData[[curDim]][[i]])) # Rows
+                {
+                  print(paste("Doing - Anova (subData - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))
+                  
+                  cl <- makeCluster(8) 
+                  clusterExport(cl, list("aov", "STATS_SUB_DESIGNS", "iDesign", "curDim"))
+                  tic()
+                  anovas.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[curDim]][[i]][[j]], fun = function(x) {aov(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]], x)})
+                  toc()
+                  stopCluster(cl)
+                  
+                  anovas.full.titles = paste("aov", " : ",  format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]]))
+                  print("Done!")
+                
+                  print(paste("Doing - Summary (sub - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))      
+                  anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
+                  
+                  stats.subAnalysis.aov.retVal <- staR_aov_pvals(anovas.full.summary)
+                  
+                  stats.subAnalysis.pVals[[curDim]][[i]][[j]] <- unlist(stats.subAnalysis.aov.retVal[[1]])
+                  stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- unique(stats.subAnalysis.aov.retVal[[2]])
+                }
+              }
+            }
+          }
+        }
       }
       
       #############################################################
@@ -190,22 +304,48 @@ curAnalysis = 1
       bShowPlot = TRUE
       if(bShowPlot)
       {
-        for(i in 1:length(stats.fullAnalysis.pVals))
+        ###  --- Full Analysis ---
+        if(bFullStatsAnalysis)
         {
-          plot(unlist(stats.fullAnalysis.pVals[[i]]), type="l", log="y", ylim = c(0.001, 1))
-          title(main = stats.fullAnalysis.pVals[[i]])
-          abline(h = sigthreshold)
-          
-          if(bSaveOnDiskImages)
+          for(i in 1:length(stats.fullAnalysis.pVals))
           {
-            dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
-            dev.off()
-            Sys.sleep(10)
+            plot(unlist(stats.fullAnalysis.pVals[[i]]), type="l", log="y", ylim = c(0.001, 1))
+            title(main = stats.fullAnalysis.pTitles[[i]])
+            abline(h = sigthreshold)
+            
+            if(bSaveOnDiskImages)
+            {
+              dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
+              dev.off()
+              Sys.sleep(10)
+            }
+          }
+        }
+        
+        ###  --- Sub Analysis ---
+        if(bSubDataAnalysis)
+        {
+          for(curDim in 1:length(stats.subAnalysis.pVals))
+          {
+            for(i in 1:length(stats.subAnalysis.pVals[[curDim]]))
+            {
+              for(j in 1:length(stats.subAnalysis.pVals[[curDim]][[i]]))
+              {
+                plot(unlist(stats.subAnalysis.pVals[[curDim]][[i]][[j]]), type="l", log="y", ylim = c(0.001, 1))
+                title(main = stats.subAnalysis.pTitles[[curDim]][[i]][[j]])
+                abline(h = sigthreshold)
+                
+                if(bSaveOnDiskImages)
+                {
+                  dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
+                  dev.off()
+                  Sys.sleep(10)
+                }
+              }
+            }
           }
         }
       }
-      
-      ## TODO : Same for sub analysis!
       
       #############################################################
       ###### Pvals Signif ( < threshold ) !
@@ -221,21 +361,23 @@ curAnalysis = 1
       }
       stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pSignif
       
-      ## TODO : if sub analysis
-#       stats.fullAnalysis.pSignif <- stats.fullAnalysis.pVals
-#       for(i in 1:length(stats.fullAnalysis.pSignif))
-#       {
-#         print(paste(length(stats.fullAnalysis.pSignif), i))
-#         if(length(stats.fullAnalysis.pSignif[[i]]) > 0)
-#         {
-#           for(j in 1:length(stats.fullAnalysis.pSignif[[i]]))
-#           {
-#             stats.fullAnalysis.pSignif[[i]][[j]][stats.fullAnalysis.pSignif[[i]][[j]] < sigthreshold] <- 0 #'Signif.'
-#             stats.fullAnalysis.pSignif[[i]][[j]][stats.fullAnalysis.pSignif[[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
-#           }
-#         }
-#       }
-#       stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pSignif
+
+      stats.subAnalysis.pSignif <- stats.subAnalysis.pVals
+      if(bSubDataAnalysis)
+      {
+        for(curDim in 1:length(stats.subAnalysis.pSignif))
+        {
+          for(i in 1:length(stats.subAnalysis.pSignif[[curDim]]))
+          {
+            for(j in 1:length(stats.subAnalysis.pSignif[[curDim]][[i]]))
+            {
+              stats.subAnalysis.pSignif[[curDim]][[i]][[j]][stats.subAnalysis.pSignif[[curDim]][[i]][[j]] < sigthreshold] <- 0 #'Signif.'
+              stats.subAnalysis.pSignif[[curDim]][[i]][[j]][stats.subAnalysis.pSignif[[curDim]][[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
+            }
+          }
+        }
+      }
+      stats.subAnalysis.pSignificants <- stats.subAnalysis.pSignif
       print("Done!")
       
       #save() # Save on disk.
@@ -261,9 +403,9 @@ curAnalysis = 1
       if(bSubDataAnalysis)
       {
         #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
-        hStats <- plotStats_ERP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]]
-        if(data.type == "ERSP") { hStats <- plotStats_ERSP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle, ersp_dims)}
-        else { hStats <- plotStats_ERP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]] }
+        hStats <- plotStats_ERP(stats.subAnalysis.pSignificants, timeData, stats.subAnalysis.pTitles)[[1]]
+        #if(data.type == "ERSP") { hStats <- plotStats_ERSP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle, ersp_dims)}
+        #else { hStats <- plotStats_ERP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]] }
       }
     }      
     
@@ -414,4 +556,27 @@ curAnalysis = 1
       }
     }
   }
+}
+
+
+
+## We want to put the 1st D (points) in 3th D and keep Layer x Rows x Cols (i x j x k)
+staR_InvertDimensions3D <- function(array3D)
+{ 
+  b <- list()
+  for(p in 1:length(array3D))
+  {
+    for(i in 1:length(array3D[[p]]))
+    {
+      for(j in 1:length(array3D[[p]][[i]]))
+      {
+        print(paste(p,i,j))
+        if(length(b) < i) {b[[i]] <- list()}
+        if(length(b[[i]]) <  j) {b[[i]][[j]] <- list()} 
+        
+        b[[i]][[j]][[p]] <- array3D[[p]][[i]][[j]]
+      }
+    }
+  }  
+  return (b)
 }

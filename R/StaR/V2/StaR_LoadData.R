@@ -154,7 +154,18 @@ staR_SmallSamples <- function(fullData, times, freqs, dataType)
 ###########################################################################
 staR_selectData <- function(fullData, iDesign)
 {
-  
+  ###############################################################
+  ### Layer x Row x Col 
+  ###
+  ### example - Groups x Condititions
+  ### Layer 1
+  ###       C1      C2      C3      C4
+  ### G3  [1,1,1] [1,1,2] [1,1,3] [1,1,4]  -Stat-
+  ### G3  [1,2,1] [1,2,2] [1,2,3] [1,2,4]  -Stat-
+  ###      -Stat-  -Stat-  -Stat-  -Stat-
+  ###
+  ### If you had Sessions, then you have 3 layers of this.
+  ###############################################################
   subDataset <- list() 
   subDataset[[1]] <- list()
   subDataset[[1]][[1]] <- list()
