@@ -212,7 +212,19 @@ staR_aov_sub <- function(subData, iDesign)
           cl <- makeCluster(4) 
           clusterExport(cl, list("aov", "STATS_SUB_DESIGNS", "iDesign", "curDim"))
           tic()
-          anovas.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[curDim]][[i]][[j]], fun = function(x) {aov(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]], x)})
+         
+          ###############
+          # TODO : Fix me with envir...
+          ###############
+          if(curDim == 1) # TODO : Fix me with envir...
+          {
+            anovas.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[1]][[i]][[j]], fun = function(x) {aov(STATS_SUB_DESIGNS[[iDesign + 20]][[1]], x)})
+          }
+          if(curDim == 2) # TODO : Fix me with envir...
+          {
+            anovas.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[2]][[i]][[j]], fun = function(x) {aov(STATS_SUB_DESIGNS[[iDesign + 20]][[2]], x)})
+          }
+          
           toc()
           stopCluster(cl)
           

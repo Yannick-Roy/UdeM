@@ -170,7 +170,7 @@ for(curAnalysis in 1:2)
     {
       if(stats.function == "lme")
       {
-  
+        
       } else if(stats.function == "aov")
       {
         if(bFullStatsAnalysis)
