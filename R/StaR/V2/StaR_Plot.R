@@ -219,7 +219,7 @@ plotStats_ERP_Graph <- function(yVal, yTitle, xTimeVals)
   curDF <- data.frame(yVals = yVal, xVals = xTimeVals)
   
   hLayer <- geom_line(aes(y = yVals, x = xVals, colour = "sin"), data = curDF)
-  hPlot <- ggplot() + hLayer + theme(legend.position = "none", plot.title = element_text(lineheight=.8, face="bold")) + ggtitle(yTitle)
+  hPlot <- ggplot() + hLayer + theme(legend.position = "none", plot.title = element_text(lineheight=.8, face="bold"), axis.title.x=element_blank(), axis.title.y=element_blank()) + ggtitle(yTitle)
   
   # If at least 1 mask, paint it. (to avoid crash...)
   if(length(pMasks$xminimums) > 0)
@@ -232,23 +232,24 @@ plotStats_ERP_Graph <- function(yVal, yTitle, xTimeVals)
 }
 
 
-plotStats_ERSP <- function(pVals, timeVals, titles, dims = c(400,135), bShowPlot = TRUE)
+plotStats_ERSP <- function(pVals, pTitles, xTimeVals, yFreqVals, dims = c(400,135), bShowPlot = TRUE)
 {
-  print("Plotting Stats...")
+  print("Plotting ERSP Stats...")
   tic()  
   
-  if(is.null(timeVals)) {timeVals = seq(1, 1536)}
+  if(is.null(xTimeVals)) {xTimeVals = seq(1, 400)}
+  if(is.null(yFreqVals)) {yFreqVals = seq(1, 135)}
   
   hPlot <- list()
-  for(i in 1:length(pVals))
+  for(curDim in 1:length(pVals))
   { 
-    hPlot[[i]] <- list()
-    for(j in 1:length(pVals[[i]]))
+    hPlot[[curDim]] <- list()
+    for(i in 1:length(pVals[[curDim]]))
     {
-      hPlot[[i]][[j]] <- list()
-      for(k in 1:length(pVals[[i]][[j]]))
+      hPlot[[curDim]][[i]] <- list()
+      for(j in 1:length(pVals[[curDim]][[i]]))
       {
-        yVal <- unlist(pVals[[i]][[j]][[k]])
+        yVal <- unlist(pVals[[curDim]][[i]][[j]])
         if(!is.null(yVal))
         {
           #       pMasks <- getSignifMasks(yVal)
@@ -274,12 +275,13 @@ plotStats_ERSP <- function(pVals, timeVals, titles, dims = c(400,135), bShowPlot
           #gg <- gg + scale_fill_gradientn(limits = c(-3,3), colours = c("blue","green","red")) #low="red", high="yellow")
           #gg <- gg + scale_fill_gradientn(colours =c("blue", "red"))#, trans = "log")
           #gg <- gg + scale_colour_gradient(trans = "log")
-          gg <- gg + scale_x_continuous(expand = c(0, 0))
-          gg <- gg + scale_y_continuous(expand = c(0, 0))
+          #gg <- gg + scale_x_continuous(expand = c(0, 0))
+          #gg <- gg + scale_y_continuous(expand = c(0, 0))
           gg <- gg + theme_bw()
-          gg <- gg + theme(legend.position="none", plot.title = element_text(lineheight=.8, face="bold"), axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank()) + ggtitle(titles[[i]][[j]])
+          gg <- gg + theme(legend.position="none", plot.title = element_text(lineheight=.8, face="bold"), axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank()) + ggtitle(pTitles[[curDim]][[i]][[1]])
           
-          hPlot[[i]][[j]][[k]] <- gg
+          
+          hPlot[[curDim]][[i]][[j]] <- gg
           #hPlot[[i]][[j]] <- ggplot() + geom_line(aes(y = yVal, x = timeVals, colour = "sin")) + theme(legend.position = "none") + geom_rect(data =  pMasks, alpha = 0.3, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
         }
       }
@@ -293,6 +295,52 @@ plotStats_ERSP <- function(pVals, timeVals, titles, dims = c(400,135), bShowPlot
   
   hPlot
 }
+
+plotStats_ERSP_Graph <- function(pVals, pTitle, xTimeVals, yFreqVals, dims = c(400,135), bShowPlot = TRUE)
+{
+  print("Plotting ERSP Stats Graph...")
+
+  if(is.null(xTimeVals)) {xTimeVals = seq(1, 400)}
+  if(is.null(yFreqVals)) {yFreqVals = seq(1, 135)}
+  
+  if(!is.null(pVals))
+  {
+        #       pMasks <- getSignifMasks(yVal)
+        #       
+        #       # From pMasks Indexes to real value indices (e.g. [-1000, 2000] vs [1, 1536])
+        #       if(!is.null(pMasks$xminimums) && !is.null(pMasks$xmaximums))
+        #       {
+        #         pMasks$xminimums <- timeVals[pMasks$xminimums]
+        #         pMasks$xmaximums <- timeVals[pMasks$xmaximums]
+        #       }
+        #       else
+        #       {
+        #         print("... pMasks - NULL ... ")
+        #       }
+        
+    tmat <- t(matrix(pVals, nrow = dims[[2]], ncol = dims[[1]]))
+    gg <- ggplot(melt(tmat), aes(x=Var1, y=Var2, fill=value)) + geom_tile()
+    gg <- gg + geom_raster()
+        #gg <- gg + coord_equal()
+    gg <- gg + scale_fill_gradient(low="red", high="blue")
+        #gg <- gg + scale_fill_gradientn(limits = c(-3,3), colours = c("blue","green","red")) #low="red", high="yellow")
+        #gg <- gg + scale_fill_gradientn(colours =c("blue", "red"))#, trans = "log")
+        #gg <- gg + scale_colour_gradient(trans = "log")
+        #gg <- gg + scale_x_continuous(expand = c(0, 0))
+        #gg <- gg + scale_y_continuous(expand = c(0, 0))
+    gg <- gg + theme_bw()
+    gg <- gg + theme(legend.position="none", plot.title = element_text(lineheight=.8, face="bold"), axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(),panel.grid.major=element_blank(), panel.grid.minor=element_blank()) + ggtitle(pTitle)
+        
+        #hPlot[[i]][[j]] <- gg
+        #hPlot[[i]][[j]] <- ggplot() + geom_line(aes(y = yVal, x = timeVals, colour = "sin")) + theme(legend.position = "none") + geom_rect(data =  pMasks, alpha = 0.3, aes(xmin = xminimums, xmax = xmaximums, ymin = -Inf, ymax = Inf), fill = "blue")
+  }
+      #}
+
+  #if(bShowPlot == TRUE) {grid.arrange(hPlot)}
+  
+  return(gg)
+}
+
 
 ###########################################################################
 ####################       Get Significant Masks !     ####################

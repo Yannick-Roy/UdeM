@@ -47,7 +47,7 @@ STATS_SUB_DESIGNS[[16]] = list(values ~ (sessions), values ~ (orders))
 STATS_SUB_DESIGNS[[17]] = list(values ~ (sessions), values ~ (groups), values ~ (orders))
 STATS_SUB_DESIGNS[[18]] = list(values ~ (sessions), values ~ (groups), values ~ (orders))
 
-STATS_SUB_DESIGNS[[31]] = list(values ~ (groups) + Error(subjects/groups), values ~ (conditions) + Error(subjects/conditions))
+STATS_SUB_DESIGNS[[31]] = list(values ~ (conditions) + Error(subjects/conditions), values ~ (groups) + Error(subjects/groups))
 STATS_SUB_DESIGNS[[32]] = list(values ~ (groups) + Error(subjects/groups), values ~ (sessions) + Error(subjects/sessions))
 STATS_SUB_DESIGNS[[33]] = list(values ~ (groups) + Error(subjects/groups), values ~ (motions) + Error(subjects/motions))
 STATS_SUB_DESIGNS[[34]] = list(values ~ (groups) + Error(subjects/groups), values ~ (orders) + Error(subjects/orders))
@@ -114,7 +114,7 @@ staR_getDesignName <- function(iDesign, statsFunction)
   
   if(statsFunction == "aov")
   {
-    title <- paste("ANOVA (aov) : ", format(STATS_DESIGNS[[iDesign]]))
+    title <- paste("ANOVA (aov) : ", format(STATS_DESIGNS[[iDesign + 20]]))
   }
   
   if(statsFunction == "lme")

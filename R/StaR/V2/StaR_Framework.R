@@ -12,7 +12,6 @@ require(reshape2)
 require(tictoc)
 #require(fdrtool)
 
-
 stde <- function(x) sd(x)/sqrt(length(x))
 
 ###########################################################################
@@ -34,8 +33,7 @@ bReloadRData = FALSE
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSampleMatlabData = TRUE
-bSmallSamples = TRUE
+bSmallSamples = FALSE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
@@ -69,8 +67,7 @@ hTitles <- list()
 ###### Main Loop (ERP & ERSP) !
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-#for(curAnalysis in 1:2)
-curAnalysis = 1
+for(curAnalysis in 1:2)
 {
   if(curAnalysis == 1) # ERP
   {
@@ -186,115 +183,10 @@ curAnalysis = 1
         
         if(bSubDataAnalysis)
         {
-          #stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
-          subData <- subDataset
-          hDataset <- list()
-          vDataset <- list()
-          for(p in 1:nbPoints)  # Points
-          {
-            ## -----------------------
-            ## -- Horizontal (Rows) --
-            ## -----------------------
-            hDataset[[p]] <- list()
-            if(length(subData) > 0)
-            {
-              for(i in 1:length(subData)) # Layers
-              {
-                hDataset[[p]][[i]] <- list()
-                if(length(subData[[i]]) > 0)
-                {
-                  for(j in 1:length(subData[[i]])) # Rows
-                  {
-                    hDataset[[p]][[i]][[j]] <- list()
-                    if(length(subData[[i]][[j]]) > 0)
-                    {
-                      for(k in 1:length(subData[[i]][[j]])) # Cols
-                      { 
-                        print(paste(p, " (h) - ", i, j, k))
-                        # -- Horizontal --
-                        #a[[k]][[i]] <- rbind(subData[[i]][[j]][[k]], subData[[i]][[j]][[k]], subData[[i]][[j]][[k]], subData[[i]][[j]][[k]])
-                        if(k == 1) {hDataset[[p]][[i]][[j]] <- subData[[i]][[j]][[k]][[p]]}
-                        else {hDataset[[p]][[i]][[j]] <- rbind(hDataset[[p]][[i]][[j]], subData[[i]][[j]][[k]][[p]])}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            
-            ## -----------------------
-            ## -- Vertival (Cols) --
-            ## -----------------------
-            vDataset[[p]] <- list()
-            if(length(subData) > 0)
-            {
-              for(i in 1:length(subData)) # Layers
-              {
-                vDataset[[p]][[i]] <- list()
-                if(length(subData[[i]]) > 0)
-                {
-                  for(k in 1:length(subData[[i]][[1]])) # Cols
-                  {
-                    vDataset[[p]][[i]][[k]] <- list()
-                    for(j in 1:length(subData[[i]])) # Rows
-                    {
-                      print(paste(p, " (v) - ", i, j, k))
-                      # -- Vertical --
-                      if(j == 1) {vDataset[[p]][[i]][[k]] <- subData[[i]][[j]][[k]][[p]]}
-                      else {vDataset[[p]][[i]][[k]] <- rbind(vDataset[[p]][[i]][[k]], subData[[i]][[j]][[k]][[p]])}
-                    }
-                  }
-                }
-              }
-            }
-          }
+          stats.subAnalysis.aov.retVal <- staR_aov_sub(subDataset, iDesign)
           
-          stats.subAnalysis.hData <- staR_InvertDimensions3D(hDataset)
-          stats.subAnalysis.vData <- staR_InvertDimensions3D(vDataset)
-          
-          stats.subAnalysis.combinedData <- list()
-          stats.subAnalysis.combinedData[[1]] <- stats.subAnalysis.hData # Rows.
-          stats.subAnalysis.combinedData[[2]] <- stats.subAnalysis.vData # Cols.
-          
-          #stats.subAnalysis.aov.retVal <- staR_aov(stats.subAnalysis.hData[[1]][[1]], iDesign)
-          
-          stats.subAnalysis.pVals <- list()
-          stats.subAnalysis.pTitles <- list()
-          for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols (1 - Horizontal | 2 - Vertical)
-          {
-            if(length(stats.subAnalysis.combinedData[[curDim]]) > 0)
-            {
-              stats.subAnalysis.pVals[[curDim]] <- list()
-              stats.subAnalysis.pTitles[[curDim]] <- list()
-              for(i in 1:length(stats.subAnalysis.combinedData[[curDim]])) # Layers
-              {
-                stats.subAnalysis.pVals[[curDim]][[i]] <- list()
-                stats.subAnalysis.pTitles[[curDim]][[i]] <- list()
-                for(j in 1:length(stats.subAnalysis.combinedData[[curDim]][[i]])) # Rows
-                {
-                  print(paste("Doing - Anova (subData - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))
-                  
-                  cl <- makeCluster(8) 
-                  clusterExport(cl, list("aov", "STATS_SUB_DESIGNS", "iDesign", "curDim"))
-                  tic()
-                  anovas.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[curDim]][[i]][[j]], fun = function(x) {aov(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]], x)})
-                  toc()
-                  stopCluster(cl)
-                  
-                  anovas.full.titles = paste("aov", " : ",  format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]]))
-                  print("Done!")
-                
-                  print(paste("Doing - Summary (sub - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))      
-                  anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
-                  
-                  stats.subAnalysis.aov.retVal <- staR_aov_pvals(anovas.full.summary)
-                  
-                  stats.subAnalysis.pVals[[curDim]][[i]][[j]] <- unlist(stats.subAnalysis.aov.retVal[[1]])
-                  stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- unique(stats.subAnalysis.aov.retVal[[2]])
-                }
-              }
-            }
-          }
+          stats.subAnalysis.pVals <- stats.subAnalysis.aov.retVal[[1]]
+          stats.subAnalysis.pTitles <- stats.subAnalysis.aov.retVal[[2]]
         }
       }
       
@@ -394,8 +286,15 @@ curAnalysis = 1
       #graphs15 <- lapply(mixedmodels.pSignificants[[3]], FUN = function(x, y, arg1){plotStats_ERP_Graph(yVal = unlist(x), yTitle = y, xTimeVals = arg1)}, arg1 = timeData)
       combinedValsTitles <- list()
       for(i in 1:length(stats.fullAnalysis.pSignificants)) {combinedValsTitles[[i]] <- list(stats.fullAnalysis.pSignificants[[i]], stats.fullAnalysis.pTitles[[i]])}
-      stats.fullAnalysis.ERP <- lapply(combinedValsTitles, FUN = function(x, arg1){plotStats_ERP_Graph(yVal = unlist(x[[1]]), yTitle = as.character(x[[2]]), xTimeVals = arg1)}, arg1 = timeData)
-      stats.fullAnalysis.hPlots <- lapply(stats.fullAnalysis.ERP, FUN = function(x) {x[[2]]})
+      
+      if(data.type == "ERSP") {
+        stats.fullAnalysis.ERSP <- lapply(combinedValsTitles, FUN = function(x, arg1, arg2){plotStats_ERSP_Graph(pVals = unlist(x[[1]]), pTitle = as.character(x[[2]]), xTimeVals = arg1, yFreqVals = arg2)}, arg1 = timeData, arg2 = freqData)
+        stats.fullAnalysis.hPlots <- stats.fullAnalysis.ERSP #lapply(stats.fullAnalysis.ERSP, FUN = function(x) {x[[2]]})
+      } else {
+        stats.fullAnalysis.ERP <- lapply(combinedValsTitles, FUN = function(x, arg1){plotStats_ERP_Graph(yVal = unlist(x[[1]]), yTitle = as.character(x[[2]]), xTimeVals = arg1)}, arg1 = timeData)
+        stats.fullAnalysis.hPlots <- lapply(stats.fullAnalysis.ERP, FUN = function(x) {x[[2]]})
+      }
+      
       
       ########################
       ### Plot Sub Analysis
@@ -403,7 +302,12 @@ curAnalysis = 1
       if(bSubDataAnalysis)
       {
         #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
-        hStats <- plotStats_ERP(stats.subAnalysis.pSignificants, timeData, stats.subAnalysis.pTitles)[[1]]
+        if(data.type == "ERSP") {
+          hStats <- plotStats_ERSP(stats.subAnalysis.pSignificants, stats.subAnalysis.pTitles, timeData, freqData, ersp_dims)
+        } else {
+          hStats <- plotStats_ERP(stats.subAnalysis.pSignificants, timeData, stats.subAnalysis.pTitles)[[1]]
+        }
+        
         #if(data.type == "ERSP") { hStats <- plotStats_ERSP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle, ersp_dims)}
         #else { hStats <- plotStats_ERP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]] }
       }
@@ -457,34 +361,40 @@ curAnalysis = 1
             if(k > 1)
             {
               hRows[[i]][[j]] <- cbind(hRows[[i]][[j]], ggplotGrob(hData[[i]][[j]][[k]]), size = "last")
-            }
-            else
-            {
+            } else {
               hRows[[i]][[j]] <- ggplotGrob(hData[[i]][[j]][[k]])
             }
           }
-        }
         
-        if(stats.bCompute) # Don't add stat graph if there aren't being computed!
-        {
-          hRows[[i]][[j]] <- cbind(hRows[[i]][[j]], ggplotGrob(hStats[[1]][[i]][[k]]), size = "last")
+          if(stats.bCompute) # Don't add stat graph if there aren't being computed!
+          {
+            hRows[[i]][[j]] <- cbind(hRows[[i]][[j]], ggplotGrob(hStats[[1]][[i]][[j]]), size = "last")
+          }
         }
       }
       
       if(designMatrix$nbRow > 1 && stats.bCompute)
       {
-        nbRows <- length(hRows)
-        hRows[[nbRows + 1]] <- ggplotGrob(hStats[[2]][[1]])
-        for(j in 2:designMatrix$nbCol)
+        nbRows <- length(hRows[[1]])
+        for(k in 1:designMatrix$nbCol)
         {
-          hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[2]][[j]]), size = "last")
+          if(k > 1)
+          {
+            hRows[[1]][[nbRows + 1]] <- cbind(hRows[[1]][[nbRows + 1]], ggplotGrob(hStats[[2]][[1]][[k]]), size = "last")
+          } else {
+            hRows[[1]][[nbRows + 1]] <- ggplotGrob(hStats[[2]][[1]][[k]])
+          }
         }
-        if(iDesign >= 11 && iDesign <= 16)
-        {
-          #hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[3]]), size = "last")
-          print("Modify me... Utilizing the first graph of D3.")
-          hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[1]]), size = "last")
-        }
+        
+        hRows[[1]][[nbRows + 1]] <- cbind(hRows[[1]][[nbRows + 1]], ggplotGrob(ggplot(data.frame()) + geom_point() + xlim(0, 10) + ylim(0, 100)), size = "last")
+        
+#         if(iDesign >= 11 && iDesign <= 16)
+#         {
+#           #hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[3]]), size = "last")
+#           print("Modify me... Utilizing the first graph of D3.")
+#           hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[1]]), size = "last")
+#         }
+        
       }
       
       if(length(hRows[[1]]) == 1) 
@@ -494,12 +404,17 @@ curAnalysis = 1
       
       if(length(hRows[[1]]) == 2) 
       {
-        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], top=textGrob(staR_getDesignName(iDesignb, stats.function), gp=gpar(fontsize=20,font=3)))
+        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20,font=3)))
       }
       
       if(length(hRows[[1]]) == 3) 
       {
         grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20,font=3)))
+      }
+      
+      if(length(hRows[[1]]) == 4) 
+      {
+        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], hRows[[1]][[4]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20,font=3)))
       }
       
       if(bSaveOnDiskImages)
@@ -556,27 +471,4 @@ curAnalysis = 1
       }
     }
   }
-}
-
-
-
-## We want to put the 1st D (points) in 3th D and keep Layer x Rows x Cols (i x j x k)
-staR_InvertDimensions3D <- function(array3D)
-{ 
-  b <- list()
-  for(p in 1:length(array3D))
-  {
-    for(i in 1:length(array3D[[p]]))
-    {
-      for(j in 1:length(array3D[[p]][[i]]))
-      {
-        print(paste(p,i,j))
-        if(length(b) < i) {b[[i]] <- list()}
-        if(length(b[[i]]) <  j) {b[[i]][[j]] <- list()} 
-        
-        b[[i]][[j]][[p]] <- array3D[[p]][[i]][[j]]
-      }
-    }
-  }  
-  return (b)
 }
