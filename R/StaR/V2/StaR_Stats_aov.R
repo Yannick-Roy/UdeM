@@ -210,7 +210,7 @@ staR_aov_sub <- function(subData, iDesign)
           print(paste("Doing - Anova (subData - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))
           
           cl <- makeCluster(4) 
-          clusterExport(cl, list("aov", "STATS_SUB_DESIGNS", "iDesign", "curDim"))
+          clusterExport(cl, list("aov", "STATS_SUB_DESIGNS", "iDesign"))
           tic()
          
           ###############
