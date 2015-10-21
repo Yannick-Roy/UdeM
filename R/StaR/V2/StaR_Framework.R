@@ -34,7 +34,7 @@ bReloadRData = FALSE
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSmallSamples = FALSE
+bSmallSamples = TRUE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
@@ -48,7 +48,7 @@ timeData = 0 # Need real value (runtime)
 freqData = 0 # Need real value (runtime)
 
 data.type = "ERP"
-stats.function = "aov"
+stats.function = "lme"
 stats.bCompute = TRUE
 
 sigthreshold = 0.05
@@ -57,8 +57,8 @@ sigthreshold = 0.05
 #dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-#dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
-dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
+#dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
 dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlotsFullPath)
 
@@ -69,7 +69,7 @@ hTitles <- list()
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
 #for(curAnalysis in 1:2)
-curAnalysis = 2
+curAnalysis = 1
 {
   if(curAnalysis == 1) # ERP
   {

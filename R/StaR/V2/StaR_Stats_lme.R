@@ -9,7 +9,7 @@ staR_lme <- function(fullData, iDesign, bSubAnalysis = FALSE)
   
   print(paste("Doing - lme (fullData) : ", format(STATS_DESIGNS[[iDesign]]), " random=", format(STATS_DESIGNS_RND)))  
   tic()
-  mixedmodels.full <- parLapply(cl = cl, fullData, fun = function(x) {lme(STATS_DESIGNS[[iDesign]], random=STATS_DESIGNS_RND, x)})
+  mixedmodels.full <- parLapply(cl = cl, fullData, fun = function(x) {lme(fixed=STATS_DESIGNS[[iDesign]], random=STATS_DESIGNS_RND, data=x)})
   toc()
   
   stopCluster(cl)
@@ -165,10 +165,10 @@ staR_lme_sub <- function(subData, iDesign)
         stats.subAnalysis.pTitles[[curDim]][[i]] <- list()
         for(j in 1:length(stats.subAnalysis.combinedData[[curDim]][[i]])) # Rows
         {
-          print(paste("Doing - Mixed Models (subData - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS_MM[[iDesign]][[curDim]])))
+          print(paste("Doing - Mixed Models (subData - [",curDim, ",", i, ",", j, "]) : fixed = ", format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND)))
           
           cl <- makeCluster(4) 
-          clusterExport(cl, list("lme", "STATS_SUB_DESIGNS_MM", "STATS_DESIGNS_RND", "iDesign"))
+          clusterExport(cl, list("lme", "STATS_SUB_DESIGNS", "STATS_DESIGNS_RND", "iDesign"))
           tic()
           
           ###############
@@ -176,23 +176,23 @@ staR_lme_sub <- function(subData, iDesign)
           ###############
           if(curDim == 1) # TODO : Fix me with envir...
           {
-            mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[1]][[i]][[j]], fun = function(x) {lme(STATS_SUB_DESIGNS_MM[[iDesign]][[1]], random=STATS_DESIGNS_RND, x)})
+            mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[1]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[1]], random=STATS_DESIGNS_RND, data=x)})
           }
           if(curDim == 2) # TODO : Fix me with envir...
           {
-            mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[2]][[i]][[j]], fun = function(x) {lme(STATS_SUB_DESIGNS_MM[[iDesign]][[2]], random=STATS_DESIGNS_RND, x)})
+            mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[2]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[2]], random=STATS_DESIGNS_RND, data=x)})
           }
           
           toc()
           stopCluster(cl)
           
-          mixedmodels.full.titles = paste("lme", " : ",  format(STATS_SUB_DESIGNS_MM[[iDesign]][[curDim]]))
+          mixedmodels.full.titles = paste("lme", " : fixed = ",  format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND))
           print("Done!")
           
-          print(paste("Doing - Summary (sub - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS_MM[[iDesign]][[curDim]])))      
+          print(paste("Doing - Summary (subData - [",curDim, ",", i, ",", j, "]) : fixed = ", format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND)))
           mixedmodels.full.summary <- lapply(mixedmodels.full, FUN = function(x) {summary(x)})
           
-          stats.subAnalysis.lme.retVal <- staR_aov_pvals(mixedmodels.full.summary)
+          stats.subAnalysis.lme.retVal <- staR_lme_pvals(mixedmodels.full.summary)
           
           stats.subAnalysis.pVals[[curDim]][[i]][[j]] <- unlist(stats.subAnalysis.lme.retVal[[1]])
           stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- unique(stats.subAnalysis.lme.retVal[[2]])

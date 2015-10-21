@@ -107,7 +107,8 @@ STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (orders) + (1|subjects), values ~ (se
 STATS_DESIGNS_MM_RESTRICTED = values ~ 1 * (1 | subjects)
 STATS_DESIGNS_MM[[99]] = values ~ 1 * (1 | subjects) #Bug...
 
-STATS_DESIGNS_RND = ~1|subjects
+STATS_DESIGNS_RND = ~1|sessions
+#STATS_DESIGNS_RND = ~1|subjects
 
 #==================================================================
 
