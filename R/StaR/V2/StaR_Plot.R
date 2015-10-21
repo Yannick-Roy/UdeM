@@ -97,7 +97,7 @@ plotData_ERSP <- function(data, params, timeVals, dims = c(400,135), bShowPlot =
       for(j in 1:length(data[[i]]))
       {
         hDataList[[i]][[j]] <- list()
-        for(j in 1:length(data[[i]][[j]]))
+        for(k in 1:length(data[[i]][[j]]))
         {
           #hData[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + theme(legend.position="none")#axis.line=element_blank(),axis.text.x=element_blank(), 
           #hDataList[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + 

@@ -23,6 +23,7 @@ source("StaR_Designs.R")
 source("StaR_LoadData.R")
 source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
+source("StaR_Stats_lme.R")
 
 designs = 11#c(2,3,4,5,11,12,13,14,15,16,17,18)
 
@@ -67,7 +68,8 @@ hTitles <- list()
 ###### Main Loop (ERP & ERSP) !
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-for(curAnalysis in 1:2)
+#for(curAnalysis in 1:2)
+curAnalysis = 2
 {
   if(curAnalysis == 1) # ERP
   {
@@ -170,6 +172,21 @@ for(curAnalysis in 1:2)
     {
       if(stats.function == "lme")
       {
+        if(bFullStatsAnalysis)
+        {
+          stats.fullAnalysis.lme.retVal <- staR_lme(fullData, iDesign)
+          
+          stats.fullAnalysis.pVals <- stats.fullAnalysis.lme.retVal[[1]]
+          stats.fullAnalysis.pTitles <- stats.fullAnalysis.lme.retVal[[2]]
+        }
+        
+        if(bSubDataAnalysis)
+        {
+          stats.subAnalysis.lme.retVal <- staR_lme_sub(subDataset, iDesign)
+          
+          stats.subAnalysis.pVals <- stats.subAnalysis.lme.retVal[[1]]
+          stats.subAnalysis.pTitles <- stats.subAnalysis.lme.retVal[[2]]
+        }
         
       } else if(stats.function == "aov")
       {
@@ -253,7 +270,6 @@ for(curAnalysis in 1:2)
       }
       stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pSignif
       
-
       stats.subAnalysis.pSignif <- stats.subAnalysis.pVals
       if(bSubDataAnalysis)
       {

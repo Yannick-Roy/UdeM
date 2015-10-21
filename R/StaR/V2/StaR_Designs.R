@@ -27,7 +27,8 @@ STATS_DESIGNS[[23]] = values ~ (motions) + Error(subjects/(motions))
 STATS_DESIGNS[[24]] = values ~ (orders) + Error(subjects/(orders))
 STATS_DESIGNS[[25]] = values ~ (groups) + Error(subjects/(groups))
 
-STATS_DESIGNS[[31]] = values ~ (groups * conditions) + Error(subjects/(groups * conditions))
+STATS_DESIGNS[[31]] = values ~ (groups * conditions) + Error(sessions/(groups * conditions))
+#STATS_DESIGNS[[31]] = values ~ (groups * conditions) + Error(subjects/(groups * conditions))
 STATS_DESIGNS[[32]] = values ~ (groups * sessions) + Error(subjects/(groups * sessions))
 STATS_DESIGNS[[33]] = values ~ (groups * motions) + Error(subjects/(groups * motions))
 STATS_DESIGNS[[34]] = values ~ (groups * orders) + Error(subjects/(groups * orders))
@@ -36,6 +37,7 @@ STATS_DESIGNS[[36]] = values ~ (sessions * orders) + Error(subjects/(sessions * 
 STATS_DESIGNS[[37]] = values ~ (groups * sessions * motions) + Error(subjects/(groups * sessions * motions))
 STATS_DESIGNS[[38]] = values ~ (groups * sessions * orders) + Error(subjects/(groups * sessions * orders))
 STATS_DESIGNS[[39]] = values ~ (groups * sessions * motions * orders) + Error(subjects/(groups * sessions * motions * orders))
+#STATS_DESIGNS[[39]] = values ~ (groups * sessions * motions * orders) + Error(subjects/(groups * sessions * motions * orders))
 
 STATS_SUB_DESIGNS <- list()
 STATS_SUB_DESIGNS[[11]] = list(values ~ (conditions), values ~ (groups))
@@ -94,7 +96,8 @@ STATS_DESIGNS_MM[[38]] = values ~ (groups * sessions * orders) + (1|subjects)
 STATS_DESIGNS_MM[[39]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
 
 STATS_SUB_DESIGNS_MM <- list()
-STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|subjects), values ~ (groups) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|subjects), values ~ (groups) + (1|subjects))
+STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|sessions), values ~ (groups) + (1|sessions))
 STATS_SUB_DESIGNS_MM[[12]] = list(values ~ (sessions) + (1|subjects), values ~ (groups) + (1|subjects))
 STATS_SUB_DESIGNS_MM[[13]] = list(values ~ (motions) + (1|subjects), values ~ (groups) + (1|subjects))
 STATS_SUB_DESIGNS_MM[[14]] = list(values ~ (orders) + (1|subjects), values ~ (groups) + (1|subjects))
@@ -120,7 +123,7 @@ staR_getDesignName <- function(iDesign, statsFunction)
   if(statsFunction == "lme")
   {
     #if(MMfunc == "lmer") {title <- paste("Mixed Models (", MMfunc, ") : ", format(STATS_DESIGNS_MM[[iDesign]]))}
-    title <- paste("Mixed Models (", MMfunc, ") : ", format(STATS_DESIGNS[[iDesign]]), "\n ", format(STATS_DESIGNS_RND))
+    title <- paste("Mixed Models (lme) : ", format(STATS_DESIGNS[[iDesign]]), "\n ", format(STATS_DESIGNS_RND))
   }
   
   subTitle <- gsub("[+]", "\n +", title)
