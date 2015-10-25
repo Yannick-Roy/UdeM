@@ -27,8 +27,8 @@ STATS_DESIGNS[[23]] = values ~ (motions) + Error(subjects/(motions))
 STATS_DESIGNS[[24]] = values ~ (orders) + Error(subjects/(orders))
 STATS_DESIGNS[[25]] = values ~ (groups) + Error(subjects/(groups))
 
-STATS_DESIGNS[[31]] = values ~ (groups * conditions) + Error(sessions/(groups * conditions))
-#STATS_DESIGNS[[31]] = values ~ (groups * conditions) + Error(subjects/(groups * conditions))
+#STATS_DESIGNS[[31]] = values ~ (groups * conditions) + Error(sessions/(groups * conditions))
+STATS_DESIGNS[[31]] = values ~ (groups * conditions) + Error(subjects/(groups * conditions))
 STATS_DESIGNS[[32]] = values ~ (groups * sessions) + Error(subjects/(groups * sessions))
 STATS_DESIGNS[[33]] = values ~ (groups * motions) + Error(subjects/(groups * motions))
 STATS_DESIGNS[[34]] = values ~ (groups * orders) + Error(subjects/(groups * orders))
@@ -107,8 +107,8 @@ STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (orders) + (1|subjects), values ~ (se
 STATS_DESIGNS_MM_RESTRICTED = values ~ 1 * (1 | subjects)
 STATS_DESIGNS_MM[[99]] = values ~ 1 * (1 | subjects) #Bug...
 
-STATS_DESIGNS_RND = ~1|sessions
-#STATS_DESIGNS_RND = ~1|subjects
+#STATS_DESIGNS_RND = ~1|sessions
+STATS_DESIGNS_RND = ~1|subjects
 
 #==================================================================
 

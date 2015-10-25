@@ -28,12 +28,12 @@ staR_lme_pvals <- function(summary)
     
     pVs <- list()
     pNames <- list()
-   
+    
     n = length(mixedmodels.summary[[1]]$'p-value')
     for(i in 1:(n - 1))
     {
       pVs[[i]] <- lapply(mixedmodels.summary, FUN = function(x) {x$'p-value'[[i+1]]})
-      pNames[[i]] <- row.names(mixedmodels.summary[[1]])[2:n]
+      pNames[[i]] <- row.names(mixedmodels.summary[[1]])[i+1]#[2:n]
     }
     print("Done!")
     

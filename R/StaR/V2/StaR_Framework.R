@@ -25,7 +25,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 11#c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 19#c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -34,13 +34,13 @@ bReloadRData = FALSE
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSmallSamples = TRUE
+bSmallSamples = FALSE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
 
 bFullStatsAnalysis = TRUE   # Full report on all the data.
-bSubDataAnalysis = TRUE     # Multiple plots with data.
+bSubDataAnalysis = FALSE     # Multiple plots with data.
 
 ersp_dims <- c(400, 135) # Default
 nbPoints = 0 # Need real value (runtime)
@@ -57,8 +57,8 @@ sigthreshold = 0.05
 #dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
-#dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
+#dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
 dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlotsFullPath)
 
@@ -68,8 +68,8 @@ hTitles <- list()
 ###### Main Loop (ERP & ERSP) !
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-#for(curAnalysis in 1:2)
-curAnalysis = 1
+for(curAnalysis in 1:2)
+#curAnalysis = 1
 {
   if(curAnalysis == 1) # ERP
   {
@@ -178,6 +178,11 @@ curAnalysis = 1
           
           stats.fullAnalysis.pVals <- stats.fullAnalysis.lme.retVal[[1]]
           stats.fullAnalysis.pTitles <- stats.fullAnalysis.lme.retVal[[2]]
+          
+          #for()
+          #{
+          #  stats.fullAnalysis.pVals.Corrected <- p.adjust(unlist(stats.fullAnalysis.pVals), "fdr") 
+          #}
         }
         
         if(bSubDataAnalysis)
@@ -186,6 +191,8 @@ curAnalysis = 1
           
           stats.subAnalysis.pVals <- stats.subAnalysis.lme.retVal[[1]]
           stats.subAnalysis.pTitles <- stats.subAnalysis.lme.retVal[[2]]
+          
+          #stats.subAnalysis.pVals.Corrected <- p.adjust(stats.fullAnalysis.pVals, "fdr")
         }
         
       } else if(stats.function == "aov")
@@ -196,6 +203,8 @@ curAnalysis = 1
         
           stats.fullAnalysis.pVals <- stats.fullAnalysis.aov.retVal[[1]]
           stats.fullAnalysis.pTitles <- stats.fullAnalysis.aov.retVal[[2]]
+          
+          #stats.fullAnalysis.pVals.Corrected <- p.adjust(stats.fullAnalysis.pVals, "fdr")
         }
         
         if(bSubDataAnalysis)
@@ -204,6 +213,8 @@ curAnalysis = 1
           
           stats.subAnalysis.pVals <- stats.subAnalysis.aov.retVal[[1]]
           stats.subAnalysis.pTitles <- stats.subAnalysis.aov.retVal[[2]]
+          
+          #stats.subAnalysis.pVals.Corrected <- p.adjust(stats.fullAnalysis.pVals, "fdr")
         }
       }
       
@@ -292,6 +303,7 @@ curAnalysis = 1
       if(bFullStatsAnalysis)
       {
         save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
+        save(fullData, timeData, freqData, subData, subDataset, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
       }
       
       # -- Plot Stats --

@@ -119,13 +119,13 @@ staR_SmallSamples <- function(fullData, times, freqs, dataType)
   if(dataType == "ERSP")
   {
     # Time
-    lowLimit_time <- which(timeData > 50)[1] # From 50ms
-    highLimit_time <- which(timeData < 400)  # To 500ms
+    lowLimit_time <- which(timeData > 100)[1] # From 100ms
+    highLimit_time <- which(timeData < 300)  # To 300ms
     highLimit_time <- highLimit_time[length(highLimit_time) - 1]
     
     # Freq
     lowLimit_freq <- which(freqData > 10)[1] # From 10Hz
-    highLimit_freq <- which(freqData < 13)   # To 15Hz
+    highLimit_freq <- which(freqData < 13)   # To 13Hz
     highLimit_freq <- highLimit_freq[length(highLimit_freq) - 1]
     
     # TODO : Fix this, not the real "sub squarre in the matrix!"
