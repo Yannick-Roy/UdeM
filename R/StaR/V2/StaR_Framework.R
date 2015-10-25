@@ -47,9 +47,12 @@ nbPoints = 0 # Need real value (runtime)
 timeData = 0 # Need real value (runtime)
 freqData = 0 # Need real value (runtime)
 
+data.domain = 1
 data.type = "ERP"
 stats.function = "lme"
 stats.bCompute = TRUE
+stats.bCorrection = TRUE
+stats.correctionFunction = "fdr"
 
 sigthreshold = 0.05
 
@@ -68,8 +71,8 @@ hTitles <- list()
 ###### Main Loop (ERP & ERSP) !
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-for(curAnalysis in 1:2)
-#curAnalysis = 1
+#for(curAnalysis in 1:2)
+curAnalysis = 1
 {
   if(curAnalysis == 1) # ERP
   {
@@ -95,9 +98,10 @@ for(curAnalysis in 1:2)
   {
     # Read Matlab file !
     if(data.type == "ERSP") { 
-      data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat" 
+      data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat"
+      #data.file = paste("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_ersp_d", data.domain, ".mat", sep="")
     } else { 
-        data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d1.mat" 
+        data.file = paste("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d", data.domain, ".mat", sep="")
     }
     
     print("Matlab Data - Loading...")
@@ -168,7 +172,7 @@ for(curAnalysis in 1:2)
     #############################################################
     ###### Stats !
     #############################################################
-    if(stats.bCompute == TRUE)
+    if(stats.bCompute)
     {
       if(stats.function == "lme")
       {
@@ -178,11 +182,6 @@ for(curAnalysis in 1:2)
           
           stats.fullAnalysis.pVals <- stats.fullAnalysis.lme.retVal[[1]]
           stats.fullAnalysis.pTitles <- stats.fullAnalysis.lme.retVal[[2]]
-          
-          #for()
-          #{
-          #  stats.fullAnalysis.pVals.Corrected <- p.adjust(unlist(stats.fullAnalysis.pVals), "fdr") 
-          #}
         }
         
         if(bSubDataAnalysis)
@@ -191,8 +190,6 @@ for(curAnalysis in 1:2)
           
           stats.subAnalysis.pVals <- stats.subAnalysis.lme.retVal[[1]]
           stats.subAnalysis.pTitles <- stats.subAnalysis.lme.retVal[[2]]
-          
-          #stats.subAnalysis.pVals.Corrected <- p.adjust(stats.fullAnalysis.pVals, "fdr")
         }
         
       } else if(stats.function == "aov")
@@ -203,8 +200,6 @@ for(curAnalysis in 1:2)
         
           stats.fullAnalysis.pVals <- stats.fullAnalysis.aov.retVal[[1]]
           stats.fullAnalysis.pTitles <- stats.fullAnalysis.aov.retVal[[2]]
-          
-          #stats.fullAnalysis.pVals.Corrected <- p.adjust(stats.fullAnalysis.pVals, "fdr")
         }
         
         if(bSubDataAnalysis)
@@ -213,13 +208,53 @@ for(curAnalysis in 1:2)
           
           stats.subAnalysis.pVals <- stats.subAnalysis.aov.retVal[[1]]
           stats.subAnalysis.pTitles <- stats.subAnalysis.aov.retVal[[2]]
-          
-          #stats.subAnalysis.pVals.Corrected <- p.adjust(stats.fullAnalysis.pVals, "fdr")
         }
       }
       
       #############################################################
-      ###### Pvals - Full Analysis !
+      ###### Pvals - Correction !
+      #############################################################
+      if(stats.bCorrection)
+      {
+        if(bFullStatsAnalysis)
+        {
+          stats.fullAnalysis.pVals.Corrected <- list()
+          for(i in 1:length(stats.fullAnalysis.pVals))
+          {
+            stats.fullAnalysis.pVals.Corrected[[i]] <- p.adjust(unlist(stats.fullAnalysis.pVals[[i]]), stats.correctionFunction) 
+          }
+          
+          stats.fullAnalysis.pVals.Original <- stats.fullAnalysis.pVals
+          stats.fullAnalysis.pVals <- stats.fullAnalysis.pVals.Corrected
+          
+          ## Debug
+          for(i in 1:length(stats.fullAnalysis.pVals.Corrected))
+          {
+            print(paste("Graph ==>", stats.fullAnalysis.pTitles[[i]], " max :", max(unlist(stats.fullAnalysis.pVals.Corrected[[i]])), " min :", min(unlist(stats.fullAnalysis.pVals.Corrected[[i]]))))
+          }
+        }
+        
+        if(bSubDataAnalysis)
+        {
+          stats.subAnalysis.pVals.Corrected <- list()
+          for(i in 1:length(stats.subAnalysis.pVals))
+          {
+            stats.subAnalysis.pVals.Corrected[[i]] <- p.adjust(unlist(stats.subAnalysis.pVals[[i]]), stats.correctionFunction) 
+          }
+          
+          stats.subAnalysis.pVals.Original <- stats.subAnalysis.pVals
+          stats.subAnalysis.pVals <- stats.subAnalysis.pVals.Corrected
+          
+          ## Debug
+          for(i in 1:length(stats.subAnalysis.pVals.Corrected))
+          {
+            print(paste("Graph ==>", stats.subAnalysis.pTitles[[i]], " max :", max(unlist(stats.subAnalysis.pVals.Corrected[[i]])), " min :", min(unlist(stats.subAnalysis.pVals.Corrected[[i]]))))
+          }
+        }
+      }
+      
+      #############################################################
+      ###### Pvals - Plot Raw !
       #############################################################
       bShowPlot = TRUE
       if(bShowPlot)
