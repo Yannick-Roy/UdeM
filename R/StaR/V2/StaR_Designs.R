@@ -121,13 +121,13 @@ staR_getDesignName <- function(iDesign, statsFunction)
   
   if(statsFunction == "aov")
   {
-    title <- paste("ANOVA (aov) : ", format(STATS_DESIGNS[[iDesign + 20]]))
+    title <- paste("ANOVA (aov) :", "\n ", format(STATS_DESIGNS[[iDesign + 20]]))
   }
   
   if(statsFunction == "lme")
   {
     #if(MMfunc == "lmer") {title <- paste("Mixed Models (", MMfunc, ") : ", format(STATS_DESIGNS_MM[[iDesign]]))}
-    title <- paste("Mixed Models (lme) : ", format(STATS_DESIGNS[[iDesign]]), "\n ", format(STATS_DESIGNS_RND))
+    title <- paste("Mixed Models (lme) :", "\n ", format(STATS_DESIGNS[[iDesign]]), "\n ", format(STATS_DESIGNS_RND))
   }
   
   subTitle <- gsub("[+]", "\n +", title)
