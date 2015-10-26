@@ -25,7 +25,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 19#c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 11#c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -40,7 +40,7 @@ bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
 
 bFullStatsAnalysis = TRUE   # Full report on all the data.
-bSubDataAnalysis = FALSE     # Multiple plots with data.
+bSubDataAnalysis = TRUE     # Multiple plots with data.
 
 ersp_dims <- c(400, 135) # Default
 nbPoints = 0 # Need real value (runtime)
@@ -48,13 +48,13 @@ timeData = 0 # Need real value (runtime)
 freqData = 0 # Need real value (runtime)
 
 data.domain = 1
-data.type = "ERP"
-stats.function = "lme"
+data.type = "N/A"
+stats.function = "aov"
 stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
 
-sigthreshold = 0.05
+sigthreshold = 0.001
 
 # Clear Plots.
 #dev.off()
@@ -145,7 +145,7 @@ curAnalysis = 1
     dir.create(dirPlots)
     
     # Prep Plot Series !
-    grid.arrange(textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=30)))
+    grid.arrange(textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=30)), textGrob(paste("Domain #", data.domain), gp=gpar(fontsize=30)))
     if(bSaveOnDiskImages)
     {
       dev.copy2pdf(file = paste(dirPlots, "/Title_", iDesign, ".pdf", sep = ""))
