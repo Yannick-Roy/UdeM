@@ -37,6 +37,7 @@ STATS_DESIGNS[[36]] = values ~ (sessions * orders) + Error(subjects/(sessions * 
 STATS_DESIGNS[[37]] = values ~ (groups * sessions * motions) + Error(subjects/(groups * sessions * motions))
 STATS_DESIGNS[[38]] = values ~ (groups * sessions * orders) + Error(subjects/(groups * sessions * orders))
 STATS_DESIGNS[[39]] = values ~ (groups * sessions * motions * orders) + Error(subjects/(groups * sessions * motions * orders))
+STATS_DESIGNS[[40]] = values ~ (groups * sessions * conditions) + Error(subjects/(groups * sessions * conditions))
 #STATS_DESIGNS[[39]] = values ~ (groups * sessions * motions * orders) + Error(subjects/(groups * sessions * motions * orders))
 
 STATS_SUB_DESIGNS <- list()
@@ -46,8 +47,8 @@ STATS_SUB_DESIGNS[[13]] = list(values ~ (motions), values ~ (groups))
 STATS_SUB_DESIGNS[[14]] = list(values ~ (orders), values ~ (groups))
 STATS_SUB_DESIGNS[[15]] = list(values ~ (sessions), values ~ (motions))
 STATS_SUB_DESIGNS[[16]] = list(values ~ (sessions), values ~ (orders))
-STATS_SUB_DESIGNS[[17]] = list(values ~ (sessions), values ~ (groups), values ~ (orders))
-STATS_SUB_DESIGNS[[18]] = list(values ~ (sessions), values ~ (groups), values ~ (orders))
+STATS_SUB_DESIGNS[[17]] = list(values ~ (sessions), values ~ (motions), values ~ (groups))
+STATS_SUB_DESIGNS[[18]] = list(values ~ (sessions), values ~ (orders), values ~ (groups))
 
 STATS_SUB_DESIGNS[[31]] = list(values ~ (conditions) + Error(subjects/conditions), values ~ (groups) + Error(subjects/groups))
 STATS_SUB_DESIGNS[[32]] = list(values ~ (groups) + Error(subjects/groups), values ~ (sessions) + Error(subjects/sessions))
@@ -55,8 +56,10 @@ STATS_SUB_DESIGNS[[33]] = list(values ~ (groups) + Error(subjects/groups), value
 STATS_SUB_DESIGNS[[34]] = list(values ~ (groups) + Error(subjects/groups), values ~ (orders) + Error(subjects/orders))
 STATS_SUB_DESIGNS[[35]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (motions) + Error(subjects/motions))
 STATS_SUB_DESIGNS[[36]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (orders) + Error(subjects/orders))
-STATS_SUB_DESIGNS[[37]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (groups) + Error(subjects/groups), values ~ (orders) + Error(subjects/orders))
-STATS_SUB_DESIGNS[[38]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (groups) + Error(subjects/groups), values ~ (orders) + Error(subjects/orders))
+STATS_SUB_DESIGNS[[37]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (mptions) + Error(subjects/motions), values ~ (groups) + Error(subjects/groups))
+STATS_SUB_DESIGNS[[38]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (orders) + Error(subjects/orders), values ~ (groups) + Error(subjects/groups))
+STATS_SUB_DESIGNS[[40]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (conditions) + Error(subjects/conditions), values ~ (groups) + Error(subjects/groups))
+
 
 #STATS_SUB_DESIGNS_ez[[11]] = ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions)) #, within = .(sessions)
 #================================================================================================================================

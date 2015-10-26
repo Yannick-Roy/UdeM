@@ -2,6 +2,8 @@ library(lme4)
 library(nlme)
 library(pbkrtest)
 
+source("StaR_Tools.R")
+
 staR_lme <- function(fullData, iDesign, bSubAnalysis = FALSE)
 {
   cl <- makeCluster(4) 
@@ -80,9 +82,10 @@ staR_lme_pvals <- function(summary)
 ###################################################################################
 staR_lme_sub <- function(subData, iDesign)
 {
-  #stats.fullAnalysis.lme.retVal <- staR_lme(fullData, iDesign)
+  #stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
   hDataset <- list()
   vDataset <- list()
+  lDataset <- list()
   for(p in 1:nbPoints)  # Points
   {
     ## -----------------------
@@ -140,20 +143,50 @@ staR_lme_sub <- function(subData, iDesign)
         }
       }
     }
+    
+    ## -----------------------
+    ## -- 3D (Layers) --
+    ## -----------------------
+    lDataset[[p]] <- list()
+    if(length(subData) > 0)
+    {
+      for(j in 1:length(subData[[1]])) # Rows
+      {
+        lDataset[[p]][[j]] <- list()
+        if(length(subData[[1]][[j]]) > 0)
+        {
+          for(k in 1:length(subData[[1]][[j]])) # Cols
+          {
+            lDataset[[p]][[j]][[k]] <- list()
+            for(i in 1:length(subData)) # Layers
+            {
+              #print(paste(p, " (v) - ", i, j, k))
+              # -- Vertical --
+              if(j == 1) {lDataset[[p]][[j]][[k]] <- subData[[i]][[j]][[k]][[p]]}
+              else {lDataset[[p]][[j]][[k]] <- rbind(lDataset[[p]][[j]][[k]], subData[[i]][[j]][[k]][[p]])}
+            }
+          }
+        }
+      }
+    }   
   }
   
   stats.subAnalysis.hData <- staR_InvertDimensions3D(hDataset)
   stats.subAnalysis.vData <- staR_InvertDimensions3D(vDataset)
+  stats.subAnalysis.lData <- staR_InvertDimensions3D(lDataset)
+  
+  browser()
   
   stats.subAnalysis.combinedData <- list()
   stats.subAnalysis.combinedData[[1]] <- stats.subAnalysis.hData # Rows.
   stats.subAnalysis.combinedData[[2]] <- stats.subAnalysis.vData # Cols.
+  stats.subAnalysis.combinedData[[3]] <- stats.subAnalysis.lData # Layers.
   
   #stats.subAnalysis.aov.retVal <- staR_aov(stats.subAnalysis.hData[[1]][[1]], iDesign)
   
   stats.subAnalysis.pVals <- list()
   stats.subAnalysis.pTitles <- list()
-  for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols (1 - Horizontal | 2 - Vertical)
+  for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols & Layers (1 - Horizontal | 2 - Vertical)
   {
     if(length(stats.subAnalysis.combinedData[[curDim]]) > 0)
     {
@@ -165,8 +198,7 @@ staR_lme_sub <- function(subData, iDesign)
         stats.subAnalysis.pTitles[[curDim]][[i]] <- list()
         for(j in 1:length(stats.subAnalysis.combinedData[[curDim]][[i]])) # Rows
         {
-          print(paste("Doing - Mixed Models (subData - [",curDim, ",", i, ",", j, "]) : fixed = ", format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND)))
-          
+          print(paste("Doing - Mixed Models (subData - [", curDim, ",", i, ",", j, "]) : fixed = ", format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND)))
           cl <- makeCluster(4) 
           clusterExport(cl, list("lme", "STATS_SUB_DESIGNS", "STATS_DESIGNS_RND", "iDesign"))
           tic()
@@ -181,6 +213,10 @@ staR_lme_sub <- function(subData, iDesign)
           if(curDim == 2) # TODO : Fix me with envir...
           {
             mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[2]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[2]], random=STATS_DESIGNS_RND, data=x)})
+          }
+          if(curDim == 3) # TODO : Fix me with envir...
+          {
+            mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[3]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[3]], random=STATS_DESIGNS_RND, data=x)})
           }
           
           toc()

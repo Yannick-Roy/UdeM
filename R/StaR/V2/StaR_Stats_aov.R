@@ -1,25 +1,4 @@
-
-## We want to put the 1st D (points) in 3th D and keep Layer x Rows x Cols (i x j x k)
-staR_InvertDimensions3D <- function(array3D)
-{ 
-  b <- list()
-  for(p in 1:length(array3D))
-  {
-    for(i in 1:length(array3D[[p]]))
-    {
-      for(j in 1:length(array3D[[p]][[i]]))
-      {
-        #print(paste(p,i,j))
-        if(length(b) < i) {b[[i]] <- list()}
-        if(length(b[[i]]) <  j) {b[[i]][[j]] <- list()} 
-        
-        b[[i]][[j]][[p]] <- array3D[[p]][[i]][[j]]
-      }
-    }
-  }  
-  return (b)
-}
-
+source("StaR_Tools.R")
 
 staR_aov <- function(fullData, iDesign, bSubAnalysis = FALSE)
 {
