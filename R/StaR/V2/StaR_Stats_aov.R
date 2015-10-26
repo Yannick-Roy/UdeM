@@ -23,22 +23,59 @@ staR_InvertDimensions3D <- function(array3D)
 
 staR_aov <- function(fullData, iDesign, bSubAnalysis = FALSE)
 {
-  cl <- makeCluster(4) 
-  clusterExport(cl, list("aov", "STATS_DESIGNS", "iDesign"))
-  
-  print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign + 20]])))
-  tic()
-  anovas.full <- parLapply(cl = cl, fullData, fun = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
-  toc()
-  print("Done!")
-  
-  stopCluster(cl)
-  
-  print(paste("Doing - Summary (full) : ", format(STATS_DESIGNS[[iDesign + 20]])))      
-  anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
+  anovas.full.summary <- list()
+  for(i in 1:6)
+  {
+    if(i == 1) {fullData.part <- fullData[1:10000]}
+    if(i == 2) {fullData.part <- fullData[10001:20000]}
+    if(i == 3) {fullData.part <- fullData[20001:30000]}
+    if(i == 4) {fullData.part <- fullData[30001:40000]}
+    if(i == 5) {fullData.part <- fullData[40001:50000]}
+    if(i == 6) {fullData.part <- fullData[50001:54000]}
+
+    cl <- makeCluster(2) 
+    clusterExport(cl, list("aov", "STATS_DESIGNS", "iDesign"))
+    
+    print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign + 20]])))
+    tic()
+    anovas.full <- parLapply(cl = cl, fullData.part, fun = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
+    toc()
+    print("Done!")
+    
+    stopCluster(cl)
+    
+    print(paste("Doing - Summary (full) : ", format(STATS_DESIGNS[[iDesign + 20]])))      
+    anovas.full.summary <- cbind(anovas.full.summary, lapply(anovas.full, FUN = function(x) {summary(x)}))
+    
+    print(paste("aov - done with part #", i))
+  }
   
   return (staR_aov_pvals(anovas.full.summary))
-  
+
+#########################################
+############## BACKUP !! ################
+#########################################
+##   staR_aov <- function(fullData, iDesign, bSubAnalysis = FALSE)
+##   {
+##     cl <- makeCluster(2) 
+##     clusterExport(cl, list("aov", "STATS_DESIGNS", "iDesign"))
+##     
+##     print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign + 20]])))
+##     tic()
+##     anovas.full <- parLapply(cl = cl, fullData, fun = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
+##     toc()
+##     print("Done!")
+##     
+##     stopCluster(cl)
+##     
+##    print(paste("Doing - Summary (full) : ", format(STATS_DESIGNS[[iDesign + 20]])))      
+##     anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
+##     
+##     return (staR_aov_pvals(anovas.full.summary))
+#########################################
+############## BACKUP !! ################
+#########################################  
+   
 #   print(paste("Doing - Anova (fullData) : ", format(STATS_DESIGNS[[iDesign + 20]])))
 #   tic()
 #   anovas.full <- lapply(fullData, FUN = function(x) {aov(STATS_DESIGNS[[iDesign + 20]], x)})
@@ -188,7 +225,7 @@ staR_aov_sub <- function(subData, iDesign)
         {
           print(paste("Doing - Anova (subData - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))
           
-          cl <- makeCluster(4) 
+          cl <- makeCluster(2) 
           clusterExport(cl, list("aov", "STATS_SUB_DESIGNS", "iDesign"))
           tic()
          

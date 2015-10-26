@@ -25,11 +25,11 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 11#c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 19#c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
-bReloadRData = FALSE
+bReloadRData = TRUE
 
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
@@ -40,16 +40,16 @@ bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
 
 bFullStatsAnalysis = TRUE   # Full report on all the data.
-bSubDataAnalysis = TRUE     # Multiple plots with data.
+bSubDataAnalysis = FALSE     # Multiple plots with data.
 
 ersp_dims <- c(400, 135) # Default
 nbPoints = 0 # Need real value (runtime)
 timeData = 0 # Need real value (runtime)
 freqData = 0 # Need real value (runtime)
 
-data.domain = 1
+data.domain = 2
 data.type = "N/A"
-stats.function = "aov"
+stats.function = "lme"
 stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
@@ -96,6 +96,10 @@ curAnalysis = 1
   # Fill "Wide structure" with real data.
   if(bLoadMatlabFile)
   {
+    fullData <- list()
+    timeData <- list()
+    freqData <- list()
+    
     # Read Matlab file !
     if(data.type == "ERSP") { 
       data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat"
@@ -104,9 +108,17 @@ curAnalysis = 1
         data.file = paste("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d", data.domain, ".mat", sep="")
     }
     
-    print("Matlab Data - Loading...")
-    matlabData <- staR_fillFromMatlab(data.file, "MPT", fullData, nbPoints, bSmallSamples = bSmallSamples, dataType = data.type)
-    print("Matlab Data - Done!")
+    if(bReloadRData)
+    {
+      print("Matlab Data - Loading...")
+      #save(matlabData, file = "~/Documents/Playground/UdeM/RMatlab_Data/matlabData_ERSP_D1.RData")
+      load("~/Documents/Playground/UdeM/RMatlab_Data/matlabData_ERSP_D1.RData")
+      print("Matlab Data - Done!")
+    } else {
+      print("Matlab Data - Loading...")
+      matlabData <- staR_fillFromMatlab(data.file, "MPT", fullData, nbPoints, bSmallSamples = bSmallSamples, dataType = data.type)
+      print("Matlab Data - Done!")
+    }
     
     print("Matlab Data - Getting Time & Freq (if ERSP)")
     # Get Data.
