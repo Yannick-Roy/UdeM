@@ -3,6 +3,8 @@
 #================================================================================================================================
 STATS_DESIGNS <- list()
 
+# Comment pour dire que j'ai un bug avec git!
+
 # Normal Designs
 STATS_DESIGNS[[1]] = values ~ (conditions)
 STATS_DESIGNS[[2]] = values ~ (sessions)
