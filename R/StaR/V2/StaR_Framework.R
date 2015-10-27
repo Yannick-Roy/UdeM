@@ -25,16 +25,16 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 19#c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 11#c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
-bReloadRData = TRUE
+bReloadRData = FALSE
 
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSmallSamples = FALSE
+bSmallSamples = TRUE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
@@ -47,9 +47,9 @@ nbPoints = 0 # Need real value (runtime)
 timeData = 0 # Need real value (runtime)
 freqData = 0 # Need real value (runtime)
 
-data.domain = 2
+data.domain = 1
 data.type = "N/A"
-stats.function = "lme"
+stats.function = "aov"
 stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
@@ -60,8 +60,8 @@ sigthreshold = 0.001
 #dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-#dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
-dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
+#dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
 dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlotsFullPath)
 
@@ -96,10 +96,6 @@ curAnalysis = 1
   # Fill "Wide structure" with real data.
   if(bLoadMatlabFile)
   {
-    fullData <- list()
-    timeData <- list()
-    freqData <- list()
-    
     # Read Matlab file !
     if(data.type == "ERSP") { 
       data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat"
@@ -108,17 +104,9 @@ curAnalysis = 1
         data.file = paste("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d", data.domain, ".mat", sep="")
     }
     
-    if(bReloadRData)
-    {
-      print("Matlab Data - Loading...")
-      #save(matlabData, file = "~/Documents/Playground/UdeM/RMatlab_Data/matlabData_ERSP_D1.RData")
-      load("~/Documents/Playground/UdeM/RMatlab_Data/matlabData_ERSP_D1.RData")
-      print("Matlab Data - Done!")
-    } else {
-      print("Matlab Data - Loading...")
-      matlabData <- staR_fillFromMatlab(data.file, "MPT", fullData, nbPoints, bSmallSamples = bSmallSamples, dataType = data.type)
-      print("Matlab Data - Done!")
-    }
+    print("Matlab Data - Loading...")
+    matlabData <- staR_fillFromMatlab(data.file, "MPT", fullData, nbPoints, bSmallSamples = bSmallSamples, dataType = data.type)
+    print("Matlab Data - Done!")
     
     print("Matlab Data - Getting Time & Freq (if ERSP)")
     # Get Data.
@@ -174,6 +162,7 @@ curAnalysis = 1
     subData = retVal[[2]]
     print("Done !")
     
+    paramsList <- list()
     if(length(subData) > 0)
     {
       print("Get Params (mean, min, max, ...)")
@@ -249,18 +238,32 @@ curAnalysis = 1
         if(bSubDataAnalysis)
         {
           stats.subAnalysis.pVals.Corrected <- list()
-          for(i in 1:length(stats.subAnalysis.pVals))
+          for(curDim in 1:length(stats.subAnalysis.pVals)) # Vertical or Horizontal ?
           {
-            stats.subAnalysis.pVals.Corrected[[i]] <- p.adjust(unlist(stats.subAnalysis.pVals[[i]]), stats.correctionFunction) 
-          }
+            stats.subAnalysis.pVals.Corrected[[curDim]] <- list()
+            for(i in 1:length(stats.subAnalysis.pVals[[curDim]])) # Layers
+            {
+              stats.subAnalysis.pVals.Corrected[[curDim]][[i]] <- list()
+              for(j in 1:length(stats.subAnalysis.pVals[[curDim]][[i]])) # Stats (combined on row or col or 3D)
+              {
+                stats.subAnalysis.pVals.Corrected[[curDim]][[i]][[j]] <- p.adjust(unlist(stats.subAnalysis.pVals[[curDim]][[i]][[j]]), stats.correctionFunction) 
+              }
+            }   
+          }           
           
           stats.subAnalysis.pVals.Original <- stats.subAnalysis.pVals
           stats.subAnalysis.pVals <- stats.subAnalysis.pVals.Corrected
           
           ## Debug
-          for(i in 1:length(stats.subAnalysis.pVals.Corrected))
+          for(curDim in 1:length(stats.subAnalysis.pVals.Corrected))
           {
-            print(paste("Graph ==>", stats.subAnalysis.pTitles[[i]], " max :", max(unlist(stats.subAnalysis.pVals.Corrected[[i]])), " min :", min(unlist(stats.subAnalysis.pVals.Corrected[[i]]))))
+            for(i in 1:length(stats.subAnalysis.pVals.Corrected[[curDim]]))
+            {
+              for(j in 1:length(stats.subAnalysis.pVals.Corrected[[curDim]][[i]]))
+              {
+                print(paste("Graph ==>", stats.subAnalysis.pTitles[[curDim]][[i]][[j]], " max :", max(unlist(stats.subAnalysis.pVals.Corrected[[curDim]][[i]][[j]])), " min :", min(unlist(stats.subAnalysis.pVals.Corrected[[curDim]][[i]][[j]]))))
+              }
+            }
           }
         }
       }
@@ -328,9 +331,10 @@ curAnalysis = 1
       }
       stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pSignif
       
-      stats.subAnalysis.pSignif <- stats.subAnalysis.pVals
       if(bSubDataAnalysis)
       {
+        stats.subAnalysis.pSignif <- stats.subAnalysis.pVals
+        
         for(curDim in 1:length(stats.subAnalysis.pSignif))
         {
           for(i in 1:length(stats.subAnalysis.pSignif[[curDim]]))
@@ -342,8 +346,9 @@ curAnalysis = 1
             }
           }
         }
+        
+        stats.subAnalysis.pSignificants <- stats.subAnalysis.pSignif
       }
-      stats.subAnalysis.pSignificants <- stats.subAnalysis.pSignif
       print("Done!")
       
       #save() # Save on disk.
@@ -474,22 +479,22 @@ curAnalysis = 1
       
       if(length(hRows[[1]]) == 1) 
       {
-        grid.arrange(hRows[[1]][[1]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20,font=3)))
+        grid.arrange(hRows[[1]][[1]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       
       if(length(hRows[[1]]) == 2) 
       {
-        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20,font=3)))
+        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       
       if(length(hRows[[1]]) == 3) 
       {
-        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20,font=3)))
+        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       
       if(length(hRows[[1]]) == 4) 
       {
-        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], hRows[[1]][[4]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20,font=3)))
+        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], hRows[[1]][[4]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       
       if(bSaveOnDiskImages)
@@ -506,31 +511,31 @@ curAnalysis = 1
     {
       if(length(stats.fullAnalysis.hPlots) == 1)
       {
-        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=14,font=3)))
+        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       if(length(stats.fullAnalysis.hPlots) == 2)
       {
-        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=14,font=3)))
+        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       if(length(stats.fullAnalysis.hPlots) == 3)
       {
-        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=14,font=3)))
+        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       if(length(stats.fullAnalysis.hPlots) == 4)
       {
-        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=14,font=3)))
+        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       if(length(stats.fullAnalysis.hPlots) == 5)
       {
-        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), ggplotGrob(stats.fullAnalysis.hPlots[[5]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=14,font=3)))
+        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), ggplotGrob(stats.fullAnalysis.hPlots[[5]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       if(length(stats.fullAnalysis.hPlots) == 6)
       {
-        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), ggplotGrob(stats.fullAnalysis.hPlots[[5]]), ggplotGrob(stats.fullAnalysis.hPlots[[6]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=14,font=3)))
+        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), ggplotGrob(stats.fullAnalysis.hPlots[[5]]), ggplotGrob(stats.fullAnalysis.hPlots[[6]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       if(length(stats.fullAnalysis.hPlots) == 7)
       {
-        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), ggplotGrob(stats.fullAnalysis.hPlots[[5]]), ggplotGrob(stats.fullAnalysis.hPlots[[6]]), ggplotGrob(stats.fullAnalysis.hPlots[[7]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=14,font=3)))
+        grid.arrange(ggplotGrob(stats.fullAnalysis.hPlots[[1]]), ggplotGrob(stats.fullAnalysis.hPlots[[2]]), ggplotGrob(stats.fullAnalysis.hPlots[[3]]), ggplotGrob(stats.fullAnalysis.hPlots[[4]]), ggplotGrob(stats.fullAnalysis.hPlots[[5]]), ggplotGrob(stats.fullAnalysis.hPlots[[6]]), ggplotGrob(stats.fullAnalysis.hPlots[[7]]), top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
       }
       if(length(stats.fullAnalysis.hPlots) == 15)
       {
