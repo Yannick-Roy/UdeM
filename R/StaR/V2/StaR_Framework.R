@@ -25,7 +25,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 11#c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = c(11, 13, 15, 17, 19) #c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -40,7 +40,7 @@ bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
 
 bFullStatsAnalysis = TRUE   # Full report on all the data.
-bSubDataAnalysis = FALSE     # Multiple plots with data.
+bSubDataAnalysis = TRUE     # Multiple plots with data.
 
 ersp_dims <- c(400, 135) # Default
 nbPoints = 0 # Need real value (runtime)
@@ -49,7 +49,7 @@ freqData = 0 # Need real value (runtime)
 
 data.domain = 1
 data.type = "N/A"
-stats.function = "aov"
+stats.function = "lme"
 stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
@@ -60,8 +60,8 @@ sigthreshold = 0.001
 #dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
-#dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
+#dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
 dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlotsFullPath)
 
@@ -71,8 +71,7 @@ hTitles <- list()
 ###### Main Loop (ERP & ERSP) !
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-#for(curAnalysis in 1:2)
-curAnalysis = 1
+for(curAnalysis in 1:2)
 {
   if(curAnalysis == 1) # ERP
   {
@@ -145,12 +144,27 @@ curAnalysis = 1
     dir.create(dirPlots)
     
     # Prep Plot Series !
-    grid.arrange(textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=30)), textGrob(paste("Domain #", data.domain), gp=gpar(fontsize=30)))
+    hAnalysisTitles <- list()
+    hAnalysisTitles[[1]] <- textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20))
+    hAnalysisTitles[[2]] <- textGrob(paste("Domain: #", data.domain), gp=gpar(fontsize=20))
+    if(stats.bCorrection){
+      hAnalysisTitles[[3]] <- textGrob(paste("Corrected with:", stats.correctionFunction), gp=gpar(fontsize=20))
+    } else {
+      hAnalysisTitles[[3]] <- textGrob("Not Corrected!", gp=gpar(fontsize=20))
+    }
+    hAnalysisTitles[[4]] <- textGrob(paste("Threshold (pValue):", sigthreshold), gp=gpar(fontsize=20))
+    grid.arrange(hAnalysisTitles[[1]], hAnalysisTitles[[2]], hAnalysisTitles[[3]], hAnalysisTitles[[4]], nrow = 4, ncol = 1)
     if(bSaveOnDiskImages)
     {
       dev.copy2pdf(file = paste(dirPlots, "/Title_", iDesign, ".pdf", sep = ""))
       dev.off()
       Sys.sleep(5)
+    }
+    
+    if(bSubDataAnalysis && length(STATS_SUB_DESIGNS[[iDesign]]) == 0)
+    {
+      print("======== Disabling Sub Analysis, the current design doesn't support it... =========")
+      bSubDataAnalysis = FALSE
     }
     
     #############################################################
@@ -269,6 +283,40 @@ curAnalysis = 1
       }
       
       #############################################################
+      ###### Pvals Signif ( < threshold ) !
+      #############################################################
+      print(paste("Doing - PSignif."))
+      
+      ## TODO : if full analysis
+      stats.fullAnalysis.pSignif <- stats.fullAnalysis.pVals
+      for(i in 1:length(stats.fullAnalysis.pSignif))
+      {
+          stats.fullAnalysis.pSignif[[i]][stats.fullAnalysis.pSignif[[i]] < sigthreshold] <- 0 #'Signif.'
+          stats.fullAnalysis.pSignif[[i]][stats.fullAnalysis.pSignif[[i]] >= sigthreshold] <- 1 #'Non Signif.'
+      }
+      stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pSignif
+      
+      if(bSubDataAnalysis)
+      {
+        stats.subAnalysis.pSignif <- stats.subAnalysis.pVals
+        
+        for(curDim in 1:length(stats.subAnalysis.pSignif))
+        {
+          for(i in 1:length(stats.subAnalysis.pSignif[[curDim]]))
+          {
+            for(j in 1:length(stats.subAnalysis.pSignif[[curDim]][[i]]))
+            {
+              stats.subAnalysis.pSignif[[curDim]][[i]][[j]][stats.subAnalysis.pSignif[[curDim]][[i]][[j]] < sigthreshold] <- 0 #'Signif.'
+              stats.subAnalysis.pSignif[[curDim]][[i]][[j]][stats.subAnalysis.pSignif[[curDim]][[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
+            }
+          }
+        }
+        
+        stats.subAnalysis.pSignificants <- stats.subAnalysis.pSignif
+      }
+      print("Done!")
+      
+      #############################################################
       ###### Pvals - Plot Raw !
       #############################################################
       bShowPlot = TRUE
@@ -316,40 +364,6 @@ curAnalysis = 1
           }
         }
       }
-      
-      #############################################################
-      ###### Pvals Signif ( < threshold ) !
-      #############################################################
-      print(paste("Doing - PSignif."))
-      
-      ## TODO : if full analysis
-      stats.fullAnalysis.pSignif <- stats.fullAnalysis.pVals
-      for(i in 1:length(stats.fullAnalysis.pSignif))
-      {
-          stats.fullAnalysis.pSignif[[i]][stats.fullAnalysis.pSignif[[i]] < sigthreshold] <- 0 #'Signif.'
-          stats.fullAnalysis.pSignif[[i]][stats.fullAnalysis.pSignif[[i]] >= sigthreshold] <- 1 #'Non Signif.'
-      }
-      stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pSignif
-      
-      if(bSubDataAnalysis)
-      {
-        stats.subAnalysis.pSignif <- stats.subAnalysis.pVals
-        
-        for(curDim in 1:length(stats.subAnalysis.pSignif))
-        {
-          for(i in 1:length(stats.subAnalysis.pSignif[[curDim]]))
-          {
-            for(j in 1:length(stats.subAnalysis.pSignif[[curDim]][[i]]))
-            {
-              stats.subAnalysis.pSignif[[curDim]][[i]][[j]][stats.subAnalysis.pSignif[[curDim]][[i]][[j]] < sigthreshold] <- 0 #'Signif.'
-              stats.subAnalysis.pSignif[[curDim]][[i]][[j]][stats.subAnalysis.pSignif[[curDim]][[i]][[j]] >= sigthreshold] <- 1 #'Non Signif.'
-            }
-          }
-        }
-        
-        stats.subAnalysis.pSignificants <- stats.subAnalysis.pSignif
-      }
-      print("Done!")
       
       #save() # Save on disk.
       if(bFullStatsAnalysis)
