@@ -170,6 +170,10 @@ staR_selectData <- function(fullData, iDesign)
   subDataset[[1]] <- list()
   subDataset[[1]][[1]] <- list()
   
+  subDataset.Title <- list()
+  subDataset.Title[[1]] <- list()
+  subDataset.Title[[1]][[1]] <- list()
+  
   if(iDesign > 20) {iDesign <- iDesign - 20}
   
   if(iDesign == 1)
@@ -178,6 +182,8 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[2]] <- lapply(fullData, subset, conditions == "FOM")
     subDataset[[1]][[1]][[3]] <- lapply(fullData, subset, conditions == "SOF")
     subDataset[[1]][[1]][[4]] <- lapply(fullData, subset, conditions == "SOM")
+    
+    subDataset
   }
   
   if(iDesign == 2)
@@ -318,15 +324,24 @@ staR_selectData <- function(fullData, iDesign)
   if(iDesign <= 18)
   {
     dsDataList <- list()
+    dsDataList.Title <- list()
     for(i in 1:length(subDataset))
     {
       dsDataList[[i]] <- list()
+      dsDataList.Title[[i]] <- list()
       for(j in 1:length(subDataset[[i]]))
       { 
         dsDataList[[i]][[j]] <- list()
+        dsDataList.Title[[i]][[j]] <- list()
         for(k in 1:length(subDataset[[i]][[j]]))
         {  
           dsDataList[[i]][[j]][[k]] <- lapply(subDataset[[i]][[j]][[k]], FUN = function(x) {x$value})
+          
+          dsDataList.Title[[i]][[j]][[k]] <- list()
+          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$groups)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "group=", subDataset[[i]][[j]][[k]][[1]]$groups[[1]], sep="")}
+          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$orders)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "order=", subDataset[[i]][[j]][[k]][[1]]$orders[[1]], sep="")}
+          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$motions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "motion=", subDataset[[i]][[j]][[k]][[1]]$motions[[1]], sep="")}
+          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$sessions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "session=", subDataset[[i]][[j]][[k]][[1]]$sessions[[1]], sep="")}
         }
       }
     }
@@ -334,7 +349,7 @@ staR_selectData <- function(fullData, iDesign)
     subDataset <- list()
     dsDataList <- list()
   }
-  retVal = list(subDataset, dsDataList)
+  retVal = list(subDataset, dsDataList, dsDataList.Title)
 }
 
 ###########################################################################

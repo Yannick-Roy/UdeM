@@ -34,7 +34,7 @@ bReloadRData = FALSE
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSmallSamples = FALSE
+bSmallSamples = TRUE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
@@ -49,7 +49,7 @@ freqData = 0 # Need real value (runtime)
 
 data.domain = 1
 data.type = "N/A"
-stats.function = "lme"
+stats.function = "aov"
 stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
@@ -60,8 +60,8 @@ sigthreshold = 0.001
 #dev.off()
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-#dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
-dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
+#dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
 dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
 dir.create(dirPlotsFullPath)
 
@@ -175,6 +175,7 @@ curAnalysis = 1
     retVal <- staR_selectData(fullData, iDesign)
     subDataset = retVal[[1]]
     subData = retVal[[2]]
+    subData.Titles = retVal[[3]]
     print("Done !")
     
     paramsList <- list()
@@ -369,8 +370,8 @@ curAnalysis = 1
       #save() # Save on disk.
       if(bFullStatsAnalysis)
       {
-        save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
-        save(fullData, timeData, freqData, subData, subDataset, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
+        save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles,  file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
+        save(fullData, timeData, freqData, subData, subDataset, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
       }
       
       # -- Plot Stats --
@@ -417,7 +418,7 @@ curAnalysis = 1
       if(data.type == "ERSP") { 
         hData <- plotData_ERSP(subData, paramsList, timeData, ersp_dims) 
       } else { 
-        hData <- plotData_ERP(subData, paramsList, timeData) 
+        hData <- plotData_ERP(subData, paramsList, timeData, titles = subData.Titles) 
       }
       
       if(length(hData) > 0)

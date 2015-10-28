@@ -60,6 +60,7 @@ staR_aov_sub <- function(subData, iDesign)
   #stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
   hDataset <- list()
   vDataset <- list()
+  lDataset <- list()
   for(p in 1:nbPoints)  # Points
   {
     ## -----------------------
@@ -117,14 +118,42 @@ staR_aov_sub <- function(subData, iDesign)
         }
       }
     }
+    
+    ## -----------------------
+    ## -- 3D (Layers) --
+    ## -----------------------
+    lDataset[[p]] <- list()
+    if(length(subData) > 0)
+    {
+      for(j in 1:length(subData[[1]])) # Rows
+      {
+        lDataset[[p]][[j]] <- list()
+        if(length(subData[[1]][[j]]) > 0)
+        {
+          for(k in 1:length(subData[[1]][[j]])) # Cols
+          {
+            lDataset[[p]][[j]][[k]] <- list()
+            for(i in 1:length(subData)) # Layers
+            {
+              #print(paste(p, " (v) - ", i, j, k))
+              # -- Vertical --
+              if(j == 1) {lDataset[[p]][[j]][[k]] <- subData[[i]][[j]][[k]][[p]]}
+              else {lDataset[[p]][[j]][[k]] <- rbind(lDataset[[p]][[j]][[k]], subData[[i]][[j]][[k]][[p]])}
+            }
+          }
+        }
+      }
+    } 
   }
   
   stats.subAnalysis.hData <- staR_InvertDimensions3D(hDataset)
   stats.subAnalysis.vData <- staR_InvertDimensions3D(vDataset)
+  stats.subAnalysis.lData <- staR_InvertDimensions3D(lDataset)
   
   stats.subAnalysis.combinedData <- list()
-  stats.subAnalysis.combinedData[[1]] <- stats.subAnalysis.hData # Rows.
-  stats.subAnalysis.combinedData[[2]] <- stats.subAnalysis.vData # Cols.
+  if(length(STATS_SUB_DESIGNS[[iDesign]]) > 0) {stats.subAnalysis.combinedData[[1]] <- stats.subAnalysis.hData} # Rows.
+  if(length(STATS_SUB_DESIGNS[[iDesign]]) > 1) {stats.subAnalysis.combinedData[[2]] <- stats.subAnalysis.vData} # Cols.
+  if(length(STATS_SUB_DESIGNS[[iDesign]]) > 2) {stats.subAnalysis.combinedData[[3]] <- stats.subAnalysis.lData} # Layers.
   
   #stats.subAnalysis.aov.retVal <- staR_aov(stats.subAnalysis.hData[[1]][[1]], iDesign)
   
@@ -132,7 +161,7 @@ staR_aov_sub <- function(subData, iDesign)
   stats.subAnalysis.pTitles <- list()
   if(length(stats.subAnalysis.combinedData) > 0)
   {
-    for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols (1 - Horizontal | 2 - Vertical)
+    for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols & Layers (1 - Horizontal | 2 - Vertical)
     {
       if(length(stats.subAnalysis.combinedData[[curDim]]) > 0)
       {
@@ -145,11 +174,11 @@ staR_aov_sub <- function(subData, iDesign)
           for(j in 1:length(stats.subAnalysis.combinedData[[curDim]][[i]])) # Rows
           {
             print(paste("Doing - Anova (subData - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))
-            
             cl <- makeCluster(2) 
             clusterExport(cl, list("aov", "STATS_SUB_DESIGNS", "iDesign"))
             tic()
            
+            tryCatch({
             ###############
             # TODO : Fix me with envir...
             ###############
@@ -161,12 +190,20 @@ staR_aov_sub <- function(subData, iDesign)
             {
               anovas.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[2]][[i]][[j]], fun = function(x) {aov(STATS_SUB_DESIGNS[[iDesign + 20]][[2]], x)})
             }
-            
+            if(curDim == 3) # TODO : Fix me with envir...
+            {
+              anovas.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[3]][[i]][[j]], fun = function(x) {aov(STATS_SUB_DESIGNS[[iDesign + 20]][[3]], x)})
+            }
             toc()
             stopCluster(cl)
             
             anovas.full.titles = paste("aov", " : ",  format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]]))
             print("Done!")
+          }, error = function(e) {
+            print(paste("======= ERROR in aov_sub :", e, "========"))
+            mixedmodels.full.titles = paste("aov - FAILED", " : fixed = ",  format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]]))
+            mixedmodels.full <- list()
+          })
             
             print(paste("Doing - Summary (sub - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))      
             anovas.full.summary <- lapply(anovas.full, FUN = function(x) {summary(x)})
