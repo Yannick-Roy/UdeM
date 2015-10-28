@@ -71,7 +71,8 @@ hTitles <- list()
 ###### Main Loop (ERP & ERSP) !
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-for(curAnalysis in 1:2)
+#for(curAnalysis in 1:2)
+curAnalysis = 1
 {
   if(curAnalysis == 1) # ERP
   {
@@ -467,54 +468,49 @@ for(curAnalysis in 1:2)
         }
       }
       
-      if(designMatrix$nbRow > 1 && stats.bCompute)
+      for(i in 1:length(hRows))
       {
-        nbRows <- length(hRows[[1]])
-        for(k in 1:designMatrix$nbCol)
+        if(designMatrix$nbRow > 1 && stats.bCompute)
         {
-          if(k > 1)
+          nbRows <- length(hRows[[i]])
+          for(k in 1:designMatrix$nbCol)
           {
-            hRows[[1]][[nbRows + 1]] <- cbind(hRows[[1]][[nbRows + 1]], ggplotGrob(hStats[[2]][[1]][[k]]), size = "last")
-          } else {
-            hRows[[1]][[nbRows + 1]] <- ggplotGrob(hStats[[2]][[1]][[k]])
+            if(k > 1)
+            {
+              hRows[[i]][[nbRows + 1]] <- cbind(hRows[[i]][[nbRows + 1]], ggplotGrob(hStats[[2]][[1]][[k]]), size = "last")
+            } else {
+              hRows[[i]][[nbRows + 1]] <- ggplotGrob(hStats[[2]][[1]][[k]])
+            }
           }
+          
+          hRows[[i]][[nbRows + 1]] <- cbind(hRows[[i]][[nbRows + 1]], ggplotGrob(ggplot(data.frame()) + geom_point() + xlim(0, 10) + ylim(0, 100)), size = "last")
+        }
+      
+        if(length(hRows[[i]]) == 1) 
+        {
+          grid.arrange(hRows[[i]][[1]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
         }
         
-        hRows[[1]][[nbRows + 1]] <- cbind(hRows[[1]][[nbRows + 1]], ggplotGrob(ggplot(data.frame()) + geom_point() + xlim(0, 10) + ylim(0, 100)), size = "last")
+        if(length(hRows[[i]]) == 2) 
+        {
+          grid.arrange(hRows[[i]][[1]], hRows[[i]][[2]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
+        }
         
-#         if(iDesign >= 11 && iDesign <= 16)
-#         {
-#           #hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[3]]), size = "last")
-#           print("Modify me... Utilizing the first graph of D3.")
-#           hRows[[nbRows + 1]] <- cbind(hRows[[nbRows + 1]], ggplotGrob(hStats[[3]][[1]]), size = "last")
-#         }
+        if(length(hRows[[i]]) == 3) 
+        {
+          grid.arrange(hRows[[i]][[1]], hRows[[i]][[2]], hRows[[i]][[3]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
+        }
         
-      }
-      
-      if(length(hRows[[1]]) == 1) 
-      {
-        grid.arrange(hRows[[1]][[1]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
-      }
-      
-      if(length(hRows[[1]]) == 2) 
-      {
-        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
-      }
-      
-      if(length(hRows[[1]]) == 3) 
-      {
-        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
-      }
-      
-      if(length(hRows[[1]]) == 4) 
-      {
-        grid.arrange(hRows[[1]][[1]], hRows[[1]][[2]], hRows[[1]][[3]], hRows[[1]][[4]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
-      }
-      
-      if(bSaveOnDiskImages)
-      {
-        dev.copy2pdf(file = paste(dirPlots, "/Data_", i, ".pdf", sep = ""))
-        dev.off()
+        if(length(hRows[[i]]) == 4) 
+        {
+          grid.arrange(hRows[[i]][[1]], hRows[[i]][[2]], hRows[[i]][[3]], hRows[[i]][[4]], top=textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=10,font=3)))
+        }
+        
+        if(bSaveOnDiskImages)
+        {
+          dev.copy2pdf(file = paste(dirPlots, "/Data_", i, ".pdf", sep = ""))
+          dev.off()
+        }
       }
     }
     

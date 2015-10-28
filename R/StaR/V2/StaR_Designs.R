@@ -58,7 +58,7 @@ STATS_SUB_DESIGNS[[33]] = list(values ~ (groups) + Error(subjects/groups), value
 STATS_SUB_DESIGNS[[34]] = list(values ~ (groups) + Error(subjects/groups), values ~ (orders) + Error(subjects/orders))
 STATS_SUB_DESIGNS[[35]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (motions) + Error(subjects/motions))
 STATS_SUB_DESIGNS[[36]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (orders) + Error(subjects/orders))
-STATS_SUB_DESIGNS[[37]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (mptions) + Error(subjects/motions), values ~ (groups) + Error(subjects/groups))
+STATS_SUB_DESIGNS[[37]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (motions) + Error(subjects/motions), values ~ (groups) + Error(subjects/groups))
 STATS_SUB_DESIGNS[[38]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (orders) + Error(subjects/orders), values ~ (groups) + Error(subjects/groups))
 STATS_SUB_DESIGNS[[40]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (conditions) + Error(subjects/conditions), values ~ (groups) + Error(subjects/groups))
 

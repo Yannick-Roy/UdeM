@@ -31,13 +31,15 @@ plotData_ERP <- function(data, params, timeVals, bShowPlot = TRUE)
   
   if(length(data) > 0)
   {
-    if(length(data) != length(params)) {print("======= ERROR in plotData() : length(data) != length(params) ========")}
-    else
-    {
+    #if(length(data) != length(params)) {
+    #  print("======= ERROR in plotData() : length(data) != length(params) ========")
+    #  } else {
       hDataList <- list()
       for(i in 1:length(data))
       { 
-        if(length(data[[i]]) != length(params[[i]])) {print("======= ERROR in plotData() : length(data[[i]]) != length(params[[i]]) ========")} }
+    #    if(length(data[[i]]) != length(params[[i]])) {
+    #      print("======= ERROR in plotData() : length(data[[i]]) != length(params[[i]]) ========")
+    #    }
         
         hDataList[[i]] <- list()
         for(j in 1:length(data[[i]]))
@@ -61,16 +63,10 @@ plotData_ERP <- function(data, params, timeVals, bShowPlot = TRUE)
             #                 panel.grid.minor=element_blank(),plot.background=element_blank())
           }      
         }
-        
-        #hData1 <- cbind(ggplotGrob(hData[[1]]), ggplotGrob(hData[[2]]), ggplotGrob(hData[[3]]), size = "last")
-        #hData2 <- cbind(ggplotGrob(hData[[5]]), ggplotGrob(hData[[6]]), ggplotGrob(hData[[7]]), ggplotGrob(hData[[8]]), size = "last")
-        #hData3 <- cbind(ggplotGrob(hData[[9]]), ggplotGrob(hData[[10]]), ggplotGrob(hData[[11]]), ggplotGrob(hData[[12]]), size = "last")
-        
-        #if(bShowPlot == TRUE) {grid.arrange(hDataList)}
-    }
-  }else{
-    print("No data...")
-  }  
+      }
+    #}
+  }
+    
   toc()
   print("Done!")
   

@@ -203,27 +203,33 @@ staR_lme_sub <- function(subData, iDesign)
             clusterExport(cl, list("lme", "STATS_SUB_DESIGNS", "STATS_DESIGNS_RND", "iDesign"))
             tic()
             
-            ###############
-            # TODO : Fix me with envir...
-            ###############
-            if(curDim == 1) # TODO : Fix me with envir...
-            {
-              mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[1]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[1]], random=STATS_DESIGNS_RND, data=x)})
-            }
-            if(curDim == 2) # TODO : Fix me with envir...
-            {
-              mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[2]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[2]], random=STATS_DESIGNS_RND, data=x)})
-            }
-            if(curDim == 3) # TODO : Fix me with envir...
-            {
-              mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[3]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[3]], random=STATS_DESIGNS_RND, data=x)})
-            }
-            
-            toc()
-            stopCluster(cl)
-            
-            mixedmodels.full.titles = paste("lme", " : fixed = ",  format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND))
-            print("Done!")
+            tryCatch({
+              ###############
+              # TODO : Fix me with envir...
+              ###############
+              if(curDim == 1) # TODO : Fix me with envir...
+              {
+                mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[1]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[1]], random=STATS_DESIGNS_RND, data=x)})
+              }
+              if(curDim == 2) # TODO : Fix me with envir...
+              {
+                mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[2]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[2]], random=STATS_DESIGNS_RND, data=x)})
+              }
+              if(curDim == 3) # TODO : Fix me with envir...
+              {
+                mixedmodels.full <- parLapply(cl = cl, stats.subAnalysis.combinedData[[3]][[i]][[j]], fun = function(x) {lme(fixed=STATS_SUB_DESIGNS[[iDesign]][[3]], random=STATS_DESIGNS_RND, data=x)})
+              }
+              
+              toc()
+              stopCluster(cl)
+              
+              mixedmodels.full.titles = paste("lme", " : fixed = ",  format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND))
+              print("Done!")
+            }, error = function(e) {
+              print(paste("======= ERROR in lme_sub :", e, "========"))
+              mixedmodels.full.titles = paste("lme - FAILED", " : fixed = ",  format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND))
+              mixedmodels.full <- list()
+            })
             
             print(paste("Doing - Summary (subData - [",curDim, ",", i, ",", j, "]) : fixed = ", format(STATS_SUB_DESIGNS[[iDesign]][[curDim]]), " random = ", format(STATS_DESIGNS_RND)))
             mixedmodels.full.summary <- lapply(mixedmodels.full, FUN = function(x) {summary(x)})
