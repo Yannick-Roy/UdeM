@@ -25,7 +25,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = c(11, 13, 15, 17, 19) #c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 17#c(11, 13, 15, 17, 19) #c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -34,7 +34,7 @@ bReloadRData = FALSE
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSmallSamples = TRUE
+bSmallSamples = FALSE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData = TRUE
