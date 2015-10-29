@@ -170,10 +170,6 @@ staR_selectData <- function(fullData, iDesign)
   subDataset[[1]] <- list()
   subDataset[[1]][[1]] <- list()
   
-  subDataset.Title <- list()
-  subDataset.Title[[1]] <- list()
-  subDataset.Title[[1]][[1]] <- list()
-  
   if(iDesign > 20) {iDesign <- iDesign - 20}
   
   if(iDesign == 1)
@@ -348,6 +344,7 @@ staR_selectData <- function(fullData, iDesign)
   }else{
     subDataset <- list()
     dsDataList <- list()
+    dsDataList.Title <- list()
   }
   retVal = list(subDataset, dsDataList, dsDataList.Title)
 }
