@@ -338,10 +338,15 @@ staR_selectData <- function(fullData, iDesign)
           dsDataList[[i]][[j]][[k]] <- lapply(subDataset[[i]][[j]][[k]], FUN = function(x) {x$value})
           
           dsDataList.Title[[i]][[j]][[k]] <- list()
-          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$groups)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "group=", subDataset[[i]][[j]][[k]][[1]]$groups[[1]], sep="")}
-          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$orders)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "order=", subDataset[[i]][[j]][[k]][[1]]$orders[[1]], sep="")}
-          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$motions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "motion=", subDataset[[i]][[j]][[k]][[1]]$motions[[1]], sep="")}
-          if(length(unique(subDataset[[i]][[j]][[k]][[1]]$sessions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "session=", subDataset[[i]][[j]][[k]][[1]]$sessions[[1]], sep="")}
+          tryCatch({
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$groups)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "group=", subDataset[[i]][[j]][[k]][[1]]$groups[[1]], sep="")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$orders)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "order=", subDataset[[i]][[j]][[k]][[1]]$orders[[1]], sep="")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$motions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "motion=", subDataset[[i]][[j]][[k]][[1]]$motions[[1]], sep="")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$sessions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "session=", subDataset[[i]][[j]][[k]][[1]]$sessions[[1]], sep="")}
+          }, error = function(e) {
+            dsDataList.Title[[i]][[j]][[k]] = "N/A"
+            print(paste("==== ERROR in staR_selectData :", e))
+          })
         }
       }
     }
