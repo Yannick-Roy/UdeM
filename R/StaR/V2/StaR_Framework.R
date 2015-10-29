@@ -25,7 +25,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 17#c(11, 13, 15, 17, 19) #c(2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 11#c(11, 13, 15, 17, 19) #c(2,3,4,5,11,12,13,14,15,16,17,18)
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -49,7 +49,7 @@ freqData = 0 # Need real value (runtime)
 
 data.domain = 1
 data.type = "N/A"
-stats.function = "aov"
+stats.function = "lme"
 stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
@@ -72,7 +72,7 @@ hTitles <- list()
 #############################################################
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
 #for(curAnalysis in 1:2)
-curAnalysis = 1
+curAnalysis = 2
 {
   if(curAnalysis == 1) # ERP
   {
@@ -114,14 +114,14 @@ curAnalysis = 1
     fullData.original = fullData
     
     # Get Time.
-    if(length(matlabData) >= 3)
+    if(length(matlabData) >= 2)
     {if(length(matlabData[[2]]) >= 1)
-    {timeData = matlabData[[2]][1,]}}
+    {timeData = matlabData[[2]]}}
     
     # Get Freq.
     if(length(matlabData) >= 3)
     {if(length(matlabData[[3]]) >= 1)
-    {freqData = matlabData[[3]][1,]}}
+    {freqData = matlabData[[3]]}}
     print("Matlab Data - Done!")
   } 
   
@@ -379,6 +379,7 @@ curAnalysis = 1
       ########################
       ### Plot Full Analysis
       ########################
+      stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pVals
       #graphs15 <- lapply(mixedmodels.pSignificants[[3]], FUN = function(x, y, arg1){plotStats_ERP_Graph(yVal = unlist(x), yTitle = y, xTimeVals = arg1)}, arg1 = timeData)
       combinedValsTitles <- list()
       for(i in 1:length(stats.fullAnalysis.pSignificants)) {combinedValsTitles[[i]] <- list(stats.fullAnalysis.pSignificants[[i]], stats.fullAnalysis.pTitles[[i]])}

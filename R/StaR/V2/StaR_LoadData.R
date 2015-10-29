@@ -91,10 +91,13 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, nbPoints = 153
   
   if(bSmallSamples)
   {
-    staR_SmallSamples(fullData, times, freqs, dataType)    
+    retVal <- staR_SmallSamples(fullData, times, freqs, dataType)    
+    fullData <- retVal[[1]]
+    times <- retVal[[2]]
+    freqs <- retVal[[3]]
   }
   
-  list(fullData, times, freqs)
+  return(list(fullData, times, freqs))
 }
 
 # Sub sample the big dataset for testing. (speed)
@@ -146,7 +149,7 @@ staR_SmallSamples <- function(fullData, times, freqs, dataType)
   
   print(paste("Data subsampled ! ", length(fullData)))
   
-  list(fullData, timeData, freqData)
+  return(list(fullData, timeData, freqData))
 }
 
 ###########################################################################
