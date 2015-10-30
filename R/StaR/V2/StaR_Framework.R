@@ -364,7 +364,7 @@ for(curAnalysis in 1:2)
               }
             }
 
-            if(bSubStatsAnalysis)
+            if(bSubDataAnalysis)
             {
               for(curDim in 1:length(stats.subAnalysis.pVals))
               {
