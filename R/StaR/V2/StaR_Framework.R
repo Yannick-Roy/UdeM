@@ -54,6 +54,8 @@ stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
 
+bTempDisableSubAnalysis = FALSE
+
 sigthreshold = 0.001
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
@@ -70,22 +72,11 @@ for(curAnalysis in 1:2)
   {
     data.domain = domainNo
     
-    for(analType in 1:2)
+    #for(analType in 1:2)
+    analType = 1
     {
       if(analType == 1){stats.function = "lme"}
       if(analType == 2){stats.function = "aov"}
-
-      #############################################################
-      ###### Create Folder Structure!
-      #############################################################
-      dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
-      dir.create(dirPlotsFullPath)  
-      dirPlotsFullPath <- paste(dirPlotsFullPath, "/", data.type, sep = "")
-      dir.create(dirPlotsFullPath)  
-      dirPlotsFullPath <- paste(dirPlotsFullPath, "/Domain_", data.domain, sep = "")
-      dir.create(dirPlotsFullPath)  
-      dirPlotsFullPath <- paste(dirPlotsFullPath, "/Stats_", stats.function, sep = "")
-      dir.create(dirPlotsFullPath) 
       
       #############################################################
       ###### Data type !
@@ -102,6 +93,19 @@ for(curAnalysis in 1:2)
         
         nbPoints = 54000
       }
+
+      #############################################################
+      ###### Create Folder Structure!
+      #############################################################
+      dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
+      dir.create(dirPlotsFullPath)  
+      dirPlotsFullPath <- paste(dirPlotsFullPath, "/", data.type, sep = "")
+      dir.create(dirPlotsFullPath)  
+      dirPlotsFullPath <- paste(dirPlotsFullPath, "/Domain_", data.domain, sep = "")
+      dir.create(dirPlotsFullPath)  
+      dirPlotsFullPath <- paste(dirPlotsFullPath, "/Stats_", stats.function, sep = "")
+      dir.create(dirPlotsFullPath) 
+
       
       #############################################################
       ###### Prep Data !
@@ -178,10 +182,12 @@ for(curAnalysis in 1:2)
           Sys.sleep(5)
         }
         
+        if(bTempDisableSubAnalysis) {bSubDataAnalysis = TRUE}
         if(bSubDataAnalysis && length(STATS_SUB_DESIGNS[[iDesign]]) == 0)
         {
           print("======== Disabling Sub Analysis, the current design doesn't support it... =========")
           bSubDataAnalysis = FALSE
+          bTempDisableSubAnalysis = TRUE # To re-enable SubDataAnalysis automatically after this design.
         }
         
         #############################################################
@@ -358,7 +364,7 @@ for(curAnalysis in 1:2)
               }
             }
 
-            if(bFullStatsAnalysis)
+            if(bSubStatsAnalysis)
             {
               for(curDim in 1:length(stats.subAnalysis.pVals))
               {
@@ -383,7 +389,7 @@ for(curAnalysis in 1:2)
           }
           
           #save() # Save on disk.
-          if(bFullStatsAnalysis)
+          if(bSaveOnDiskData)
           {
             #save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles,  file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
             save(fullData, timeData, freqData, subData, subDataset, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
