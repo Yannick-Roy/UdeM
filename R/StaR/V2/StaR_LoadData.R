@@ -97,6 +97,9 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, nbPoints = 153
     freqs <- retVal[[3]]
   }
   
+  if(class(times) == "matrix") times <- times[1,]
+  if(class(freqs) == "matrix") freqs <- freqs[1,]
+  
   return(list(fullData, times, freqs))
 }
 
