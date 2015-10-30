@@ -52,10 +52,10 @@ plotData_ERP <- function(data, params, timeVals, titles = NULL, bShowPlot = TRUE
             #hData[[i]][[j]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]]) + theme(legend.position="none")#axis.line=element_blank(),axis.text.x=element_blank(), 
             hDataList[[i]][[j]][[k]] <- ggplot() + geom_line(aes(y=means, x=times, colour = "sin"), data = params[[i]][[j]][[k]]) + 
             theme(legend.position="none", axis.line=element_blank(), axis.title.x=element_blank(), axis.title.y=element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank()) +
-            geom_vline(xintercept = 0, colour="black", linetype = "longdash") + ylim(-0.5, 0.7) + geom_ribbon(aes(x=times, ymin=means-sdes, ymax=means+sdes), alpha = 0.3, fill="orange", data=params[[i]][[j]][[k]]) +
+            geom_vline(xintercept = 0, colour="black", linetype = "longdash") + ylim(-0.5, 0.7) + geom_ribbon(aes(x=times, ymin=means-sdes, ymax=means+sdes), alpha = 0.3, fill="orange", data=params[[i]][[j]][[k]])
             #ggtitle(titles[[i]][[j]][[k]], gp=gpar(fontsize=10,font=3))
             #geom_text(aes(1250, 0.65, label = paste(titles[[i]][[j]][[k]])))
-            annotate(geom="text", x = 1250, y = 0.65, label=titles[[i]][[j]][[k]], color="black", size=rel(3.0))
+            #annotate(geom="text", x = 1250, y = 0.65, label=titles[[i]][[j]][[k]], color="black", size=rel(3.0))
             #scale_x_continuous(limits = c(-500, 2000)) #coord_cartesian(xlim = c(2000, -500)) 
             
             # Empty Plot !
