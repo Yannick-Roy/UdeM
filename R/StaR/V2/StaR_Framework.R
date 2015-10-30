@@ -356,9 +356,78 @@ for(domainNo in 1:4)
                 }
               }
             }
+<<<<<<< HEAD
             
             ###  --- Sub Analysis ---
             if(bSubDataAnalysis)
+=======
+          }
+        }
+      }
+      
+      #save() # Save on disk.
+      if(bFullStatsAnalysis)
+      {
+        save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles,  file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
+        save(fullData, timeData, freqData, subData, subDataset, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
+      }
+      
+      # -- Plot Stats --
+      
+      ########################
+      ### Plot Full Analysis
+      ########################
+      stats.fullAnalysis.pSignificants <- stats.fullAnalysis.pVals
+      #graphs15 <- lapply(mixedmodels.pSignificants[[3]], FUN = function(x, y, arg1){plotStats_ERP_Graph(yVal = unlist(x), yTitle = y, xTimeVals = arg1)}, arg1 = timeData)
+      combinedValsTitles <- list()
+      for(i in 1:length(stats.fullAnalysis.pSignificants)) {combinedValsTitles[[i]] <- list(stats.fullAnalysis.pSignificants[[i]], stats.fullAnalysis.pTitles[[i]])}
+      
+      if(data.type == "ERSP") {
+        stats.fullAnalysis.ERSP <- lapply(combinedValsTitles, FUN = function(x, arg1, arg2){plotStats_ERSP_Graph(pVals = unlist(x[[1]]), pTitle = as.character(x[[2]]), xTimeVals = arg1, yFreqVals = arg2)}, arg1 = timeData, arg2 = freqData)
+        stats.fullAnalysis.hPlots <- stats.fullAnalysis.ERSP #lapply(stats.fullAnalysis.ERSP, FUN = function(x) {x[[2]]})
+      } else {
+        stats.fullAnalysis.ERP <- lapply(combinedValsTitles, FUN = function(x, arg1){plotStats_ERP_Graph(yVal = unlist(x[[1]]), yTitle = as.character(x[[2]]), xTimeVals = arg1)}, arg1 = timeData)
+        stats.fullAnalysis.hPlots <- lapply(stats.fullAnalysis.ERP, FUN = function(x) {x[[2]]})
+      }
+      
+      
+      ########################
+      ### Plot Sub Analysis
+      ########################
+      if(bSubDataAnalysis)
+      {
+        #plot(unlist(lapply(mixedmodels.summary, FUN = function(x) {x$p.value})), type="l")
+        if(data.type == "ERSP") {
+          hStats <- plotStats_ERSP(stats.subAnalysis.pSignificants, stats.subAnalysis.pTitles, timeData, freqData, ersp_dims)
+        } else {
+          hStats <- plotStats_ERP(stats.subAnalysis.pSignificants, timeData, stats.subAnalysis.pTitles)[[1]]
+        }
+        
+        #if(data.type == "ERSP") { hStats <- plotStats_ERSP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle, ersp_dims)}
+        #else { hStats <- plotStats_ERP(mixedmodels.pSignificants, timeData, mixedmodels.pValsTitle)[[1]] }
+      }
+    }      
+    
+    #############################################################
+    ###### Plot sub analysis (data & stats) !
+    #############################################################
+    # -- Plot Data --
+    if(bSubDataAnalysis)
+    {
+      if(data.type == "ERSP") { 
+        hData <- plotData_ERSP(subData, paramsList, timeData, ersp_dims) 
+      } else { 
+        hData <- plotData_ERP(subData, paramsList, timeData, titles = subData.Titles) 
+      }
+      
+      if(length(hData) > 0)
+      {
+        for(i in 1:length(hData))
+        {
+          for(j in 1:length(hData[[i]]))
+          {
+            for(k in 1:length(hData[[i]][[j]]))
+>>>>>>> bea11581b8deea3851fc39eb3d6328718d764666
             {
               for(curDim in 1:length(stats.subAnalysis.pVals))
               {
