@@ -1,3 +1,7 @@
+####################################################################
+## Source : https://cran.r-project.org/web/packages/ERP/ERP.pdf
+####################################################################
+
 library(ERP)
 ### simulated ERPs for 20 subjects (rows) and 251 ERPs measured at
 ### every 4 milliseconds plus a behavior score (columns)
