@@ -79,6 +79,7 @@ disp('ToDo: Check if all the sessions are in the current design!!!');
 % end 
 
 nbPlots = 6;
+nbPlotsValid = 1;
 nbSessions = length(STUDY.session);
 nbGroups = length(STUDY.group);
 
@@ -156,6 +157,9 @@ colorName{14,1} = 'Blue';
 colorName{15,1} = 'Navy';
 colorName{16,1} = 'Black';
 
+defaultColorName = colorName{5,1};
+defaultColor = colors{5,1};
+
 plotParams{1,1}.domain = userInput{1,1};
 plotParams{1,1}.group   = userInput{1,2};
 plotParams{1,1}.session   = userInput{1,3};
@@ -227,24 +231,16 @@ tempDomains = [];
 for i=1:nbPlots tempDomains = [tempDomains plotParams{1,i}.domain]; end
 uniqueDomains = unique(tempDomains);
 
-% %plotParams{1,5}.cluster = userInput{1,13};
-% %plotParams{1,5}.group   = userInput{1,14};
-% %if userInput{1,15}>1
-% %    plotParams{1,5}.color     = colors{colorIndex(userInput{1,15}-1)};
-% %    plotParams{1,5}.colorName = colorName{colorIndex(userInput{1,15}-1)};
-% %end
+% Get nbPlotsValid.
+nbPlotsValid = 0;
+for i=1:nbPlots 
+    if(~strcmp(plotParams{1,i}.colorName, 'N/A')) 
+        nbPlotsValid = nbPlotsValid + 1; 
+    end
+end
 
-%plotParams{1,6}  = userInput{1,16};             % slice orientation
-%plotParams{1,7}  = str2num(userInput{1,17}); %#ok<ST2NM> % smoothing [mm]
-%plotParams{1,8}  = str2num(userInput{1,18}); %#ok<ST2NM> % color scale upper limit [mm]
-%plotParams{1,9}  = userInput{1,19};             % group subtractor
-%plotParams{1,10} = userInput{1,20};             % group subtracted
-%plotParams{1,11} = str2num(userInput{1,21}); %#ok<ST2NM> % threshold [%]
-%plotParams{1,12} = userInput{1,22};             % save figure or not
-
-% pass them to the main function
-%std_dipoleDensity(STUDY, ALLEEG, plotParams)
-
+% For each domain, for each dipole, check if it's in one of the nbPlots,
+% if so -> color it!
 for d=uniqueDomains
     domain = obj.projection.domain(d); 
     projection = obj.projection;
@@ -267,10 +263,10 @@ for d=uniqueDomains
     nbDipoles = length(dipoleId);
     nbDipolesColored = 0;
     
-    for i=1:length(dipoleId) dipolesColors(i,:) = colors{5,1}; end
+    for i=1:length(dipoleId) dipolesColors(i,:) = defaultColor; end
     
     for i=1:length(dipoleId) % For each Dipole.
-        for c=1:6 % For each Color (plot row in UI)
+        for c=1:nbPlots % For each Color (plot row in UI)
             if(plotParams{1,c}.domain == d && ~strcmp(plotParams{1,c}.colorName, 'N/A')) % Check if same domain!
                 disp(['D' num2str(d) ' - ID: ' num2str(dipoleId(i)) ' - Sessions: ' sessions{i} 'vs' num2str(plotParams{1,c}.session) ' |  Groups: ' num2str(groups(i)) 'vs' num2str(plotParams{1,c}.group)]);
                 if((str2num(sessions{i}) == plotParams{1,c}.session || plotParams{1,c}.session == (nbSessions + 1))  && (groups(i) == plotParams{1,c}.group || plotParams{1,c}.group == (nbGroups + 1)))
@@ -290,26 +286,44 @@ for d=uniqueDomains
     for i=1:size(dipolesColors, 1) - 2
         dipolesColorAsCell{i} = dipolesColors(i,:);
     end;
-
-
+    
     figure;
     plot_dipplot_with_cortex(obj.object.location(dipoleId,:), true, 'coordformat', 'MNI', 'gui', 'off', 'spheres', 'on', 'color', dipolesColorAsCell);
     %domain.plot_head_surface(domain.headGrid, domain.membershipCube, 'surfaceColor', inputOptions.surfaceColor, 'surfaceOptions', {'facealpha', 0.9});%inputOptions.surfaceAlpha});
     pr.plot_head_surface(domain.headGrid, domain.membershipCube, 'surfaceColor', [0.15 0.8 0.15], 'surfaceOptions', {'facealpha', 0.3});%inputOptions.surfaceAlpha}); 
     
-    [l,o,p,t] = legend({'Domain 1', 'Domain 2', 'Domain 3', 'Domain 4', 'Domain 5', 'Domain 6'});
+    labels = {};
+    for i=1:nbPlots 
+        if ~strcmp(plotParams{1,i}.colorName, 'N/A') 
+            tempDomains = strsplit(domainString, '|');
+            tempGroups =  strsplit(groupString, '|');
+            tempSessions = strsplit(sessionString, '|');
+            tempLabel = strcat(tempDomains(plotParams{1,i}.domain), ' G', tempGroups(plotParams{1,i}.group), ' S', tempSessions(plotParams{1,i}.session));
+            labels{i} = char(tempLabel);
+        else
+            labels{i} = 'N/A';
+        end
+    end
+        
+    [l,o,p,t] = legend(labels);
     for i=1:length(o)
-        %if ~strcmp(plotParams{1,i}.colorName, 'N/A')
-        %if exist(plotParams{1,i}, 'color')
+        length(o)/2
         i
-            get(o(i))
-            if(i <= 6)
-                set(o(i),'BackgroundColor', plotParams{1,1}.color)
+        get(o(i))
+        if(i <= length(o)/2)
+            if( plotParams{1,i}.color ~= -1 )
+                set(o(i),'BackgroundColor', plotParams{1,i}.color)
             else
-                set(o(i),'FaceColor', plotParams{1,1}.color)
+                set(o(i),'BackgroundColor', [0 0 0]);
             end
-        %end
-        %end
+        else
+            i - (length(o)/2)
+            if( plotParams{1, i - (length(o)/2)}.color ~= -1 )
+                set(o(i),'FaceColor', plotParams{1, i - (length(o)/2)}.color)
+            else
+                set(o(i),'FaceColor', [0 0 0]);
+            end
+        end
     end
     set(l, 'Box', 'off')
     %set(l, 'Color', 'c')
