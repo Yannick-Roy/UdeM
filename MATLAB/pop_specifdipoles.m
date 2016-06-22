@@ -2,11 +2,48 @@
 %       
 
 % Author: Yannick Roy, UdeM
-% History
 % 
+% === HISTORY ===
 % 06/13/2016 ver 0.01 by Yannick. Creation of the Dialog Box (UI).
+% 06/24/2016 ver 0.02 by Yannick. Legend Added.
+% === /HISTORY ===
+%
+% === KNOW ISSUES & TODO ===
+% Domain doesn't select by default.
+% === /KNOW ISSUES ===
+%
+% === NOTES ===
+%
+% The following code must be added to create_mpt_submenu.m  
+% (~ line 300 in 14.4.4b)
+%
+% % % function command_measure_show_domain_specifdipoles(callerHandle, evnt, measureName)
+% % %     tagForHandle = get(gcbo, 'tag');
+% % %     if ischar(tagForHandle(end)) && ~isempty(tagForHandle(end))
+% % %         domainIndex = str2num(tagForHandle(end));
+% % %         STUDY = evalin('base', 'STUDY;');
+% % %         ALLEEG = evalin('base', 'ALLEEG;');
+% % %         
+% % %         if isfield(STUDY, 'measureProjection')
+% % %             %STUDY.measureProjection.option.groupDifferenceOption = STUDY.measureProjection.(measureName).projection.domain(domainIndex).plotGroupDifferenceGui(STUDY.measureProjection.(measureName).object, STUDY.measureProjection.option.groupDifferenceOption);
+% % %             % Send domain obj. You can retrieve the Dipole object from the domain.
+% % %             STUDY.measureProjection.(measureName).projection.domain(domainIndex)
+% % %             study_local = pop_specifdipoles(STUDY, ALLEEG, STUDY.measureProjection.(measureName), domainIndex) 
+% % %         end;
+% % %         
+% % %         % put the STUDY variable back from workspace
+% % %         assignin('base', 'STUDY', STUDY);
+% % %     else
+% % %         return;
+% % %     end   
+% % % end
+%
+% The following code must also be added to create_mpt_submenu.m
+%
+% % % uimenu(domain_menu,'Label', 'Show Specific Dipoles','Callback',{@command_measure_show_domain_specifdipoles, measureString},'tag',[measureString 'SpecificDipolesForDomain ' num2str(j)], 'userdata', 'study:on');
 
-function STUDY = pop_specifdipoles(STUDY, ALLEEG, obj)
+
+function STUDY = pop_specifdipoles(STUDY, ALLEEG, obj, curDomain)
 
 com = '';
 if nargin < 2
@@ -60,29 +97,10 @@ else
 end
 disp('ToDo: Check if all the sessions are in the current design!!!');
 
-% group condition in the STUDY.design 
-% var2 = STUDY.design(STUDY.currentdesign).variable(1,2).value;
-% groupString = '(none)|all';
-% if ~isempty(var2)
-%     for n = 1:length(var2)
-%         if iscell(var2{1,n}) % if groups are combined in the selected group condition
-%             tmpCell = var2{1,n}; % work on copy
-%             tmpCell(2,:) = {' & '};
-%             tmpCell{2,end} = '';
-%             tmpString = [tmpCell{:}];
-%             clear tmpCell
-%         else
-%             tmpString = var2{1,n};
-%         end
-%         groupString = [groupString '|' tmpString];
-%     end
-% end 
-
 nbPlots = 6;
 nbPlotsValid = 1;
 nbSessions = length(STUDY.session);
 nbGroups = length(STUDY.group);
-
 
 % collect user input
 try
@@ -100,12 +118,12 @@ try
         }, ... 
     'uilist',...
        {{'style' 'text' 'string' ' '} {'style' 'text' 'string' 'Domain        '} {'style' 'text' 'string' 'Group        '} {'style' 'text' 'string' 'Session      '} {'style' 'text' 'string' 'Color        '} ...
-        {'style' 'text' 'string' '           Plot 1:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' 1} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 1} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 1} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 3} ...
-        {'style' 'text' 'string' '           Plot 2:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' 1} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 1} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 2} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
-        {'style' 'text' 'string' '           Plot 3:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' 1} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 1} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 3} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
-        {'style' 'text' 'string' '           Plot 4:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' 1} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 2} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 1} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
-        {'style' 'text' 'string' '           Plot 5:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' 1} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 2} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 2} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
-        {'style' 'text' 'string' '           Plot 6:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' 1} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 2} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 3} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
+        {'style' 'text' 'string' '           Plot 1:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' curDomain} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 1} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 1} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 3} ...
+        {'style' 'text' 'string' '           Plot 2:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' curDomain} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 1} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 2} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
+        {'style' 'text' 'string' '           Plot 3:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' curDomain} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 1} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 3} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
+        {'style' 'text' 'string' '           Plot 4:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' curDomain} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 2} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 1} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
+        {'style' 'text' 'string' '           Plot 5:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' curDomain} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 2} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 2} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
+        {'style' 'text' 'string' '           Plot 6:           '}  {'style' 'popupmenu' 'string' domainString 'tag' 'domain' 'value' curDomain} {'style' 'popupmenu' 'string' groupString 'tag' 'group' 'value' 2} {'style' 'popupmenu' 'string' sessionString 'tag' 'session' 'value' 3} {'style' 'popupmenu' 'string' 'N/A|White|Yellow|Fuchsia|Red|Silver|Gray|Olive|Purple|Maroon|Aqua|Lime|Teal|Green|Blue|Navy|Black' 'tag' 'color' 'value' 1} ...
         {'style' 'text' 'string' 'YR Custom'} {'style' 'text' 'string' 'YR Custom 2'} });
 catch
     disp('## ERROR ## pop_specifDipoles() cant load...');
@@ -305,11 +323,16 @@ for d=uniqueDomains
         end
     end
         
+    % Legend with Colored Background + Face Marker.
+    % l -> legend handle. Useful to "set" params.
+    % o -> object handle. Useful to modify text and icons.
+    % p -> plot handle. Not used.
+    % t -> labels. Not used.
     [l,o,p,t] = legend(labels);
     for i=1:length(o)
-        length(o)/2
-        i
-        get(o(i))
+        %length(o)/2
+        %i
+        %get(o(i))
         if(i <= length(o)/2)
             if( plotParams{1,i}.color ~= -1 )
                 set(o(i),'BackgroundColor', plotParams{1,i}.color)
@@ -326,5 +349,4 @@ for d=uniqueDomains
         end
     end
     set(l, 'Box', 'off')
-    %set(l, 'Color', 'c')
 end
