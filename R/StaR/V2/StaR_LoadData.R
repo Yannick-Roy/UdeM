@@ -9,9 +9,13 @@ staR_prepData <- function()
   cond_orders_vals = c("FO", "SO")
   cond_motion_vals = c("F", "M")
   conditions_vals = c("FOM", "FOF", "SOF", "SOM")
-  subjects_vals = c(seq(from = 1, to = 15), seq(from = 31, to = 45))
+  #subjects_vals = c(seq(from = 1, to = 15), seq(from = 31, to = 45))
+  subjects_vals = c(1,2,3,4)
   groups_vals = c(3,4)
   sessions_vals = c(1,2,3)
+  
+  nbRecordings = length(groups_vals) * length(subjects_vals) * length(sessions_vals)
+  nbSets = nbRecordings * length(conditions_vals)
   
   motions = rep(cond_motion_vals, times = length(groups_vals) * (length(subjects_vals)  / 2) * length(sessions_vals) * length(cond_orders_vals), each = 1)
   orders = rep(cond_orders_vals, times = length(groups_vals) * (length(subjects_vals) / 2) * length(sessions_vals), each = length(cond_motion_vals))
@@ -19,11 +23,11 @@ staR_prepData <- function()
   #conditions = rep(conditions_vals, times = length(groups_vals) * (length(subjects_vals) / 2) * length(sessions_vals))
   conditions <- paste(orders, motions, sep="")
   
-  sessions = rep(sessions_vals, times = 360 / (length(conditions_vals) * length(sessions_vals)) , each = length(conditions_vals))
+  sessions = rep(sessions_vals, times = nbSets / (length(conditions_vals) * length(sessions_vals)) , each = length(conditions_vals))
   subjects = rep(subjects_vals, times = length(groups_vals) / 2, each = length(conditions) / length(groups_vals) / (length(subjects_vals)/2))
   groups = rep(groups_vals, times = 1, each = length(conditions) / length(groups_vals))
   
-  values = seq(1,360)
+  values = seq(1,nbSets)
   
   fullData = data.frame(groups, subjects, sessions, orders, motions, conditions, values) #, row.names = c("No", Group", "Subject", "Session", "Condition"))
   #fullData = data.frame(groups, subjects, sessions, conditions, values) #, row.names = c("No", Group", "Subject", "Session", "Condition"))
@@ -40,9 +44,34 @@ staR_prepData <- function()
 ###########################################################################
 ###################       Fill Structure from Matlab File !     ###########
 ###########################################################################
-staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, nbPoints = 1536, bSmallSamples = FALSE, dataType = "ERP")
+staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, bSmallSamples = FALSE, dataType = "ERP")
 {
-  mld_erps.d <- readMat(fileName)
+  print(paste("Opening Matlab File: ", fileName))
+  mlData.d <- readMat(fileName)
+ 
+  times <- list()
+  if("times" %in% names(mlData.d))
+  {
+    times <- mlData.d$times
+  } else
+  {
+    print("### change me! ### (staR_fillFromMatlab)")
+    times <- 1:1536
+    #times <- 1
+  }
+  
+  freqs <- list()
+  if("freqs" %in% names(mlData.d))
+  {
+    freqs <- mlData.d$freqs
+  } else
+  {
+    freqs <- 1
+  }
+  
+  print("Change the nbSets - for dimension of stuff")
+  nbSets = 4 * 2 * 3
+  nbPoints = length(freqs) * length(times)
   
   if(toolBox == "MPT")
   {
@@ -51,12 +80,12 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, nbPoints = 153
     {
       fullData[[j]] = dataStructure
       
-      for (i in 0:(90 - 1)) 
+      for (i in 0:(nbSets - 1)) 
       {
-        fullData[[j]]$values[i*4 + 1] = mld_erps.d$linearProjectedMeasure[0 * nbPoints + j, i + 1]
-        fullData[[j]]$values[i*4 + 2] = mld_erps.d$linearProjectedMeasure[1 * nbPoints + j, i + 1]
-        fullData[[j]]$values[i*4 + 3] = mld_erps.d$linearProjectedMeasure[2 * nbPoints + j, i + 1]
-        fullData[[j]]$values[i*4 + 4] = mld_erps.d$linearProjectedMeasure[3 * nbPoints + j, i + 1]
+        fullData[[j]]$values[i*4 + 1] = mlData.d$linearProjectedMeasure[0 * nbPoints + j, i + 1]
+        fullData[[j]]$values[i*4 + 2] = mlData.d$linearProjectedMeasure[1 * nbPoints + j, i + 1]
+        fullData[[j]]$values[i*4 + 3] = mlData.d$linearProjectedMeasure[2 * nbPoints + j, i + 1]
+        fullData[[j]]$values[i*4 + 4] = mlData.d$linearProjectedMeasure[3 * nbPoints + j, i + 1]
       }
       
       if(j %% 100 == 0)
@@ -77,18 +106,6 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, nbPoints = 153
       print(i)
   }
   
-  times <- list()
-  if("times" %in% names(mld_erps.d))
-  {
-    times <- mld_erps.d$times
-  }
-  
-  freqs <- list()
-  if("freqs" %in% names(mld_erps.d))
-  {
-    freqs <- mld_erps.d$freqs
-  }
-  
   if(bSmallSamples)
   {
     retVal <- staR_SmallSamples(fullData, times, freqs, dataType)    
@@ -106,6 +123,8 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, nbPoints = 153
 # Sub sample the big dataset for testing. (speed)
 staR_SmallSamples <- function(fullData, times, freqs, dataType)
 {
+  print("Small Samples...")
+  
   if(is.null(fullData)) {fullData <- list()}
   if(is.null(times)) {timeData <- list()} else { timeData <- times}
   if(is.null(freqs)) {freqData <- list()} else { freqData <- freqs}

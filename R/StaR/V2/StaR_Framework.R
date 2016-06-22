@@ -14,9 +14,9 @@ require(tictoc)
 
 stde <- function(x) sd(x)/sqrt(length(x))
 
-###########################################################################
-#########################       Sequence !     ############################
-###########################################################################
+#**************************************************************************
+#**************************       Sequence !     **************************
+#**************************************************************************
 #source("StaR_Anovas.R")
 #source("StaR_MixedModels.R")
 source("StaR_Designs.R")
@@ -25,7 +25,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = c(16,17,18)#c(19,11,12,13,14,15,16,17,18) #,2,3,4,5,
+designs = c(18)#c(19,11,12,13,14,15,16,17,18) #,2,3,4,5,
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -37,7 +37,8 @@ bPrepMatlabData = TRUE
 bSmallSamples = FALSE
 
 bSaveOnDiskImages = TRUE
-bSaveOnDiskData = TRUE
+bSaveOnDiskData_R = TRUE
+bSaveOnDiskData_Matlab = TRUE
 
 bFullStatsAnalysis = TRUE   # Full report on all the data.
 bSubDataAnalysis = TRUE     # Multiple plots with data.
@@ -49,9 +50,9 @@ freqData = 0 # Need real value (runtime)
 
 data.domain = 1
 data.type = "N/A"
-stats.function = "lme"
+stats.function = "aov"  #lme
 stats.bCompute = TRUE
-stats.bCorrection = TRUE
+stats.bCorrection = FALSE
 stats.correctionFunction = "fdr"
 
 bTempDisableSubAnalysis = FALSE
@@ -60,43 +61,36 @@ sigthreshold = 0.001
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
 #dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
-dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
+#dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
+dirPlotsPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/"
 
-#############################################################
-###### Main Loop (ERP & ERSP) !
-#############################################################
+#**************************************************************************
+#***** Main Loop (ERP & ERSP) !
+#**************************************************************************
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
-for(curAnalysis in 1:2)
+#for(curAnalysis in 1:2)
+curAnalysis = 1
 {
-  for(domainNo in 1:4)
+  #for(domainNo in 1:3)
+  domainNo = 1
   {
     data.domain = domainNo
     
     #for(analType in 1:2)
-    analType = 1
+    analType = 2
     {
       if(analType == 1){stats.function = "lme"}
       if(analType == 2){stats.function = "aov"}
       
-      #############################################################
+      #************************************************************
       ###### Data type !
-      #############################################################
-      if(curAnalysis == 1) # ERP
-      {
-        data.type = "ERP"
-        
-        nbPoints = 1536
-      }
-      if(curAnalysis == 2) # ERSP
-      {
-        data.type = "ERSP"
-        
-        nbPoints = 54000
-      }
-
-      #############################################################
+      #************************************************************
+      if(curAnalysis == 1) { data.type = "ERP" } #ERP
+      if(curAnalysis == 2) { data.type = "ERSP" } # ERSP
+      
+      #************************************************************
       ###### Create Folder Structure!
-      #############################################################
+      #************************************************************
       dirPlotsFullPath <- paste(dirPlotsPath, dirPlotsName, sep = "")
       dir.create(dirPlotsFullPath)  
       dirPlotsFullPath <- paste(dirPlotsFullPath, "/", data.type, sep = "")
@@ -108,25 +102,22 @@ for(curAnalysis in 1:2)
 
       
       tryCatch({
-        #############################################################
+        #************************************************************
         ###### Prep Data !
-        #############################################################
+        #************************************************************
         # Formatting the "Wide structure" for stats.
-        if(bPrepMatlabData) { fullData <- staR_prepData() }
+        # TODO : Allow to design study parameters here. (rather than to modify source code!)
+        if(bPrepMatlabData) { fullDataStructure <- staR_prepData() }
         
         # Fill "Wide structure" with real data.
         if(bLoadMatlabFile)
         {
           # Read Matlab file !
-          if(data.type == "ERSP") { 
-            data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat"
-            #data.file = paste("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_ersp_d", data.domain, ".mat", sep="")
-          } else { 
-              data.file = paste("~/Documents/Playground/UdeM/RMatlab_Data/export_mpt_erp_d", data.domain, ".mat", sep="")
-          }
+          #data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat"
+          data.file = paste("~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/MPT_exp_", tolower(data.type), "_d", data.domain, ".mat", sep="")
           
           print("Matlab Data - Loading...")
-          matlabData <- staR_fillFromMatlab(data.file, "MPT", fullData, nbPoints, bSmallSamples = bSmallSamples, dataType = data.type)
+          matlabData <- staR_fillFromMatlab(data.file, "MPT", fullDataStructure, bSmallSamples = bSmallSamples, dataType = data.type)
           print("Matlab Data - Done!")
           
           print("Matlab Data - Getting Time & Freq (if ERSP)")
@@ -150,9 +141,9 @@ for(curAnalysis in 1:2)
         nbPoints = length(fullData)
         ersp_dims <- c(length(timeData), length(freqData))
         
-        #############################################################
+        #************************************************************
         ###### Loop for Designs !
-        #############################################################
+        #************************************************************
         for(curDesign in designs)
         {
           iDesign = curDesign
@@ -191,9 +182,9 @@ for(curAnalysis in 1:2)
             bTempDisableSubAnalysis = TRUE # To re-enable SubDataAnalysis automatically after this design.
           }
           
-          #############################################################
+          #************************************************************
           ###### Select sub data & params !
-          #############################################################
+          #************************************************************
           print("Select Data...")
           retVal <- staR_selectData(fullData, iDesign)
           subDataset = retVal[[1]]
@@ -209,9 +200,9 @@ for(curAnalysis in 1:2)
             print("Done !")
           }
           
-          #############################################################
+          #************************************************************
           ###### Stats !
-          #############################################################
+          #************************************************************          
           if(stats.bCompute)
           {
             if(stats.function == "lme")
@@ -251,9 +242,9 @@ for(curAnalysis in 1:2)
               }
             }
             
-            #############################################################
+            #************************************************************
             ###### Pvals - Correction !
-            #############################################################
+            #************************************************************
             if(stats.bCorrection)
             {
               if(bFullStatsAnalysis)
@@ -307,9 +298,9 @@ for(curAnalysis in 1:2)
               }
             }
             
-            #############################################################
+            #************************************************************
             ###### Pvals Signif ( < threshold ) !
-            #############################################################
+            #************************************************************
             print(paste("Doing - PSignif."))
             
             ## TODO : if full analysis
@@ -341,9 +332,9 @@ for(curAnalysis in 1:2)
             }
             print("Done!")
             
-            #############################################################
+            #************************************************************
             ###### Pvals - Plot Raw !
-            #############################################################
+            #************************************************************
             bShowPlot = TRUE
             if(bShowPlot)
             {
@@ -390,10 +381,27 @@ for(curAnalysis in 1:2)
             }
             
             #save() # Save on disk.
-            if(bSaveOnDiskData)
+            if(bSaveOnDiskData_R)
             {
+              designName <- staR_getDesignName(iDesign, stats.function)
+              print(paste("Saving ", designName, "..."))
+              
               #save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles,  file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
-              save(fullData, timeData, freqData, subData, subDataset, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
+              save(fullData, timeData, freqData, subData, subDataset, iDesign, designName, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
+            }
+            
+            if(bSaveOnDiskData_Matlab)
+            {
+              #writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), fullData=fullData, timeData = timeData, freqData = freqData, subData = subData, subDataset = subDataset, iDesign = iDesign, designName = designName, paramsList = paramsList, pVals = stats.fullAnalysis.pVals, pSignificants = stats.fullAnalysis.pSignificants, pTitles = stats.fullAnalysis.pTitles)
+              # paramlist -> subdata -> times | means | sdes | maxs | mins
+              # mapply(as.matrix(subData[[1]][[1]][[1]])
+              # writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, data=mapply(as.matrix(subData[[1]][[1]][[1]]), FUN=unlist), iDesign = iDesign, designName = designName, pVals = unlist(stats.fullAnalysis.pVals), pSignificants = unlist(stats.fullAnalysis.pSignificants))
+              
+              #c <- sapply(subData[[1]][[1]], FUN = function(x) mapply(as.matrix(x), FUN=unlist), simplify="matrix")
+              mList <- lapply(paramsList, FUN= function(x) lapply(x, FUN= function(x) lapply(x, FUN=function(x) x$means)))
+              #mList <- lapply(paramsList, FUN=function(x) x$means)
+              mUnlist <- unlist(mList)
+              writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, means=mUnlist, iDesign = iDesign, designName = designName, pVals = unlist(stats.fullAnalysis.pVals), pSignificants = unlist(stats.fullAnalysis.pSignificants))
             }
             
             # -- Plot Stats --
@@ -432,9 +440,9 @@ for(curAnalysis in 1:2)
             }
           }      
           
-          #############################################################
+          #************************************************************
           ###### Plot sub analysis (data & stats) !
-          #############################################################
+          #************************************************************
           # -- Plot Data --
           if(bSubDataAnalysis)
           {
@@ -537,10 +545,10 @@ for(curAnalysis in 1:2)
               }
             }
           }
-          
-          #############################################################
+       
+          #************************************************************
           ###### Plot full analysis !
-          #############################################################
+          #************************************************************
           if(bFullStatsAnalysis && stats.bCompute)
           {
             if(length(stats.fullAnalysis.hPlots) == 1)
