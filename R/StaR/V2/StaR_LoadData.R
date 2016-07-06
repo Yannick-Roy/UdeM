@@ -195,6 +195,10 @@ staR_selectData <- function(fullData, iDesign)
   subDataset[[1]] <- list()
   subDataset[[1]][[1]] <- list()
   
+  subDatasetVarVals <- list() 
+  subDatasetVarVals[[1]] <- list()
+  subDatasetVarVals[[1]][[1]] <- list()
+  
   if(iDesign > 20) {iDesign <- iDesign - 20}
   
   if(iDesign == 1)
@@ -204,6 +208,11 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[3]] <- lapply(fullData, subset, conditions == "SOF")
     subDataset[[1]][[1]][[4]] <- lapply(fullData, subset, conditions == "SOM")
     
+    subDatasetVarVals[[1]][[1]][[1]] <- "conditions=FOF"
+    subDatasetVarVals[[1]][[1]][[2]] <- "conditions=FOM"
+    subDatasetVarVals[[1]][[1]][[3]] <- "conditions=SOF"
+    subDatasetVarVals[[1]][[1]][[4]] <- "conditions=SOM"
+    
     subDataset
   }
   
@@ -212,24 +221,37 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[1]] <- lapply(fullData, subset, sessions == 1)    
     subDataset[[1]][[1]][[2]] <- lapply(fullData, subset, sessions == 2)
     subDataset[[1]][[1]][[3]] <- lapply(fullData, subset, sessions == 3)
+    
+    subDatasetVarVals[[1]][[1]][[1]] <- "sessions=1"
+    subDatasetVarVals[[1]][[1]][[2]] <- "sessions=2"
+    subDatasetVarVals[[1]][[1]][[3]] <- "sessions=3"
   }
   
   if(iDesign == 3)
   {
     subDataset[[1]][[1]][[1]] <- lapply(fullData, subset, motions == "F")    
     subDataset[[1]][[1]][[2]] <- lapply(fullData, subset, motions == "M")
+    
+    subDatasetVarVals[[1]][[1]][[1]] <- "motions=F"
+    subDatasetVarVals[[1]][[1]][[2]] <- "motions=M"
   }
   
   if(iDesign == 4)
   {
     subDataset[[1]][[1]][[1]] <- lapply(fullData, subset, orders == "FO")    
     subDataset[[1]][[1]][[2]] <- lapply(fullData, subset, orders == "SO")
+    
+    subDatasetVarVals[[1]][[1]][[1]] <- "orders=FO"
+    subDatasetVarVals[[1]][[1]][[2]] <- "orders=SO"
   }
   
   if(iDesign == 5)
   {
     subDataset[[1]][[1]][[1]] <- lapply(fullData, subset, groups == 3)    
     subDataset[[1]][[1]][[2]] <- lapply(fullData, subset, groups == 4)
+    
+    subDatasetVarVals[[1]][[1]][[1]] <- "groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "groups=4"
   }
   
   if(iDesign == 11)
@@ -243,6 +265,16 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, conditions == "FOM" & groups == 4)    
     subDataset[[1]][[2]][[3]] <- lapply(fullData, subset, conditions == "SOF" & groups == 4)    
     subDataset[[1]][[2]][[4]] <- lapply(fullData, subset, conditions == "SOM" & groups == 4)
+    
+    subDatasetVarVals[[1]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]][[1]] <- "conditions=FOF;groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "conditions=FOM;groups=3"
+    subDatasetVarVals[[1]][[1]][[3]] <- "conditions=SOF;groups=3"
+    subDatasetVarVals[[1]][[1]][[4]] <- "conditions=SOM;groups=3"
+    subDatasetVarVals[[1]][[2]][[1]] <- "conditions=FOF;groups=4"
+    subDatasetVarVals[[1]][[2]][[2]] <- "conditions=FOM;groups=4"
+    subDatasetVarVals[[1]][[2]][[3]] <- "conditions=SOF;groups=4"
+    subDatasetVarVals[[1]][[2]][[4]] <- "conditions=SOM;groups=4"
   }
   
   if(iDesign == 12)
@@ -253,7 +285,15 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[3]] <- lapply(fullData, subset, sessions == 3 & groups == 3)       
     subDataset[[1]][[2]][[1]] <- lapply(fullData, subset, sessions == 1 & groups == 4)    
     subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, sessions == 2 & groups == 4)    
-    subDataset[[1]][[2]][[3]] <- lapply(fullData, subset, sessions == 3 & groups == 4)    
+    subDataset[[1]][[2]][[3]] <- lapply(fullData, subset, sessions == 3 & groups == 4)  
+    
+    subDatasetVarVals[[1]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]][[1]] <- "sessions=1;groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "sessions=2;groups=3"
+    subDatasetVarVals[[1]][[1]][[3]] <- "sessions=3;groups=3"
+    subDatasetVarVals[[1]][[2]][[1]] <- "sessions=1;groups=4"
+    subDatasetVarVals[[1]][[2]][[2]] <- "sessions=2;groups=4"
+    subDatasetVarVals[[1]][[2]][[3]] <- "sessions=3;groups=4"
   }  
   
   if(iDesign == 13)
@@ -262,7 +302,13 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[1]] <- lapply(fullData, subset, motions == "F" & groups == 3)
     subDataset[[1]][[1]][[2]] <- lapply(fullData, subset, motions == "M" & groups == 3)       
     subDataset[[1]][[2]][[1]] <- lapply(fullData, subset, motions == "F" & groups == 4)    
-    subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, motions == "M" & groups == 4)        
+    subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, motions == "M" & groups == 4)   
+    
+    subDatasetVarVals[[1]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]][[1]] <- "orders=F;groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "orders=M;groups=3"
+    subDatasetVarVals[[1]][[2]][[1]] <- "orders=F;groups=4"
+    subDatasetVarVals[[1]][[2]][[2]] <- "orders=M;groups=4"
   }
   
   if(iDesign == 14)
@@ -271,7 +317,13 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[1]] <- lapply(fullData, subset, orders == "FO" & groups == 3)
     subDataset[[1]][[1]][[2]] <- lapply(fullData, subset, orders == "SO" & groups == 3)       
     subDataset[[1]][[2]][[1]] <- lapply(fullData, subset, orders == "FO" & groups == 4)    
-    subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, orders == "SO" & groups == 4)        
+    subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, orders == "SO" & groups == 4)     
+    
+    subDatasetVarVals[[1]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]][[1]] <- "orders=FO;groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "orders=SO;groups=3"
+    subDatasetVarVals[[1]][[2]][[1]] <- "orders=FO;groups=4"
+    subDatasetVarVals[[1]][[2]][[2]] <- "orders=SO;groups=4"
   }
   
   if(iDesign == 15)
@@ -282,7 +334,15 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[3]] <- lapply(fullData, subset, sessions == 3 & motions == "F")       
     subDataset[[1]][[2]][[1]] <- lapply(fullData, subset, sessions == 1 & motions == "M")    
     subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, sessions == 2 & motions == "M")    
-    subDataset[[1]][[2]][[3]] <- lapply(fullData, subset, sessions == 3 & motions == "M")         
+    subDataset[[1]][[2]][[3]] <- lapply(fullData, subset, sessions == 3 & motions == "M")  
+    
+    subDatasetVarVals[[1]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]][[1]] <- "sessions=1;motions=F"
+    subDatasetVarVals[[1]][[1]][[2]] <- "sessions=2;motions=F"
+    subDatasetVarVals[[1]][[1]][[3]] <- "sessions=3;motions=F"
+    subDatasetVarVals[[1]][[2]][[1]] <- "sessions=1;motions=M"
+    subDatasetVarVals[[1]][[2]][[2]] <- "sessions=2;motions=M"
+    subDatasetVarVals[[1]][[2]][[3]] <- "sessions=3;motions=M"
   }
   
   if(iDesign == 16)
@@ -293,7 +353,15 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[1]][[3]] <- lapply(fullData, subset, sessions == 3 & orders == "FO")       
     subDataset[[1]][[2]][[1]] <- lapply(fullData, subset, sessions == 1 & orders == "SO")    
     subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, sessions == 2 & orders == "SO")    
-    subDataset[[1]][[2]][[3]] <- lapply(fullData, subset, sessions == 3 & orders == "SO")        
+    subDataset[[1]][[2]][[3]] <- lapply(fullData, subset, sessions == 3 & orders == "SO")  
+    
+    subDatasetVarVals[[1]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]][[1]] <- "sessions=1;orders=FO"
+    subDatasetVarVals[[1]][[1]][[2]] <- "sessions=2;orders=FO"
+    subDatasetVarVals[[1]][[1]][[3]] <- "sessions=3;orders=FO"
+    subDatasetVarVals[[1]][[2]][[1]] <- "sessions=1;orders=SO"
+    subDatasetVarVals[[1]][[2]][[2]] <- "sessions=2;orders=SO"
+    subDatasetVarVals[[1]][[2]][[3]] <- "sessions=3;orders=SO"
   }
   
   if(iDesign == 17)
@@ -360,10 +428,11 @@ staR_selectData <- function(fullData, iDesign)
           
           dsDataList.Title[[i]][[j]][[k]] <- list()
           tryCatch({
-            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$groups)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "group=", subDataset[[i]][[j]][[k]][[1]]$groups[[1]], sep="")}
-            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$orders)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "order=", subDataset[[i]][[j]][[k]][[1]]$orders[[1]], sep="")}
-            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$motions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "motion=", subDataset[[i]][[j]][[k]][[1]]$motions[[1]], sep="")}
-            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$sessions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(dsDataList.Title[[i]][[j]][[k]], "session=", subDataset[[i]][[j]][[k]][[1]]$sessions[[1]], sep="")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$groups)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(paste(dsDataList.Title[[i]][[j]][[k]], "groups=", subDataset[[i]][[j]][[k]][[1]]$groups[[1]], sep=""), " | ")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$orders)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(paste(dsDataList.Title[[i]][[j]][[k]], "orders=", subDataset[[i]][[j]][[k]][[1]]$orders[[1]], sep=""), " | ")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$motions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(paste(dsDataList.Title[[i]][[j]][[k]], "motions=", subDataset[[i]][[j]][[k]][[1]]$motions[[1]], sep=""), " | ")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$sessions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(paste(dsDataList.Title[[i]][[j]][[k]], "sessions=", subDataset[[i]][[j]][[k]][[1]]$sessions[[1]], sep=""), " | ")}
+            if(length(unique(subDataset[[i]][[j]][[k]][[1]]$conditions)) == 1) {dsDataList.Title[[i]][[j]][[k]] <- paste(paste(dsDataList.Title[[i]][[j]][[k]], "conditions=", subDataset[[i]][[j]][[k]][[1]]$conditions[[1]], sep=""), " | ")}
           }, error = function(e) {
             dsDataList.Title[[i]][[j]][[k]] = "N/A"
             print(paste("==== ERROR in staR_selectData :", e))
@@ -376,7 +445,7 @@ staR_selectData <- function(fullData, iDesign)
     dsDataList <- list()
     dsDataList.Title <- list()
   }
-  retVal = list(subDataset, dsDataList, dsDataList.Title)
+  retVal = list(subDataset, dsDataList, dsDataList.Title, subDatasetVarVals)
 }
 
 ###########################################################################

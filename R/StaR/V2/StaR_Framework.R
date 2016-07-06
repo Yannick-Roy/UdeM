@@ -25,7 +25,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = c(18)#c(19,11,12,13,14,15,16,17,18) #,2,3,4,5,
+designs = c(11)#c(19,11,12,13,14,15,16,17,18) #,2,3,4,5,
 
 #fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
 #iDesign = 13
@@ -34,7 +34,7 @@ bReloadRData = FALSE
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSmallSamples = FALSE
+bSmallSamples = TRUE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData_R = TRUE
@@ -57,7 +57,7 @@ stats.correctionFunction = "fdr"
 
 bTempDisableSubAnalysis = FALSE
 
-sigthreshold = 0.001
+sigthreshold = 0.05
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
 #dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
@@ -87,6 +87,7 @@ curAnalysis = 1
       #************************************************************
       if(curAnalysis == 1) { data.type = "ERP" } #ERP
       if(curAnalysis == 2) { data.type = "ERSP" } # ERSP
+      # Spectra / Power
       
       #************************************************************
       ###### Create Folder Structure!
@@ -147,7 +148,7 @@ curAnalysis = 1
         for(curDesign in designs)
         {
           iDesign = curDesign
-          #iDesign = designs
+          
           dirPlots <- paste(dirPlotsFullPath, "/Design_NA_", iDesign, sep = "")
           if(data.type == "ERSP") { 
             dirPlots <- paste(dirPlotsFullPath, "/Design_ERSP_", iDesign, sep = "") 
@@ -190,6 +191,8 @@ curAnalysis = 1
           subDataset = retVal[[1]]
           subData = retVal[[2]]
           subData.Titles = retVal[[3]]
+          subData.VarVals = retVal[[4]]
+          writeMat("TestAsIs.mat", 'titles' = subData.Titles)
           print("Done !")
           
           paramsList <- list()
@@ -235,7 +238,7 @@ curAnalysis = 1
               
               if(bSubDataAnalysis)
               {
-                stats.subAnalysis.aov.retVal <- staR_aov_sub(subDataset, iDesign)
+                stats.subAnalysis.aov.retVal <- staR_aov_sub(subDataset, iDesign, subData.VarVals)
                 
                 stats.subAnalysis.pVals <- stats.subAnalysis.aov.retVal[[1]]
                 stats.subAnalysis.pTitles <- stats.subAnalysis.aov.retVal[[2]]
@@ -397,11 +400,38 @@ curAnalysis = 1
               # mapply(as.matrix(subData[[1]][[1]][[1]])
               # writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, data=mapply(as.matrix(subData[[1]][[1]][[1]]), FUN=unlist), iDesign = iDesign, designName = designName, pVals = unlist(stats.fullAnalysis.pVals), pSignificants = unlist(stats.fullAnalysis.pSignificants))
               
+              #mList <- lapply(paramsList, FUN=function(x) x$means)
               #c <- sapply(subData[[1]][[1]], FUN = function(x) mapply(as.matrix(x), FUN=unlist), simplify="matrix")
               mList <- lapply(paramsList, FUN= function(x) lapply(x, FUN= function(x) lapply(x, FUN=function(x) x$means)))
-              #mList <- lapply(paramsList, FUN=function(x) x$means)
               mUnlist <- unlist(mList)
-              writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, means=mUnlist, iDesign = iDesign, designName = designName, pVals = unlist(stats.fullAnalysis.pVals), pSignificants = unlist(stats.fullAnalysis.pSignificants))
+              #writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, means=mUnlist, iDesign = iDesign, designName = designName, pValsFull = unlist(stats.fullAnalysis.pVals), pSignificantsFull = unlist(stats.fullAnalysis.pSignificants), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'n' = n, 'd' = d)
+              
+              ############################
+              # TEST MATLAB LINEARIZED !!!
+              ############################
+              n <- c()
+              d <- c()
+              tryCatch ({
+                for(i in 1:length(paramsList))
+                {
+                  for(j in 1:length(paramsList[[i]]))
+                  { 
+                    for(k in 1:length(paramsList[[i]][[j]]))
+                    {  
+                      n <- c(n, subData.Titles[[i]][[j]][[k]])
+                      d <- c(d, paramsList[[i]][[j]][[k]]$means)
+                      #print(subData.Titles[[i]][[j]][[k]])
+                      #print(paramsList[[i]][[j]][[k]]$means[[1]])
+                    }
+                  }
+                }
+              } , error = function(e) {
+                print(paste("# ERRROR # ", error))
+              })
+              ############################
+              ############################
+              
+              writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, means=mUnlist, iDesign = iDesign, designName = designName, pValsFull = unlist(stats.fullAnalysis.pVals), pSignificantsFull = unlist(stats.fullAnalysis.pSignificants), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'n' = n, 'd' = d)
             }
             
             # -- Plot Stats --

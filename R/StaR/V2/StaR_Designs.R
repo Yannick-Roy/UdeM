@@ -108,6 +108,7 @@ STATS_SUB_DESIGNS_MM[[13]] = list(values ~ (motions) + (1|subjects), values ~ (g
 STATS_SUB_DESIGNS_MM[[14]] = list(values ~ (orders) + (1|subjects), values ~ (groups) + (1|subjects))
 STATS_SUB_DESIGNS_MM[[15]] = list(values ~ (motions) + (1|subjects), values ~ (sessions) + (1|subjects))
 STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (orders) + (1|subjects), values ~ (sessions) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (sessions) + (1|subjects), values ~ (orders) + (1|subjects))
 
 STATS_DESIGNS_MM_RESTRICTED = values ~ 1 * (1 | subjects)
 STATS_DESIGNS_MM[[99]] = values ~ 1 * (1 | subjects) #Bug...
@@ -141,22 +142,22 @@ staR_getDesignMatrix <- function(iDesign)
   # Same design with / without random.
   if(iDesign > 20) {iDesign <- iDesign - 20}
   
-  if(iDesign == 1) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 4, "nbRow" = 1)} # Conditions
-  if(iDesign == 2) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 3, "nbRow" = 1)} # Sessions
-  if(iDesign == 3) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 2, "nbRow" = 1)} # Motions
-  if(iDesign == 4) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 2, "nbRow" = 1)} # Orders
-  if(iDesign == 5) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 2, "nbRow" = 1)} # Groups
+  if(iDesign == 1) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 1, "nbCol" = 4)} # Conditions
+  if(iDesign == 2) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 1, "nbCol" = 3)} # Sessions
+  if(iDesign == 3) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 1, "nbCol" = 2)} # Motions
+  if(iDesign == 4) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 1, "nbCol" = 2)} # Orders
+  if(iDesign == 5) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 1, "nbCol" = 2)} # Groups
   
-  if(iDesign == 11) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 4, "nbRow" = 2)} # Groups * Conditions
-  if(iDesign == 12) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 3, "nbRow" = 2)} # Groups * Sessions
-  if(iDesign == 13) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 2, "nbRow" = 2)} # Groups * Motions
-  if(iDesign == 14) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 2, "nbRow" = 2)} # Groups * Orders
-  if(iDesign == 15) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 3, "nbRow" = 2)} # Sessions * Motions
-  if(iDesign == 16) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 3, "nbRow" = 2)} # Sessions * Orders
+  if(iDesign == 11) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 4)} # Groups * Conditions
+  if(iDesign == 12) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 3)} # Groups * Sessions
+  if(iDesign == 13) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 2)} # Groups * Motions
+  if(iDesign == 14) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 2)} # Groups * Orders
+  if(iDesign == 15) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 3)} # Sessions * Motions
+  if(iDesign == 16) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 3)} # Sessions * Orders
   
-  if(iDesign == 17) {designMatrix = data.frame("nbLayer" = 2, "nbCol" = 3, "nbRow" = 2)} # (groups * sessions * motions)
-  if(iDesign == 18) {designMatrix = data.frame("nbLayer" = 2, "nbCol" = 3, "nbRow" = 2)} # (groups * sessions * orders)
-  if(iDesign == 19) {designMatrix = data.frame("nbLayer" = 1, "nbCol" = 1, "nbRow" = 1)} # (groups * sessions * motions * orders)
+  if(iDesign == 17) {designMatrix = data.frame("nbLayer" = 2, "nbRow" = 2, "nbCol" = 3)} # Groups * Motions * Sessions   //YR: modified the order of the 2 last - please confirm.
+  if(iDesign == 18) {designMatrix = data.frame("nbLayer" = 2, "nbRow" = 2, "nbCol" = 3)} # Groups * Orders * Sessions    //YR: modified the order of the 2 last - please confirm.
+  if(iDesign == 19) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 1, "nbCol" = 1)} # Groups * Sessions * Motions * Orders
   
   designMatrix
 }

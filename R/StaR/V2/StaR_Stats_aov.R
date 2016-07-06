@@ -55,12 +55,26 @@ staR_aov_pvals <- function(summary)
 ###################################################################################
 ######  SUB !
 ###################################################################################
-staR_aov_sub <- function(subData, iDesign)
+staR_aov_sub <- function(subData, iDesign, subVarVals = NULL)
 {
+  #=======================================#
+  # DELETE ME! - TEST ONLY
+  #subData <- subDataset
+  #subVarVals <- subData.VarVals
+  
   #stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
+  # DELETE ME! - TEST ONLY
+  #=======================================#
+  
   hDataset <- list()
   vDataset <- list()
   lDataset <- list()
+
+  #=======================================#
+  #===== ETAPE 1 
+  #===== Invert dimension to start with points, 
+  #===== rather than having it in the last dimension.
+  #=======================================#
   for(p in 1:nbPoints)  # Points
   {
     ## -----------------------
@@ -150,6 +164,13 @@ staR_aov_sub <- function(subData, iDesign)
   stats.subAnalysis.vData <- staR_InvertDimensions3D(vDataset)
   stats.subAnalysis.lData <- staR_InvertDimensions3D(lDataset)
   
+  stats.subAnalysis.VarVals <- staR_InvertDimensions3D(subVarVals)
+  
+  # Notes *format*: subVarVals[[hData]][[vData]][[lData]]
+  # For example, with Design 11:  subVarVals[[1]][[2]]][[1]]  (groups=3, conditions=FOM)
+  # For example, with Design 11:  subVarVals[[2]][[3]][[1]]  (groups=4, conditions=SOF)
+  # CurDim is the dimension I want to get out.
+  
   stats.subAnalysis.combinedData <- list()
   if(length(STATS_SUB_DESIGNS[[iDesign]]) > 0) {stats.subAnalysis.combinedData[[1]] <- stats.subAnalysis.hData} # Rows.
   if(length(STATS_SUB_DESIGNS[[iDesign]]) > 1) {stats.subAnalysis.combinedData[[2]] <- stats.subAnalysis.vData} # Cols.
@@ -167,11 +188,11 @@ staR_aov_sub <- function(subData, iDesign)
       {
         stats.subAnalysis.pVals[[curDim]] <- list()
         stats.subAnalysis.pTitles[[curDim]] <- list()
-        for(i in 1:length(stats.subAnalysis.combinedData[[curDim]])) # Layers
+        for(i in 1:length(stats.subAnalysis.combinedData[[curDim]]))
         {
           stats.subAnalysis.pVals[[curDim]][[i]] <- list()
           stats.subAnalysis.pTitles[[curDim]][[i]] <- list()
-          for(j in 1:length(stats.subAnalysis.combinedData[[curDim]][[i]])) # Rows
+          for(j in 1:length(stats.subAnalysis.combinedData[[curDim]][[i]]))
           {
             print(paste("Doing - Anova (subData - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))
             cl <- makeCluster(2) 
@@ -201,8 +222,8 @@ staR_aov_sub <- function(subData, iDesign)
             print("Done!")
           }, error = function(e) {
             print(paste("======= ERROR in aov_sub :", e, "========"))
-            mixedmodels.full.titles = paste("aov - FAILED", " : fixed = ",  format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]]))
-            mixedmodels.full <- list()
+            anovas.full.titles = paste("aov - FAILED", " : fixed = ",  format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]]))
+            anovas.full <- list()
           })
             
             print(paste("Doing - Summary (sub - [",curDim, ",", i, ",", j, "]) : ", format(STATS_SUB_DESIGNS[[iDesign + 20]][[curDim]])))      
@@ -212,6 +233,39 @@ staR_aov_sub <- function(subData, iDesign)
             
             stats.subAnalysis.pVals[[curDim]][[i]][[j]] <- unlist(stats.subAnalysis.aov.retVal[[1]])
             stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- unique(stats.subAnalysis.aov.retVal[[2]])
+            print(paste("unique ", unique(stats.subAnalysis.aov.retVal[[2]])))
+            
+            # TEST
+            titleCombined <- NULL
+            if(curDim == 1) 
+            {
+              for(vv in 1:length(stats.subAnalysis.VarVals[[1]]))
+              {
+                if(is.null(titleCombined)) {
+                  titleCombined <- stats.subAnalysis.VarVals[[j]][[vv]][[1]]
+                } else {
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[1]], sep="|")
+                }
+              }
+            }
+            if(curDim == 2) 
+            {
+              for(vv in 1:length(stats.subAnalysis.VarVals))
+              {
+                if(is.null(titleCombined)) {
+                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[1]]
+                } else {
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[1]], sep="|")
+                }
+              }
+            }
+            
+            stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- titleCombined
+            print(stats.subAnalysis.pTitles[[curDim]][[i]][[j]])
+            
+            ################
+            # TODO : DIM 3 #
+            ################
           }
         }
       }
