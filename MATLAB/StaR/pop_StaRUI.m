@@ -51,16 +51,23 @@ if ~isstr(varargin{1}) %intial settings
     end
     STUDY  = varargin{1};
     ALLEEG = varargin{2};
+    obj = varargin{3};
+    domainID = varargin{4};
 
     disp(' -- Entering: pop_StaRUI() --');
 
     % Callbacks
+    cbo_design_cb = ['pop_StaRUI(''cbo_design'',gcf);']; 
     generate_plot_cb = ['pop_StaRUI(''btn_generate'',gcf);']; 
     check_compute_cb = ['pop_StaRUI(''check_compute'',gcf);']; 
-    cbo_fixvar1_cb = ['pop_StaRUI(''cbo_fixvar1'',gcf);']; 
-    cbo_fixvar2_cb = ['pop_StaRUI(''cbo_fixvar2'',gcf);']; 
-    cbo_fixvar1val_cb = ['pop_StaRUI(''cbo_fixvar1val'',gcf);']; 
-    cbo_fixvar2val_cb = ['pop_StaRUI(''cbo_fixvar2val'',gcf);']; 
+    cbo_var1_cb = ['pop_StaRUI(''cbo_var1'',gcf);']; 
+    cbo_var2_cb = ['pop_StaRUI(''cbo_var2'',gcf);']; 
+    cbo_var3_cb = ['pop_StaRUI(''cbo_var3'',gcf);']; 
+    cbo_var4_cb = ['pop_StaRUI(''cbo_var4'',gcf);']; 
+    cbo_var1val_cb = ['pop_StaRUI(''cbo_var1val'',gcf);']; 
+    cbo_var2val_cb = ['pop_StaRUI(''cbo_var2val'',gcf);']; 
+    cbo_var3val_cb = ['pop_StaRUI(''cbo_var3val'',gcf);']; 
+    cbo_var4val_cb = ['pop_StaRUI(''cbo_var4val'',gcf);']; 
 
     % Design Names...
     designs = {};
@@ -110,23 +117,34 @@ if ~isstr(varargin{1}) %intial settings
     variables{1}.name = 'N/A';
     variables{1}.values = {};
     variables{1}.values{1} = 'N/A';
-    variables{2}.name = 'group';
+    variables{2}.name = 'groups';
     variables{2}.values = {};
-    variables{2}.values{1} = '1';
-    variables{2}.values{2} = '2';
-    variables{3}.name = 'session';
+    variables{2}.values{1} = '3';
+    variables{2}.values{2} = '4';
+    variables{2}.values{3} = 'All';
+    variables{3}.name = 'sessions';
     variables{3}.values = {};
     variables{3}.values{1} = '1';
     variables{3}.values{2} = '2';
     variables{3}.values{3} = '3';
-    variables{4}.name = 'order';
+    variables{3}.values{4} = 'All';
+    variables{4}.name = 'orders';
     variables{4}.values = {};
     variables{4}.values{1} = 'FO';
     variables{4}.values{2} = 'SO';
-    variables{5}.name = 'motion';
+    variables{4}.values{3} = 'All';
+    variables{5}.name = 'motions';
     variables{5}.values = {};
     variables{5}.values{1} = 'F';
     variables{5}.values{2} = 'M';
+    variables{5}.values{3} = 'All';
+    variables{6}.name = 'conditions';
+    variables{6}.values = {};
+    variables{6}.values{1} = 'FOF';
+    variables{6}.values{2} = 'FOM';
+    variables{6}.values{3} = 'SOF';
+    variables{6}.values{4} = 'SOM';
+    variables{6}.values{5} = 'All';
     
     % create domains string
     designString = '';
@@ -182,19 +200,7 @@ if ~isstr(varargin{1}) %intial settings
         variablesString = 'N/A';
     end
     
-    vals = {'Val1', 'Val2', 'Val3'};
-    variablesValString = 'All';
-    if length(vals)>1
-        for n = 1:length(vals)
-            if isempty(variablesValString)
-                variablesValString = vals{n};
-            else
-                variablesValString = [variablesValString '|'  vals{n}];
-            end
-        end
-    else
-        variablesValString = 'N/A';
-    end
+    variablesValString = 'N/A';
     
     nbPlots = 6;
     nbPlotsValid = 1;
@@ -203,7 +209,9 @@ if ~isstr(varargin{1}) %intial settings
 
     statsThreshold = 0.05;
     statsCompute = false;
-
+    
+    uDataVariables = {obj domainID variables designs stats}
+    
     % collect user input
     try
         nRows = 13;
@@ -217,16 +225,16 @@ if ~isstr(varargin{1}) %intial settings
             {nCols nRows [0 5] [1 1]} {nCols nRows [1 5] [1 1]} ...
             {nCols nRows [0 6] [1 1]} ... % Empty Line
             {nCols nRows [0 7] [1 1]} {nCols nRows [2 7] [1 1]} {nCols nRows [3 7] [1 1]} ... % Title Line
-            {nCols nRows [1 8] [1 1]} {nCols nRows [2 8] [1 1]} ... % Var 1
-            {nCols nRows [1 9] [1 1]} {nCols nRows [2 9] [1 1]} ... % Var 2
-            {nCols nRows [1 10] [1 1]} {nCols nRows [2 10] [1 1]} {nCols nRows [3 10] [1 1]} ... % Fix Var 1
-            {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]} {nCols nRows [3 11] [1 1]} ... % Fix Var 2
+            {nCols nRows [1 8] [1 1]} {nCols nRows [2 8] [1 1]} {nCols nRows [3 8] [1 1]} ... % Var 1
+            {nCols nRows [1 9] [1 1]} {nCols nRows [2 9] [1 1]} {nCols nRows [3 9] [1 1]} ... % Var 2
+            {nCols nRows [1 10] [1 1]} {nCols nRows [2 10] [1 1]} {nCols nRows [3 10] [1 1]} ... % Var 3
+            {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]} {nCols nRows [3 11] [1 1]} ... % Var 4
             {nCols nRows [0 12] [1 1]} ... % Empty Line
             {nCols nRows [2 13] [1 2]} ... % Generate button
             {nCols nRows [0 14] [1 1]} ... % Empty Line
             }, ... 
         'uilist',...
-           {{'style' 'text' 'string' ' Design : '}  {'style' 'popupmenu' 'string' designString 'tag' 'design' 'value' 1} ...
+           {{'style' 'text' 'string' ' Design : '}  {'style' 'popupmenu' 'string' designString 'tag' 'design' 'value' 1 'callback' cbo_design_cb} ...
             {} ... 
             {'style' 'text' 'string' ' Stats' 'FontWeight' 'Bold'} ...
             {'style' 'text' 'string' ' Stats : '}  {'style' 'popupmenu' 'string' statsString 'tag' 'stats' 'value' 1} {'style' 'text' 'string' ' Signif. Threshold : '}  {'style' 'edit' 'string' statsThreshold 'tag' 'threshold' 'userdata' 'eeglab' } ...
@@ -234,14 +242,14 @@ if ~isstr(varargin{1}) %intial settings
             {'style' 'text' 'string' ' Compute Stats : '} {'style' 'checkbox' 'string' '' 'tag' 'compute' 'value' statsCompute 'callback' check_compute_cb} , ... ...
             {} ...
             {'style' 'text' 'string' ' Plot & Variables' 'FontWeight' 'Bold'} {'style' 'text' 'string' ' Name'} {'style' 'text' 'string' ' Value'} ...
-            {'style' 'text' 'string' ' Variable 1 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var1' 'value' 2} ...
-            {'style' 'text' 'string' ' Variable 2 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var2' 'value' 3} ...
-            {'style' 'text' 'string' ' [FIXED] Variable 1 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'fixvar1' 'value' 1 'callback' cbo_fixvar1_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'fixvar1val' 'value' 1 'callback' cbo_fixvar1val_cb} ...
-            {'style' 'text' 'string' ' [FIXED] Variable 2 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'fixvar2' 'value' 1 'callback' cbo_fixvar2_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'fixvar2val' 'value' 1 'callback' cbo_fixvar2val_cb} ...
+            {'style' 'text' 'string' ' Variable 1 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var1' 'value' 1 'callback' cbo_var1_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var1val' 'value' 1 'callback' cbo_var1val_cb} ...
+            {'style' 'text' 'string' ' Variable 2 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var2' 'value' 1 'callback' cbo_var2_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var2val' 'value' 1 'callback' cbo_var2val_cb} ...
+            {'style' 'text' 'string' ' Variable 3* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var3' 'value' 1 'callback' cbo_var3_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var3val' 'value' 1 'callback' cbo_var3val_cb} ...
+            {'style' 'text' 'string' ' Variable 4* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var4' 'value' 1 'callback' cbo_var4_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var4val' 'value' 1 'callback' cbo_var4val_cb} ...
             {} ...
             {'style' 'pushbutton' 'string' 'Generate' 'tag' 'generate' 'callback' generate_plot_cb} ...
             {} ...
-            }, 'userdata', nbPlots);
+            }, 'userdata', uDataVariables);
     catch
         disp('## ERROR ## pop_StaRUI() cant load...');
     end
@@ -261,20 +269,23 @@ if ~isstr(varargin{1}) %intial settings
     StaRParams.correction       = userInput{1,4};
     StaRParams.compute          = userInput{1,5};
     
-    StaRParams.vars{1}.name_ind         = userInput{1,6};
-    StaRParams.vars{2}.name_ind         = userInput{1,7};
-    StaRParams.fixvars{1}.name_ind      = userInput{1,8};
-    StaRParams.fixvars{1}.val_ind       = userInput{1,9};
-    StaRParams.fixvars{2}.name_ind      = userInput{1,10};
-    StaRParams.fixvars{2}.val_ind       = userInput{1,11};
+    StaRParams.vars{1}.name_ind      = userInput{1,6};
+    StaRParams.vars{1}.val_ind       = userInput{1,7};
+    StaRParams.vars{2}.name_ind      = userInput{1,8};
+    StaRParams.vars{2}.val_ind       = userInput{1,9};
+    StaRParams.vars{3}.name_ind      = userInput{1,10};
+    StaRParams.vars{3}.val_ind       = userInput{1,11};
+    StaRParams.vars{4}.name_ind      = userInput{1,12};
+    StaRParams.vars{4}.val_ind       = userInput{1,13};
     
     StaRParams.vars{1}.name = variables{StaRParams.vars{1}.name_ind}.name;
+    StaRParams.vars{1}.value = variables{StaRParams.vars{1}.name_ind}.values{StaRParams.vars{1}.val_ind};
     StaRParams.vars{2}.name = variables{StaRParams.vars{2}.name_ind}.name;
-    
-    StaRParams.fixvars{1}.name = variables{StaRParams.fixvars{1}.name_ind}.name;
-    StaRParams.fixvars{1}.value = vals{StaRParams.fixvars{1}.val_ind};
-    StaRParams.fixvars{2}.name = variables{StaRParams.fixvars{2}.name_ind}.name;
-    StaRParams.fixvars{2}.value = vals{StaRParams.fixvars{2}.val_ind};
+    StaRParams.vars{2}.value = variables{StaRParams.vars{2}.name_ind}.values{StaRParams.vars{2}.val_ind};
+    StaRParams.vars{3}.name = variables{StaRParams.vars{3}.name_ind}.name;
+    StaRParams.vars{3}.value = variables{StaRParams.vars{3}.name_ind}.values{StaRParams.vars{3}.val_ind};
+    StaRParams.vars{4}.name = variables{StaRParams.vars{4}.name_ind}.name;
+    StaRParams.vars{4}.value = variables{StaRParams.vars{4}.name_ind}.values{StaRParams.vars{4}.val_ind};
     
     % Get params and send them over to R in a 'StaR' protocol!
     disp('Saving... ');
@@ -286,8 +297,7 @@ if ~isstr(varargin{1}) %intial settings
     starThreshold = StaRParams.threshold;
     starCorrection = StaRParams.correction;
     starVars = StaRParams.vars;
-    starFixVars = StaRParams.fixvars;
-    save(fileTestName, 'starDesign', 'starStats', 'starThreshold', 'starCorrection', 'starVars', 'starFixVars');
+    save(fileTestName, 'starDesign', 'starStats', 'starThreshold', 'starCorrection', 'starVars');
     
     disp('Saved!');
     
@@ -299,11 +309,13 @@ if ~isstr(varargin{1}) %intial settings
     disp(['Compute? ' num2str(StaRParams.compute)]);
     disp('--------------');
     disp(['Var1 - ' StaRParams.vars{1}.name]);
+    disp(['Var1 Val - ' StaRParams.vars{1}.value]);
     disp(['Var2 - ' StaRParams.vars{2}.name]);
-    disp(['Fix Var1 - ' StaRParams.fixvars{1}.name]);
-    disp(['Fix Var1 Val - ' StaRParams.fixvars{1}.value]);
-    disp(['Fix Var2 - ' StaRParams.fixvars{2}.name]);
-    disp(['Fix Var2 Val - ' StaRParams.fixvars{2}.value]);
+    disp(['Var2 Val - ' StaRParams.vars{2}.value]);
+    disp(['Var3 - ' StaRParams.vars{3}.name]);
+    disp(['Var3 Val - ' StaRParams.vars{3}.value]);
+    disp(['Var4 - ' StaRParams.vars{4}.name]);
+    disp(['Var4 Val - ' StaRParams.vars{4}.value]);
     % -- Debug Disp --
 
     if StaRParams.compute
@@ -337,28 +349,364 @@ if ~isstr(varargin{1}) %intial settings
 else
     % varargin 1 - The string you pick (for the switch)
     % varargin 2 - userdata sent to inputui() (multiple variables)
-    userdat = get(varargin{2}, 'userdata');    
-        
+    hdl = varargin{2}; %figure handle
+    userdat = get(varargin{2}, 'userdata');
+    obj = userdat{1};
+    domainID = userdat{2};
+    variables = userdat{3};
+    designs = userdat{4};
+    stats = userdat{5};
+	
+    defaultFolder = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/Latest/';
+    
     switch  varargin{1}
-        case 'btn_generate'
-            %if statsCompute
-            if userdat == 5
-                disp('YES!');
+        case 'cbo_design'
+            var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
+            var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
+            
+            disp(designs{var_designID}.Name);
+            designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID) '/Stats_' stats{var_statsID}.function '/Design_' obj.object.measureLabel '_' num2str(designs{var_designID}.No)];
+
+            disp(['Checking for files in: ' designFolderPath]);
+            if exist(designFolderPath, 'dir')
+                disp(['Design found in ' designFolderPath]);
             else
-                disp('NO :(');
+                disp(['Design NOT found in ' designFolderPath]);
+                disp('Disabling Controls...'); % TODO ...
             end
+            
+        case 'btn_generate'
+            var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
+            var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
+            
+            disp(designs{var_designID}.Name);
+
+            designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID) '/Stats_' stats{var_statsID}.function '/Design_' obj.object.measureLabel '_' num2str(designs{var_designID}.No)];
+            designFilePath = [designFolderPath '/Workspace_Fullx.mat'];
+                
+            generateStaRPlots(obj.object, domainID, designFilePath);
+            
         case 'check_compute'
             checkcompute = get(findobj('parent', hdl, 'tag', 'compute'), 'value')
-        case 'cbo_fixvar1'
-            disp('Fix Var 1');
-        case 'cbo_fixvar2'
-            disp('Fix Var 2');
-        case 'cbo_fixvar1val'
-            disp('Fix Var 1 Val');
-        case 'cbo_fixvar2val'
-            disp('Fix Var 2 Val');
+            
+        case 'cbo_var1'
+            var_selID = get(findobj('parent', hdl, 'tag', 'var1'), 'value');
+            valString = getValString(variables{var_selID}.values);
+            set(findobj('parent', hdl,'tag', 'var1val'), 'string', valString, 'value', length(variables{var_selID}.values));  
+            
+        case 'cbo_var2'
+            var_selID = get(findobj('parent', hdl, 'tag', 'var2'), 'value');
+            valString = getValString(variables{var_selID}.values);
+            set(findobj('parent', hdl,'tag', 'var2val'), 'string', valString, 'value', length(variables{var_selID}.values));  
+            
+        case 'cbo_var3'
+            var_selID = get(findobj('parent', hdl, 'tag', 'var3'), 'value');
+            valString = getValString(variables{var_selID}.values);
+            set(findobj('parent', hdl,'tag', 'var3val'), 'string', valString, 'value', length(variables{var_selID}.values));  
+            
+        case 'cbo_var4'
+            var_selID = get(findobj('parent', hdl, 'tag', 'var4'), 'value');
+            valString = getValString(variables{var_selID}.values);
+            set(findobj('parent', hdl,'tag', 'var4val'), 'string', valString, 'value', length(variables{var_selID}.values));  
+            
+        case 'cbo_var1val'
+            %disp('Fix Var 1 Val');
+        case 'cbo_var2val'
+            %disp('Fix Var 2 Val');
+    end             
+end
+
+function figureHandle = generateStaRPlots(obj, domainID, designFileName)
+    
+    bSanityCheck = 1;
+    
+    %if statsCompute
+    bCompStats = get(findobj('parent', hdl, 'tag', 'compute'), 'value');
+    if bCompStats
+        disp('Compute the stats...');
+    else
+        disp('Do not compute the stats...');
     end
+    
+    % TODO: Add CheckBox to be able to plot regular pValues.
+    bPSignificants = 1;
+    
+    pSignifThreshold = str2num(get(findobj('parent', hdl, 'tag', 'threshold'), 'string'))
+
+    Var1_selID = get(findobj('parent', hdl, 'tag', 'var1'), 'value');
+    Val1_selID = get(findobj('parent', hdl, 'tag', 'var1val'), 'value');
+    Var2_selID = get(findobj('parent', hdl, 'tag', 'var2'), 'value');
+    Val2_selID = get(findobj('parent', hdl, 'tag', 'var2val'), 'value');
+    Var3_selID = get(findobj('parent', hdl, 'tag', 'var3'), 'value');
+    Val3_selID = get(findobj('parent', hdl, 'tag', 'var3val'), 'value');
+    Var4_selID = get(findobj('parent', hdl, 'tag', 'var4'), 'value');
+    Val4_selID = get(findobj('parent', hdl, 'tag', 'var4val'), 'value');
+
+    % Prep Var1 & check if 'All'
+    if(strcmp(variables{Var1_selID}.values{Val1_selID}, 'All'))
+        for i = 1:length(variables{Var1_selID}.values) - 1
+            Val1{i} = variables{Var1_selID}.values{i};
+            Var1{i} = variables{Var1_selID}.name;
+        end 
+    else
+        Var1{1} = variables{Var1_selID}.name;
+        Val1{1} = variables{Var1_selID}.values{Val1_selID};
+    end
+
+    % Prep Var2 & check if 'All'
+    if(strcmp(variables{Var2_selID}.values{Val2_selID}, 'All'))
+        for i = 1:length(variables{Var2_selID}.values) - 1
+            Val2{i} = variables{Var2_selID}.values{i};
+            Var2{i} = variables{Var2_selID}.name;
+        end 
+    else
+        Var2{1} = variables{Var2_selID}.name;
+        Val2{1} = variables{Var2_selID}.values{Val2_selID};
+    end
+    
+    % Prep Var3 & check if 'All'
+    if(strcmp(variables{Var3_selID}.values{Val3_selID}, 'All'))
+        %for i = 1:length(variables{Var3_selID}.values) - 1
+        %    Val3{i} = variables{Var3_selID}.values{i};
+        %    Var3{i} = variables{Var3_selID}.name;
+        %end 
+        disp('## NOT SUPPORTED! Please select 1 value for your variable 4');
+        return;
+    else
+        Var3{1} = variables{Var3_selID}.name;
+        Val3{1} = variables{Var3_selID}.values{Val3_selID};
+    end
+
+    % Prep Var4 & check if 'All'
+    if(strcmp(variables{Var4_selID}.values{Val4_selID}, 'All'))
+        %for i = 1:length(variables{Var4_selID}.values) - 1
+        %    Val4{i} = variables{Var4_selID}.values{i};
+        %    Var4{i} = variables{Var4_selID}.name;
+        %end 
+        disp('## NOT SUPPORTED! Please select 1 value for your variable 4');
+        return;
+    else
+        Var4{1} = variables{Var4_selID}.name;
+        Val4{1} = variables{Var4_selID}.values{Val4_selID};
+    end
+    
+    disp('-- Var & Vals --');
+    disp(Var1);
+    disp(Val1);
+    disp(Var2);
+    disp(Val2);
+    disp(Var3);
+    disp(Val3);
+    disp(Var4);
+    disp(Val4);
+    disp('----------------');
+
+    % Plot Based on Selection.
+    vars_test = {{'conditions'}, {'groups'}, {'groups'}};
+    vals_test = {{'FOM'}, {'3'}, {'4'}};
+
+    [Var1, Val1] = cleanVarVals(Var1, Val1);
+    [Var2, Val2] = cleanVarVals(Var2, Val2);
+    [Var3, Val3] = cleanVarVals(Var3, Val3);
+    [Var4, Val4] = cleanVarVals(Var4, Val4);
+    
+    vars_UI = cat(2, Var1, Var2, Var3, Var4);
+    vals_UI = cat(2, Val1, Val2, Val3, Val4);
+
+    vars = vars_UI;
+    vals = vals_UI;
+
+    cleanVarVals(vars, vals)
+
+    % Load existing file. (for now)
+    if strcmp(obj.measureLabel, 'ERP') && strcmp(designFileName, '')
+        %filename = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Playground/Jul05_13h03/ERP/Domain_1/Stats_aov/Design_ERP_11/Workspace_Fullx.mat';
+        designFileName = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Playground/Jul10_00h02/ERP/Domain_1/Stats_aov/Design_ERP_11/Workspace_Fullx.mat';
+    end
+    if strcmp(obj.measureLabel, 'ERSP') && strcmp(designFileName, '')
+        %filename = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/Jul09_23h08/ERSP/Domain_1/Stats_aov/Design_ERSP_11/Workspace_Fullx.mat';
+        designFileName = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/Jul10_19h13/ERSP/Domain_1/Stats_aov/Design_ERSP_11/Workspace_Fullx.mat';
+    end
+    
+    if ~exist(designFileName, 'file')
+        disp(['## Invalid file: ' designFileName]);
+        return;
+    end
+    
+    % Get DF & VarVals. (only once)
+    df = StaR_getVarValDF(designFileName);
+    
+    bShortTitles = 1;
+    bPValsTitles = 0;
+    
+    mixPlots = {};
+    mixTitles = {};
+    
+    % Rows (i, Var1) | Cols (j, Var2) - with other vars.
+    for i = 1:length(Val1)
+        if ~isempty(Val2)
+            for j = 1:length(Val2)
+                curDataVars = cat(2, Var1{i}, Var2{j}, Var3, Var4);
+                curDataVals = cat(2, Val1{i}, Val2{j}, Val3, Val4);
+                dataPlotIDs{i,j} = StaR_getVarValPlots(curDataVars, curDataVals, df, 'data');
+                if(~isempty(dataPlotIDs{i,j}))
+                    mixPlots{i,j} =  df.data{dataPlotIDs{i,j}}.plotVal;
+                    mixTitles{i,j} = df.data{dataPlotIDs{i,j}}.lbl;
+                end
                 
+                curPValsVars = cat(2, Var1{:}, Var2{j}, Var3, Var4);
+                curDataVals = cat(2, Val1{:}, Val2{j}, Val3, Val4);
+                pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pVals');
+                
+                if ~isempty(pValsPlotIDs.cols{j})
+                    mixPlots{length(Val1) + 1, j} =  df.pVals{pValsPlotIDs.cols{j}}.plotVal;
+                    
+                    if bPSignificants && ~isempty(mixPlots{length(Val1) + 1, j})
+                        mixPlots{length(Val1) + 1, j}(mixPlots{length(Val1) + 1, j} < pSignifThreshold) = 2; % 2 for a better color contrast.
+                        mixPlots{length(Val1) + 1, j}(mixPlots{length(Val1) + 1, j} ~= 2) = 0;
+                    end
+                        
+                    if bPValsTitles
+                        mixTitles{length(Val1) + 1, j} = df.pVals{pValsPlotIDs.cols{j}}.lbl;
+                    else
+                        mixTitles{length(Val1) + 1, j} = 'pVals';
+                    end
+                end
+            end
+        else
+            dataPlotIDs{i, 1} = StaR_getVarValPlots(vars, vals, df, 'data');
+            
+            if ~isempty(dataPlotIDs{i, 1})
+                mixPlots{i, 1} =  df.data{dataPlotIDs{i, 1}}.plotVal;
+                mixTitles{i, 1} = df.data{dataPlotIDs{i, 1}}.lbl;
+            end
+        end
+        
+        % Get pVals Plots Combining Vars / Vals.
+        curPValsVars = cat(2, Var1{i}, Var2{:}, Var3, Var4);
+        curDataVals = cat(2, Val1{i}, Val2{:}, Val3, Val4);
+        pValsPlotIDs.rows{i} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pVals');
+        
+        if ~isempty(pValsPlotIDs.rows{i})
+            mixPlots{i, length(Val2) + 1} =  df.pVals{pValsPlotIDs.rows{i}}.plotVal;
+            
+            if bPSignificants && ~isempty(mixPlots{i, length(Val2) + 1})
+                mixPlots{i, length(Val2) + 1}(mixPlots{i, length(Val2) + 1} < pSignifThreshold) = 2; % 2 for a better color contrast.
+                mixPlots{i, length(Val2) + 1}(mixPlots{i, length(Val2) + 1} ~= 2) = 0;
+            end
+                    
+            if bPValsTitles
+                mixTitles{i, length(Val2) + 1} = df.pVals{pValsPlotIDs.rows{i}}.lbl;
+            else
+                mixTitles{i, length(Val2) + 1} = 'pVals';
+            end
+        end
+    end
+    
+    % Test
+    %dataPlotIDs
+    %pValsPlotIDs.cols
+    %pValsPlotIDs.rows
+    %mixPlots
+    %mixTitles
+    
+    if bShortTitles
+        mixTitles = getShortTitles(mixTitles);
+    end
+    
+    if length(mixPlots) == 0
+        disp('There is nothing to plot... Please select something else.');
+        return;
+    else
+        if (strcmp(obj.measureLabel, 'ERSP'))
+            disp(['Plotting ERSP Domain #' num2str(domainID)]);
+            std_plottf(df.timeData, df.freqData, mixPlots,  'titles', mixTitles);%, varargin{:});
+        end
+
+        if (strcmp(obj.measureLabel, 'ERP'))
+            disp(['ERP! Domain #' num2str(domainID)]);
+            %if length(measureAsArrayInCell) <= numberOfConditionsInEachFigure
+                % put ERP traces together inone plot;
+
+
+                %pr.std_plotcurve(df.timeData, {df.pVals{plotIDs(i)}.plotVal}, 'titles', {df.pVals{plotIDs(i)}.lbl}, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'apart', 'figure', 'off');%, varargin{:});
+                pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'apart', 'figure', 'off');%, varargin{:});
+
+                % put legend for conditions
+            %    legend(title);
+
+                % make lines thicker.
+            %   set(findobj(gcf, 'type', 'Line'), 'linewidth', 2);
+            %end
+        end
+        %plot(df{plotIDs(i)}.plotVal);
+
+        %figureHandle = gfc;
+    end
+end
+
+function valString = getValString(vals)
+    variablesValString = '';
+    if length(vals)>1
+        for n = 1:length(vals)
+            if isempty(variablesValString)
+                variablesValString = vals{n};
+            else
+                variablesValString = [variablesValString '|'  vals{n}];
+            end
+        end
+    else
+        variablesValString = 'N/A';
+    end
+
+    valString = variablesValString;
+end
+
+function [vars, vals] = cleanVarVals(vars, vals)
+    for i = 1:length(vars)
+        if (strcmp(vars{i}, 'N/A') == 1) || (strcmp(vals{i}, 'N/A') == 1)
+            vars{i} = [];
+            vals{i} = [];
+        end
+    end
+end
+
+%% ShortTitles
+% Shitty Code to Shorten the Titles with only the First 2 Letters. (e.g. Groups=3 -> Gr=3)
+% TODO : Handle the potential problems to avoid crashes.
+function shortTitles = getShortTitles(titles)
+    
+    shortTitles = {};
+    
+    for i = 1:size(titles,1)
+        for j = 1:size(titles, 2)                
+             comb1 = strsplit(titles{i,j}, '|');
+             shortTitle1 = '';
+             for k = 1:length(comb1)
+                 comb2 = strsplit(comb1{k}, ';');
+                 shortTitle2 = '';
+                 for l = 1:length(comb2)
+                     tmpComb = strsplit(comb2{l}, '=')
+                     if length(tmpComb) == 2
+                         comb2{l} = [tmpComb{1}(1:2) '=' tmpComb{2}];
+                         if isempty(shortTitle2)
+                             shortTitle2 = comb2{l};
+                         else
+                             shortTitle2 = [shortTitle2 ';' comb2{l}];
+                         end
+                     else
+                         disp('## tmpComb in shortTitles is not 2');
+                     end
+                 end
+                 if isempty(shortTitle1)
+                     shortTitle1 = shortTitle2
+                 else
+                     shortTitle1 = [shortTitle1 '|' shortTitle2]
+                 end
+             end
+             shortTitles{i,j} = shortTitle1;
+        end    
+    end
 end
 
 function plotStaR(obj, linearProjectedMeasureForCombinedCondition, headGrid, regionOfInterestCube, projectionParameter, twoConditionLabelsForComparison, significanceLevelForConditionDifference, usePositionProjections, statisticsParameter, plottingParameter)

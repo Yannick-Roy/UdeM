@@ -58,7 +58,7 @@ if length(obj.projection.domain)>1
         if isempty(domainString)
             domainString = obj.projection.domain(1,n).label;
         else
-            domainString = [domainString '|'  obj.projection.domain(1,n).label];;
+            domainString = [domainString '|'  obj.projection.domain(1,n).label];
         end
     end
 else
@@ -134,8 +134,8 @@ if isempty(userInput)
     return
 end
 
-% store userInput to STUDY (MPT.StaR)
-STUDY.measureProjection.StaR = userInput;
+% store userInput to STUDY (MPT.specificDipoles)
+STUDY.measureProjection.specificDipoles = userInput;
 
 % create colorIndex
 colorIndex = [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16];

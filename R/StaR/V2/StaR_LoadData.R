@@ -143,23 +143,25 @@ staR_SmallSamples <- function(fullData, times, freqs, dataType)
   #timeVals <- timeVals[lowLimit:highLimit]
   if(dataType == "ERSP")
   {
+    print(timeData)
+    
     # Time
-    lowLimit_time <- which(timeData > 100)[1] # From 100ms
-    highLimit_time <- which(timeData < 300)  # To 300ms
+    lowLimit_time <- which(timeData > -100)[1] # From -100ms
+    highLimit_time <- which(timeData < 600)  # To 600ms
     highLimit_time <- highLimit_time[length(highLimit_time) - 1]
     
     # Freq
-    lowLimit_freq <- which(freqData > 10)[1] # From 10Hz
-    highLimit_freq <- which(freqData < 13)   # To 13Hz
+    lowLimit_freq <- which(freqData > 8)[1] # From 8Hz
+    highLimit_freq <- which(freqData < 16)   # To 16Hz
     highLimit_freq <- highLimit_freq[length(highLimit_freq) - 1]
     
     # TODO : Fix this, not the real "sub squarre in the matrix!"
     dataIndices <- NULL
     for(i in lowLimit_freq:highLimit_freq)
     {
-      #print(paste("lowLimit_time : ", lowLimit_time))
-      #print(paste("lowLimit_time : ", highLimit_time))
-      #print(paste("length(timeData)", length(timeData)))
+      print(paste("lowLimit_time : ", lowLimit_time))
+      print(paste("lowLimit_time : ", highLimit_time))
+      print(paste("length(timeData)", length(timeData)))
       dataIndices <- c(dataIndices, seq(i * length(timeData) + lowLimit_time, i * length(timeData) + lowLimit_time + (highLimit_time - lowLimit_time)))
     }
     
@@ -410,6 +412,8 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[2]][[2]][[3]] <- lapply(fullData, subset, orders == "SO" & sessions == 3 & groups == 4)
   }
   
+  # Clean & Easy way of putting the titles. But only supports 1 value for 1 variable. (uses the "unique" approach)
+  # Otherwise, it would have to be more specific and more "design" dependant. Like the VarVal approach (committed July 5th 2016)
   if(iDesign <= 18)
   {
     dsDataList <- list()
@@ -445,7 +449,7 @@ staR_selectData <- function(fullData, iDesign)
     dsDataList <- list()
     dsDataList.Title <- list()
   }
-  retVal = list(subDataset, dsDataList, dsDataList.Title, subDatasetVarVals)
+  retVal = list(subDataset, dsDataList, subDatasetVarVals)#dsDataList.Title)
 }
 
 ###########################################################################

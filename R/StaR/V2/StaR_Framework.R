@@ -34,7 +34,7 @@ bReloadRData = FALSE
 bLoadMatlabFile = TRUE
 bPrepMatlabData = TRUE
 
-bSmallSamples = TRUE
+bSmallSamples = FALSE
 
 bSaveOnDiskImages = TRUE
 bSaveOnDiskData_R = TRUE
@@ -69,7 +69,7 @@ dirPlotsPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/St
 #**************************************************************************
 #save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
 #for(curAnalysis in 1:2)
-curAnalysis = 1
+curAnalysis = 2
 {
   #for(domainNo in 1:3)
   domainNo = 1
@@ -191,8 +191,6 @@ curAnalysis = 1
           subDataset = retVal[[1]]
           subData = retVal[[2]]
           subData.Titles = retVal[[3]]
-          subData.VarVals = retVal[[4]]
-          writeMat("TestAsIs.mat", 'titles' = subData.Titles)
           print("Done !")
           
           paramsList <- list()
@@ -238,7 +236,7 @@ curAnalysis = 1
               
               if(bSubDataAnalysis)
               {
-                stats.subAnalysis.aov.retVal <- staR_aov_sub(subDataset, iDesign, subData.VarVals)
+                stats.subAnalysis.aov.retVal <- staR_aov_sub(subDataset, iDesign, subData.Titles)
                 
                 stats.subAnalysis.pVals <- stats.subAnalysis.aov.retVal[[1]]
                 stats.subAnalysis.pTitles <- stats.subAnalysis.aov.retVal[[2]]
@@ -404,6 +402,8 @@ curAnalysis = 1
               #c <- sapply(subData[[1]][[1]], FUN = function(x) mapply(as.matrix(x), FUN=unlist), simplify="matrix")
               mList <- lapply(paramsList, FUN= function(x) lapply(x, FUN= function(x) lapply(x, FUN=function(x) x$means)))
               mUnlist <- unlist(mList)
+              
+              dataSub <- unlist(lapply(subData, FUN= function(x) lapply(x, FUN= function(x) lapply(x, FUN=function(x) x))))
               #writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, means=mUnlist, iDesign = iDesign, designName = designName, pValsFull = unlist(stats.fullAnalysis.pVals), pSignificantsFull = unlist(stats.fullAnalysis.pSignificants), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'n' = n, 'd' = d)
               
               ############################
@@ -431,7 +431,8 @@ curAnalysis = 1
               ############################
               ############################
               
-              writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), timeData = timeData, freqData = freqData, means=mUnlist, iDesign = iDesign, designName = designName, pValsFull = unlist(stats.fullAnalysis.pVals), pSignificantsFull = unlist(stats.fullAnalysis.pSignificants), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'n' = n, 'd' = d)
+              #writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), typeData = data.type, timeData = timeData, freqData = freqData, iDesign = iDesign, designName = designName, means=mUnlist, pValsFull = unlist(stats.fullAnalysis.pVals), pSignificantsFull = unlist(stats.fullAnalysis.pSignificants), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'n' = n, 'd' = d)
+              writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), typeData = data.type, timeData = timeData, freqData = freqData, iDesign = iDesign, designName = designName, pValsFull = unlist(stats.fullAnalysis.pVals), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pValsSub = unlist(stats.subAnalysis.pVals), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'dataSub' = d, 'titlesSub' = n)
             }
             
             # -- Plot Stats --

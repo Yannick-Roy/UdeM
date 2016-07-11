@@ -55,12 +55,11 @@ staR_aov_pvals <- function(summary)
 ###################################################################################
 ######  SUB !
 ###################################################################################
-staR_aov_sub <- function(subData, iDesign, subVarVals = NULL)
+staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
 {
   #=======================================#
   # DELETE ME! - TEST ONLY
   #subData <- subDataset
-  #subVarVals <- subData.VarVals
   
   #stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
   # DELETE ME! - TEST ONLY
@@ -164,7 +163,7 @@ staR_aov_sub <- function(subData, iDesign, subVarVals = NULL)
   stats.subAnalysis.vData <- staR_InvertDimensions3D(vDataset)
   stats.subAnalysis.lData <- staR_InvertDimensions3D(lDataset)
   
-  stats.subAnalysis.VarVals <- staR_InvertDimensions3D(subVarVals)
+  stats.subAnalysis.VarVals <- staR_InvertDimensions3D(subTitles)
   
   # Notes *format*: subVarVals[[hData]][[vData]][[lData]]
   # For example, with Design 11:  subVarVals[[1]][[2]]][[1]]  (groups=3, conditions=FOM)
@@ -244,7 +243,7 @@ staR_aov_sub <- function(subData, iDesign, subVarVals = NULL)
                 if(is.null(titleCombined)) {
                   titleCombined <- stats.subAnalysis.VarVals[[j]][[vv]][[1]]
                 } else {
-                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[1]], sep="|")
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[1]], sep=" | ")
                 }
               }
             }
@@ -255,7 +254,7 @@ staR_aov_sub <- function(subData, iDesign, subVarVals = NULL)
                 if(is.null(titleCombined)) {
                   titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[1]]
                 } else {
-                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[1]], sep="|")
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[1]], sep=" | ")
                 }
               }
             }
