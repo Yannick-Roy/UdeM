@@ -187,19 +187,7 @@ if ~isstr(varargin{1}) %intial settings
         correctionString = 'N/A';
     end
     
-    variablesString = '';
-    if length(variables)>1
-        for n = 1:length(variables)
-            if isempty(variablesString)
-                variablesString = variables{n}.name;
-            else
-                variablesString = [variablesString '|'  variables{n}.name];
-            end
-        end
-    else
-        variablesString = 'N/A';
-    end
-    
+    variablesString = 'N/A';
     variablesValString = 'N/A';
     
     nbPlots = 6;
@@ -214,7 +202,7 @@ if ~isstr(varargin{1}) %intial settings
     
     % collect user input
     try
-        nRows = 13;
+        nRows = 15;
         nCols = 5;
        userInput = inputgui('title', 'pop_StaRUI()', 'geom', ...
            {{nCols nRows [0 0] [1 1]} {nCols nRows [1 0] [4 1]} ...
@@ -229,9 +217,10 @@ if ~isstr(varargin{1}) %intial settings
             {nCols nRows [1 9] [1 1]} {nCols nRows [2 9] [1 1]} {nCols nRows [3 9] [1 1]} ... % Var 2
             {nCols nRows [1 10] [1 1]} {nCols nRows [2 10] [1 1]} {nCols nRows [3 10] [1 1]} ... % Var 3
             {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]} {nCols nRows [3 11] [1 1]} ... % Var 4
-            {nCols nRows [0 12] [1 1]} ... % Empty Line
-            {nCols nRows [2 13] [1 2]} ... % Generate button
-            {nCols nRows [0 14] [1 1]} ... % Empty Line
+            {nCols nRows [1 12] [1 1]} {nCols nRows [2 12] [1 1]} ... % Plot Correction Check Box
+            {nCols nRows [0 13] [1 1]} ... % Empty Line
+            {nCols nRows [2 14] [1 2]} ... % Generate button
+            {nCols nRows [0 15] [1 1]} ... % Empty Line
             }, ... 
         'uilist',...
            {{'style' 'text' 'string' ' Design : '}  {'style' 'popupmenu' 'string' designString 'tag' 'design' 'value' 1 'callback' cbo_design_cb} ...
@@ -246,6 +235,7 @@ if ~isstr(varargin{1}) %intial settings
             {'style' 'text' 'string' ' Variable 2 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var2' 'value' 1 'callback' cbo_var2_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var2val' 'value' 1 'callback' cbo_var2val_cb} ...
             {'style' 'text' 'string' ' Variable 3* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var3' 'value' 1 'callback' cbo_var3_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var3val' 'value' 1 'callback' cbo_var3val_cb} ...
             {'style' 'text' 'string' ' Variable 4* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var4' 'value' 1 'callback' cbo_var4_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var4val' 'value' 1 'callback' cbo_var4val_cb} ...
+            {'style' 'text' 'string' ' Use Corrected pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_correction' 'value' true} , ... 
             {} ...
             {'style' 'pushbutton' 'string' 'Generate' 'tag' 'generate' 'callback' generate_plot_cb} ...
             {} ...
@@ -356,6 +346,8 @@ else
     variables = userdat{3};
     designs = userdat{4};
     stats = userdat{5};
+    
+    updateVals = [];
 	
     defaultFolder = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/Latest/';
     
@@ -363,6 +355,36 @@ else
         case 'cbo_design'
             var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
             var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
+            
+            %---------------------------------------------------
+            % Update the Var Combobox Based on Design Variables.
+            %---------------------------------------------------
+            [nbVars, varString] = getVarString(variables, designs{var_designID}.Name, true);
+            if nbVars > 0 
+                set(findobj('parent', hdl,'tag', 'var1'), 'string', varString, 'value', 1);
+            else
+                set(findobj('parent', hdl,'tag', 'var1'), 'string', 'N/A', 'value', 1);
+            end
+            if nbVars > 1
+                set(findobj('parent', hdl,'tag', 'var2'), 'string', varString, 'value', 1);
+            else
+                set(findobj('parent', hdl,'tag', 'var2'), 'string', 'N/A', 'value', 1);
+            end
+            if nbVars > 2                
+                set(findobj('parent', hdl,'tag', 'var3'), 'string', varString, 'value', 1);
+            else
+                set(findobj('parent', hdl,'tag', 'var3'), 'string', 'N/A', 'value', 1);
+            end
+            if nbVars > 3
+                set(findobj('parent', hdl,'tag', 'var4'), 'string', varString, 'value', 1);
+            else
+                set(findobj('parent', hdl,'tag', 'var4'), 'string', 'N/A', 'value', 1);
+            end
+            
+            updateVals = [1,2,3,4];
+            % Don't forget to update their Values! (putting the string and
+            % value in the UI, doesn't trigger the callback.
+            %---------------------------------------------------
             
             disp(designs{var_designID}.Name);
             designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID) '/Stats_' stats{var_statsID}.function '/Design_' obj.object.measureLabel '_' num2str(designs{var_designID}.No)];
@@ -390,33 +412,28 @@ else
             checkcompute = get(findobj('parent', hdl, 'tag', 'compute'), 'value')
             
         case 'cbo_var1'
-            var_selID = get(findobj('parent', hdl, 'tag', 'var1'), 'value');
-            valString = getValString(variables{var_selID}.values);
-            set(findobj('parent', hdl,'tag', 'var1val'), 'string', valString, 'value', length(variables{var_selID}.values));  
-            
-        case 'cbo_var2'
-            var_selID = get(findobj('parent', hdl, 'tag', 'var2'), 'value');
-            valString = getValString(variables{var_selID}.values);
-            set(findobj('parent', hdl,'tag', 'var2val'), 'string', valString, 'value', length(variables{var_selID}.values));  
-            
-        case 'cbo_var3'
-            var_selID = get(findobj('parent', hdl, 'tag', 'var3'), 'value');
-            valString = getValString(variables{var_selID}.values);
-            set(findobj('parent', hdl,'tag', 'var3val'), 'string', valString, 'value', length(variables{var_selID}.values));  
-            
-        case 'cbo_var4'
-            var_selID = get(findobj('parent', hdl, 'tag', 'var4'), 'value');
-            valString = getValString(variables{var_selID}.values);
-            set(findobj('parent', hdl,'tag', 'var4val'), 'string', valString, 'value', length(variables{var_selID}.values));  
+            updateVals = 1;
+        case 'cbo_var2'           
+            updateVals = 2;
+        case 'cbo_var3'           
+            updateVals = 3;
+        case 'cbo_var4'        
+            updateVals = 4;
             
         case 'cbo_var1val'
             %disp('Fix Var 1 Val');
         case 'cbo_var2val'
             %disp('Fix Var 2 Val');
     end             
+    
+    for i = updateVals
+        var_selID = get(findobj('parent', hdl, 'tag', ['var' num2str(i)]), 'value');
+        valString = getValString(variables{var_selID}.values);
+        set(findobj('parent', hdl,'tag', ['var' num2str(i) 'val']), 'string', valString, 'value', length(variables{var_selID}.values));  
+    end
 end
 
-function figureHandle = generateStaRPlots(obj, domainID, designFileName)
+function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO: Replace with Params{:}
     
     bSanityCheck = 1;
     
@@ -431,8 +448,9 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName)
     % TODO: Add CheckBox to be able to plot regular pValues.
     bPSignificants = 1;
     
-    pSignifThreshold = str2num(get(findobj('parent', hdl, 'tag', 'threshold'), 'string'))
-
+    pSignifThreshold = str2num(get(findobj('parent', hdl, 'tag', 'threshold'), 'string'));
+    bPCorrected = get(findobj('parent', hdl, 'tag', 'plot_correction'), 'value');
+    
     Var1_selID = get(findobj('parent', hdl, 'tag', 'var1'), 'value');
     Val1_selID = get(findobj('parent', hdl, 'tag', 'var1val'), 'value');
     Var2_selID = get(findobj('parent', hdl, 'tag', 'var2'), 'value');
@@ -559,7 +577,11 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName)
                 pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pVals');
                 
                 if ~isempty(pValsPlotIDs.cols{j})
-                    mixPlots{length(Val1) + 1, j} =  df.pVals{pValsPlotIDs.cols{j}}.plotVal;
+                    if bPCorrected
+                        mixPlots{length(Val1) + 1, j} =  df.pVals{pValsPlotIDs.cols{j}}.plotValCorrected;
+                    else
+                        mixPlots{length(Val1) + 1, j} =  df.pVals{pValsPlotIDs.cols{j}}.plotVal;
+                    end
                     
                     if bPSignificants && ~isempty(mixPlots{length(Val1) + 1, j})
                         mixPlots{length(Val1) + 1, j}(mixPlots{length(Val1) + 1, j} < pSignifThreshold) = 2; % 2 for a better color contrast.
@@ -588,7 +610,11 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName)
         pValsPlotIDs.rows{i} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pVals');
         
         if ~isempty(pValsPlotIDs.rows{i})
-            mixPlots{i, length(Val2) + 1} =  df.pVals{pValsPlotIDs.rows{i}}.plotVal;
+            if bPCorrected
+                mixPlots{i, length(Val2) + 1} =  df.pVals{pValsPlotIDs.rows{i}}.plotValCorrected;
+            else
+                mixPlots{i, length(Val2) + 1} =  df.pVals{pValsPlotIDs.rows{i}}.plotVal;
+            end
             
             if bPSignificants && ~isempty(mixPlots{i, length(Val2) + 1})
                 mixPlots{i, length(Val2) + 1}(mixPlots{i, length(Val2) + 1} < pSignifThreshold) = 2; % 2 for a better color contrast.
@@ -643,6 +669,30 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName)
 
         %figureHandle = gfc;
     end
+end
+
+function [nbVars varString] = getVarString(variables, strDesign, bAll)
+    variablesString = '';
+    nbVars = 0;
+    
+    if length(variables)>1
+        for n = 1:length(variables)
+            if (bAll == 1) || ~isempty(strfind(strDesign, variables{n}.name))
+                if isempty(variablesString)
+                    variablesString = variables{n}.name;
+                else
+                    variablesString = [variablesString '|'  variables{n}.name];
+                end
+                nbVars = nbVars + 1;
+            end
+        end
+    end
+    
+    if isempty(variablesString)
+        variablesString = 'N/A';
+    end
+    
+    varString = variablesString;
 end
 
 function valString = getValString(vals)

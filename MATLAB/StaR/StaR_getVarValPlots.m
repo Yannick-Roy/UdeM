@@ -8,7 +8,7 @@
 %
 
 function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
-    
+
     if strcmp(plotType, 'data')
         plotsFromDF = starDF.data
     else

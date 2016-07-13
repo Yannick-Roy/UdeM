@@ -22,6 +22,7 @@ function starDF = StaR_getVarValDF(filename)
     %% -- Reshape data & pVals -- 
     data_reshaped = [];
     pVals_reshaped = [];
+    pValsCorrected_reshaped = [];
     
     if(strcmp(workspaceR.typeData, 'ERP'))
         dataTypeLength = length(workspaceR.timeData);
@@ -32,6 +33,7 @@ function starDF = StaR_getVarValDF(filename)
     
     data_reshaped = reshape(workspaceR.dataSub, dataTypeLength, length(workspaceR.titlesSub));
     pVals_reshaped = reshape(workspaceR.pValsSub, dataTypeLength, length(workspaceR.pTitlesSub));
+    pValsCorrected_reshaped = reshape(workspaceR.pValsSubCorrected, dataTypeLength, length(workspaceR.pTitlesSub));
     %data_reshaped = reshape(workspaceR.dataSub, length(workspaceR.titlesSub), dataTypeLength)';
     %pVals_reshaped = reshape(workspaceR.pValsSub, length(workspaceR.pTitlesSub), dataTypeLength)';
     
@@ -45,9 +47,11 @@ function starDF = StaR_getVarValDF(filename)
         starDF.pVals{i}.var = {};
         starDF.pVals{i}.val = {};
         starDF.pVals{i}.plotVal = pVals_reshaped(:, i);
+        starDF.pVals{i}.plotValCorrected = pValsCorrected_reshaped(:, i);
 
         if strcmp(starDF.typeData, 'ERSP')
             starDF.pVals{i}.plotVal = reshape(starDF.pVals{i}.plotVal, length(starDF.freqData), length(starDF.timeData));
+            starDF.pVals{i}.plotValCorrected = reshape(starDF.pVals{i}.plotValCorrected, length(starDF.freqData), length(starDF.timeData));
         end
         
         for j=1:length(pTitlesSub_s{i}) % For each 'sub data' that contributed...

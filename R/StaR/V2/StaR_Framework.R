@@ -17,18 +17,14 @@ stde <- function(x) sd(x)/sqrt(length(x))
 #**************************************************************************
 #**************************       Sequence !     **************************
 #**************************************************************************
-#source("StaR_Anovas.R")
-#source("StaR_MixedModels.R")
 source("StaR_Designs.R")
 source("StaR_LoadData.R")
 source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = c(11)#c(19,11,12,13,14,15,16,17,18) #,2,3,4,5,
+designs = 1#c(1,2,3,4,5,11,12,13,14,15,16,17,18)
 
-#fullDataAnalysis <- function(iDesign = 1, bReloadFile = FALSE, bReprepData = FALSE, bSaveOnDisk = FALSE)
-#iDesign = 13
 bReloadRData = FALSE
 
 bLoadMatlabFile = TRUE
@@ -50,9 +46,9 @@ freqData = 0 # Need real value (runtime)
 
 data.domain = 1
 data.type = "N/A"
-stats.function = "aov"  #lme
+stats.function = "aov"    #lme
 stats.bCompute = TRUE
-stats.bCorrection = FALSE
+stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
 
 bTempDisableSubAnalysis = FALSE
@@ -67,7 +63,6 @@ dirPlotsPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/St
 #**************************************************************************
 #***** Main Loop (ERP & ERSP) !
 #**************************************************************************
-#save(fullData, timeData, freqData, subDataset, subData, paramsList, anovas.summaries, anovas.pVals, anovas.pSignificants,  file = "RWorkspaceVariables.RData")
 #for(curAnalysis in 1:2)
 curAnalysis = 2
 {
@@ -87,7 +82,7 @@ curAnalysis = 2
       #************************************************************
       if(curAnalysis == 1) { data.type = "ERP" } #ERP
       if(curAnalysis == 2) { data.type = "ERSP" } # ERSP
-      # Spectra / Power
+      # TODO: Spectra / Power
       
       #************************************************************
       ###### Create Folder Structure!
@@ -101,6 +96,9 @@ curAnalysis = 2
       dirPlotsFullPath <- paste(dirPlotsFullPath, "/Stats_", stats.function, sep = "")
       dir.create(dirPlotsFullPath) 
 
+      # Reset Variables
+      stats.subAnalysis = NULL
+      stats.fullAnalysis = NULL
       
       tryCatch({
         #************************************************************
@@ -114,7 +112,6 @@ curAnalysis = 2
         if(bLoadMatlabFile)
         {
           # Read Matlab file !
-          #data.file = "~/Documents/Playground/UdeM/RMatlab_Data/export_mpt.mat"
           data.file = paste("~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/MPT_exp_", tolower(data.type), "_d", data.domain, ".mat", sep="")
           
           print("Matlab Data - Loading...")
@@ -212,6 +209,7 @@ curAnalysis = 2
               {
                 stats.fullAnalysis.lme.retVal <- staR_lme(fullData, iDesign)
                 
+                # TODO: Save also the report... It's not just about the pVals!
                 stats.fullAnalysis.pVals <- stats.fullAnalysis.lme.retVal[[1]]
                 stats.fullAnalysis.pTitles <- stats.fullAnalysis.lme.retVal[[2]]
               }
@@ -388,7 +386,7 @@ curAnalysis = 2
               print(paste("Saving ", designName, "..."))
               
               #save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles,  file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
-              save(fullData, timeData, freqData, subData, subDataset, iDesign, designName, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
+              save(fullData, timeData, freqData, subData, subDataset, iDesign, designName, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, stats.subAnalysis.pVals, stats.subAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
             }
             
             if(bSaveOnDiskData_Matlab)
@@ -432,7 +430,7 @@ curAnalysis = 2
               ############################
               
               #writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), typeData = data.type, timeData = timeData, freqData = freqData, iDesign = iDesign, designName = designName, means=mUnlist, pValsFull = unlist(stats.fullAnalysis.pVals), pSignificantsFull = unlist(stats.fullAnalysis.pSignificants), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'n' = n, 'd' = d)
-              writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), typeData = data.type, timeData = timeData, freqData = freqData, iDesign = iDesign, designName = designName, pValsFull = unlist(stats.fullAnalysis.pVals), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pValsSub = unlist(stats.subAnalysis.pVals), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'dataSub' = d, 'titlesSub' = n)
+              writeMat(paste(dirPlots, "/Workspace_Fullx.mat", sep=""), typeData = data.type, timeData = timeData, freqData = freqData, iDesign = iDesign, designName = designName, pValsFull = unlist(stats.fullAnalysis.pVals.Original), pValsFullCorrected = unlist(stats.fullAnalysis.pVals), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pValsSub = unlist(stats.subAnalysis.pVals.Original), pValsSubCorrected = unlist(stats.subAnalysis.pVals), pTitlesSub = unlist(stats.subAnalysis.pTitles), 'dataSub' = d, 'titlesSub' = n)
             }
             
             # -- Plot Stats --
