@@ -11,8 +11,18 @@ function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
 
     if strcmp(plotType, 'data')
         plotsFromDF = starDF.data
+    elseif strcmp(plotType, 'pValsSub')
+        if length(starDF.pValsSub) > 0
+            plotsFromDF = starDF.pValsSub
+        else
+            plotsFromDF = [];
+        end
     else
-        plotsFromDF = starDF.pVals
+        if length(starDF.pValsSub) > 0
+            plotsFromDF = starDF.pValsFull
+        else
+            plotsFromDF = [];
+        end
     end
     
     goodPlotIDs = [];

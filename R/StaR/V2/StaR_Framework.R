@@ -23,7 +23,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 1#c(1,2,3,4,5,11,12,13,14,15,16,17,18)
+designs = c(1,11)#c(1,2,3,4,5,11,12,13,14,15,16,17,18)
 
 bReloadRData = FALSE
 
@@ -98,7 +98,22 @@ curAnalysis = 2
 
       # Reset Variables
       stats.subAnalysis = NULL
+      stats.subAnalysis.pVals = NULL
+      stats.subAnalysis.pVals.Corrected = NULL
+      stats.subAnalysis.pVals.Original = NULL
+      stats.subAnalysis.pTitles = NULL
+      stats.subAnalysis.pSignif = NULL
+      stats.subAnalysis.pSignificant = NULL
+      stats.subAnalysis.pSignificants = NULL
+      stats.subAnalysis.aov.retVal = NULL
+      
       stats.fullAnalysis = NULL
+      stats.fullAnalysis.pVals = NULL
+      stats.fullAnalysis.pVals.Corrected = NULL
+      stats.fullAnalysis.pVals.Original = NULL
+      stats.fullAnalysis.pTitles = NULL
+      stats.fullAnalysis.pSignif = NULL
+      stats.fullAnalysis.pSignificant = NULL
       
       tryCatch({
         #************************************************************
@@ -386,7 +401,7 @@ curAnalysis = 2
               print(paste("Saving ", designName, "..."))
               
               #save(fullData, timeData, freqData, subData, iDesign, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, subData.Titles,  file = paste(dirPlots, "/Workspace_Full.RData", sep=""))
-              save(fullData, timeData, freqData, subData, subDataset, iDesign, designName, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pSignificants, stats.fullAnalysis.pTitles, stats.subAnalysis.pVals, stats.subAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
+              save(fullData, timeData, freqData, subData, subDataset, iDesign, designName, paramsList, stats.fullAnalysis.pVals, stats.fullAnalysis.pVals.Original, stats.fullAnalysis.pTitles, stats.subAnalysis.pVals, stats.subAnalysis.pVals.Original, stats.subAnalysis.pTitles, file = paste(dirPlots, "/Workspace_Fullx.RData", sep=""))
             }
             
             if(bSaveOnDiskData_Matlab)

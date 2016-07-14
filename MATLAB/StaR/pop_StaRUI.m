@@ -58,7 +58,8 @@ if ~isstr(varargin{1}) %intial settings
 
     % Callbacks
     cbo_design_cb = ['pop_StaRUI(''cbo_design'',gcf);']; 
-    generate_plot_cb = ['pop_StaRUI(''btn_generate'',gcf);']; 
+    generatesub_plot_cb = ['pop_StaRUI(''btn_generatesub'',gcf);'];
+    generatefull_plot_cb = ['pop_StaRUI(''btn_generatefull'',gcf);'];
     check_compute_cb = ['pop_StaRUI(''check_compute'',gcf);']; 
     cbo_var1_cb = ['pop_StaRUI(''cbo_var1'',gcf);']; 
     cbo_var2_cb = ['pop_StaRUI(''cbo_var2'',gcf);']; 
@@ -219,7 +220,7 @@ if ~isstr(varargin{1}) %intial settings
             {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]} {nCols nRows [3 11] [1 1]} ... % Var 4
             {nCols nRows [1 12] [1 1]} {nCols nRows [2 12] [1 1]} ... % Plot Correction Check Box
             {nCols nRows [0 13] [1 1]} ... % Empty Line
-            {nCols nRows [2 14] [1 2]} ... % Generate button
+            {nCols nRows [2 14] [1 2]} {nCols nRows [3 14] [1 2]} ... % Generate button
             {nCols nRows [0 15] [1 1]} ... % Empty Line
             }, ... 
         'uilist',...
@@ -237,7 +238,7 @@ if ~isstr(varargin{1}) %intial settings
             {'style' 'text' 'string' ' Variable 4* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var4' 'value' 1 'callback' cbo_var4_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var4val' 'value' 1 'callback' cbo_var4val_cb} ...
             {'style' 'text' 'string' ' Use Corrected pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_correction' 'value' true} , ... 
             {} ...
-            {'style' 'pushbutton' 'string' 'Generate' 'tag' 'generate' 'callback' generate_plot_cb} ...
+            {'style' 'pushbutton' 'string' 'Generate Sub' 'tag' 'generatesub' 'callback' generatesub_plot_cb} {'style' 'pushbutton' 'string' 'Generate Full' 'tag' 'generatefull' 'callback' generatefull_plot_cb} ...
             {} ...
             }, 'userdata', uDataVariables);
     catch
@@ -397,7 +398,7 @@ else
                 disp('Disabling Controls...'); % TODO ...
             end
             
-        case 'btn_generate'
+        case 'btn_generatesub'
             var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
             var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
             
@@ -407,6 +408,9 @@ else
             designFilePath = [designFolderPath '/Workspace_Fullx.mat'];
                 
             generateStaRPlots(obj.object, domainID, designFilePath);
+            
+        case 'btn_generatefull'
+            disp('Work in Progress!'); 
             
         case 'check_compute'
             checkcompute = get(findobj('parent', hdl, 'tag', 'compute'), 'value')
@@ -574,13 +578,13 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
                 
                 curPValsVars = cat(2, Var1{:}, Var2{j}, Var3, Var4);
                 curDataVals = cat(2, Val1{:}, Val2{j}, Val3, Val4);
-                pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pVals');
+                pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
                 
                 if ~isempty(pValsPlotIDs.cols{j})
                     if bPCorrected
-                        mixPlots{length(Val1) + 1, j} =  df.pVals{pValsPlotIDs.cols{j}}.plotValCorrected;
+                        mixPlots{length(Val1) + 1, j} =  df.pValsSub{pValsPlotIDs.cols{j}}.plotValCorrected;
                     else
-                        mixPlots{length(Val1) + 1, j} =  df.pVals{pValsPlotIDs.cols{j}}.plotVal;
+                        mixPlots{length(Val1) + 1, j} =  df.pValsSub{pValsPlotIDs.cols{j}}.plotVal;
                     end
                     
                     if bPSignificants && ~isempty(mixPlots{length(Val1) + 1, j})
@@ -589,7 +593,7 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
                     end
                         
                     if bPValsTitles
-                        mixTitles{length(Val1) + 1, j} = df.pVals{pValsPlotIDs.cols{j}}.lbl;
+                        mixTitles{length(Val1) + 1, j} = df.pValsSub{pValsPlotIDs.cols{j}}.lbl;
                     else
                         mixTitles{length(Val1) + 1, j} = 'pVals';
                     end
@@ -607,13 +611,13 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
         % Get pVals Plots Combining Vars / Vals.
         curPValsVars = cat(2, Var1{i}, Var2{:}, Var3, Var4);
         curDataVals = cat(2, Val1{i}, Val2{:}, Val3, Val4);
-        pValsPlotIDs.rows{i} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pVals');
+        pValsPlotIDs.rows{i} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
         
         if ~isempty(pValsPlotIDs.rows{i})
             if bPCorrected
-                mixPlots{i, length(Val2) + 1} =  df.pVals{pValsPlotIDs.rows{i}}.plotValCorrected;
+                mixPlots{i, length(Val2) + 1} =  df.pValsSub{pValsPlotIDs.rows{i}}.plotValCorrected;
             else
-                mixPlots{i, length(Val2) + 1} =  df.pVals{pValsPlotIDs.rows{i}}.plotVal;
+                mixPlots{i, length(Val2) + 1} =  df.pValsSub{pValsPlotIDs.rows{i}}.plotVal;
             end
             
             if bPSignificants && ~isempty(mixPlots{i, length(Val2) + 1})
@@ -622,24 +626,39 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
             end
                     
             if bPValsTitles
-                mixTitles{i, length(Val2) + 1} = df.pVals{pValsPlotIDs.rows{i}}.lbl;
+                mixTitles{i, length(Val2) + 1} = df.pValsSub{pValsPlotIDs.rows{i}}.lbl;
             else
                 mixTitles{i, length(Val2) + 1} = 'pVals';
             end
         end
     end
     
-    % Test
-    %dataPlotIDs
-    %pValsPlotIDs.cols
-    %pValsPlotIDs.rows
-    %mixPlots
-    %mixTitles
+    % pValsFull 
+    for p = 1:length(df.pValsFull)
+        if bPCorrected
+            pValsFullPlots{p} = df.pValsFull{p}.plotValCorrected;
+        else
+            pValsFullPlots{p} = df.pValsFull{p}.plotVal;
+        end
+        
+        if bPSignificants
+            pValsFullPlots{p}(pValsFullPlots{p} < pSignifThreshold) = 2;
+            pValsFullPlots{p}(pValsFullPlots{p} ~= 2) = 0;
+        end
+        
+        pValsFullTitles{p} = df.pValsFull{p}.lbl;
+    end
     
+    
+    % Titles can become quite long and difficult to read - you can shorten
+    % them, keeping only first 2 letters of the variable name.
     if bShortTitles
         mixTitles = getShortTitles(mixTitles);
     end
     
+    % ------------------------------------
+    % Plot Sub Data + pVals from Sub Data.
+    % ------------------------------------
     if length(mixPlots) == 0
         disp('There is nothing to plot... Please select something else.');
         return;
@@ -647,6 +666,8 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
         if (strcmp(obj.measureLabel, 'ERSP'))
             disp(['Plotting ERSP Domain #' num2str(domainID)]);
             std_plottf(df.timeData, df.freqData, mixPlots,  'titles', mixTitles);%, varargin{:});
+            
+            std_plottf(df.timeData, df.freqData, pValsFullPlots,  'titles', pValsFullTitles);
         end
 
         if (strcmp(obj.measureLabel, 'ERP'))
@@ -669,6 +690,10 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
 
         %figureHandle = gfc;
     end
+    
+    % ------------------------------------
+    
+    % ------------------------------------
 end
 
 function [nbVars varString] = getVarString(variables, strDesign, bAll)
