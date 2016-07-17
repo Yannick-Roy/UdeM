@@ -22,10 +22,13 @@
 % % %     if ischar(tagForHandle(end)) && ~isempty(tagForHandle(end))
 % % %         domainIndex = str2num(tagForHandle(end));
 % % %         STUDY = evalin('base', 'STUDY;');
-% % %         if isfield(STUDY, 'measureProjection') && isfield(STUDY.measureProjection, 'option') && isfield(STUDY.measureProjection.option, 'groupDifferenceOption') && ~isempty(STUDY.measureProjection.option.groupDifferenceOption)
-% % %             STUDY.measureProjection.option.groupDifferenceOption = STUDY.measureProjection.(measureName).projection.domain(domainIndex).plotGroupDifferenceGui(STUDY.measureProjection.(measureName).object, STUDY.measureProjection.option.groupDifferenceOption);
-% % %         else
-% % %             STUDY.measureProjection.option.groupDifferenceOption = STUDY.measureProjection.(measureName).projection.domain(domainIndex).plotGroupDifferenceGui(STUDY.measureProjection.(measureName).object);
+% % %         ALLEEG = evalin('base', 'ALLEEG;');
+% % %         
+% % %         if isfield(STUDY, 'measureProjection')
+% % %             %STUDY.measureProjection.option.groupDifferenceOption = STUDY.measureProjection.(measureName).projection.domain(domainIndex).plotGroupDifferenceGui(STUDY.measureProjection.(measureName).object, STUDY.measureProjection.option.groupDifferenceOption);
+% % %             % Send domain obj. You can retrieve the Dipole object from the domain.
+% % %             STUDY.measureProjection.(measureName).projection.domain(domainIndex)
+% % %             study_local = pop_StaRUI(STUDY, ALLEEG, STUDY.measureProjection.(measureName), domainIndex); 
 % % %         end;
 % % %         
 % % %         % put the STUDY variable back from workspace
