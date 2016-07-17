@@ -341,6 +341,95 @@ plotStats_ERSP_Graph <- function(pVals, pTitle, xTimeVals, yFreqVals, dims = c(4
   return(gg)
 }
 
+getAnalysisTitles <- function(dirPlots, iDesign, iDomain, statsFunction, statsCorrectionOn, statsCorrectionFun, statsThreshold, bSaveOnDiskImages)
+{
+  # ------------------------------------------------------------------------
+  # ORIGINAL
+  # ------------------------------------------------------------------------
+  #           hAnalysisTitles <- list()
+  #           hAnalysisTitles[[1]] <- textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20))
+  #           hAnalysisTitles[[2]] <- textGrob(paste("Domain: #", data.domain), gp=gpar(fontsize=20))
+  #           if(stats.bCorrection){
+  #             hAnalysisTitles[[3]] <- textGrob(paste("Corrected with:", stats.correctionFunction), gp=gpar(fontsize=20))
+  #           } else {
+  #             hAnalysisTitles[[3]] <- textGrob("Not Corrected!", gp=gpar(fontsize=20))
+  #           }
+  #           hAnalysisTitles[[4]] <- textGrob(paste("Threshold (pValue):", sigthreshold), gp=gpar(fontsize=20))
+  #           grid.arrange(hAnalysisTitles[[1]], hAnalysisTitles[[2]], hAnalysisTitles[[3]], hAnalysisTitles[[4]], nrow = 4, ncol = 1)
+  #           if(bSaveOnDiskImages)
+  #           {
+  #             dev.copy2pdf(file = paste(dirPlots, "/Title_", iDesign, ".pdf", sep = ""))
+  #             dev.off()
+  #             Sys.sleep(5)
+  #           }
+  # ------------------------------------------------------------------------
+  
+  hAnalysisTitles <- list()
+  hAnalysisTitles[[1]] <- textGrob(staR_getDesignName(iDesign, statsFunction), gp=gpar(fontsize=20))
+  hAnalysisTitles[[2]] <- textGrob(paste("Domain: #", iDomain), gp=gpar(fontsize=20))
+  
+  if(statsCorrectionOn){
+    hAnalysisTitles[[3]] <- textGrob(paste("Corrected with:", statsCorrectionFun), gp=gpar(fontsize=20))
+  } else {
+    hAnalysisTitles[[3]] <- textGrob("Not Corrected!", gp=gpar(fontsize=20))
+  }
+  hAnalysisTitles[[4]] <- textGrob(paste("Threshold (pValue):", statsThreshold), gp=gpar(fontsize=20))
+  grid.arrange(hAnalysisTitles[[1]], hAnalysisTitles[[2]], hAnalysisTitles[[3]], hAnalysisTitles[[4]], nrow = 4, ncol = 1)
+  
+  if(bSaveOnDiskImages)
+  {
+    dev.copy2pdf(file = paste(dirPlots, "/Title_", iDesign, ".pdf", sep = ""))
+    dev.off()
+    Sys.sleep(5)
+  }
+  
+  return (hAnalysisTitles)
+}
+
+doRawPlots <- function(bFullStats, fullPVals, fullPTitles, bSubStats, subPVals, subTitles, sigThreshold, bSaveOnDiskImages, iDesign, dirPlots)
+{
+  ###  --- Full Analysis ---
+  if(bFullStats)
+  {
+    for(i in 1:length(fullPVals))
+    {
+      plot(unlist(fullPVals[[i]]), type="l", log="y", ylim = c(0.001, 1))
+      title(main = fullPTitles[[i]])
+      abline(h = sigThreshold)
+      
+      if(bSaveOnDiskImages)
+      {
+        dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
+        dev.off()
+        Sys.sleep(8)
+      }
+    }
+  }
+  
+  if(bSubStats)
+  {
+    for(curDim in 1:length(subPVals))
+    {
+      for(i in 1:length(subPVals[[curDim]]))
+      {
+        for(j in 1:length(subPVals[[curDim]][[i]]))
+        {
+          plot(unlist(subPVals[[curDim]][[i]][[j]]), type="l", log="y", ylim = c(0.001, 1))
+          title(main = subTitles[[curDim]][[i]][[j]])
+          abline(h = sigThreshold)
+          
+          if(bSaveOnDiskImages)
+          {
+            dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
+            dev.off()
+            Sys.sleep(8)
+          }
+        }
+      }
+    }
+  }
+}
+
 
 ###########################################################################
 ####################       Get Significant Masks !     ####################

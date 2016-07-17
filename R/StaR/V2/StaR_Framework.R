@@ -23,7 +23,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = c(1,11)#c(1,2,3,4,5,11,12,13,14,15,16,17,18)
+designs = 1#c(1,2,3,4,5,11,12,13,14,15,16,17,18)
 
 bReloadRData = FALSE
 
@@ -170,22 +170,7 @@ curAnalysis = 2
           dir.create(dirPlots)
           
           # Prep Plot Series !
-          hAnalysisTitles <- list()
-          hAnalysisTitles[[1]] <- textGrob(staR_getDesignName(iDesign, stats.function), gp=gpar(fontsize=20))
-          hAnalysisTitles[[2]] <- textGrob(paste("Domain: #", data.domain), gp=gpar(fontsize=20))
-          if(stats.bCorrection){
-            hAnalysisTitles[[3]] <- textGrob(paste("Corrected with:", stats.correctionFunction), gp=gpar(fontsize=20))
-          } else {
-            hAnalysisTitles[[3]] <- textGrob("Not Corrected!", gp=gpar(fontsize=20))
-          }
-          hAnalysisTitles[[4]] <- textGrob(paste("Threshold (pValue):", sigthreshold), gp=gpar(fontsize=20))
-          grid.arrange(hAnalysisTitles[[1]], hAnalysisTitles[[2]], hAnalysisTitles[[3]], hAnalysisTitles[[4]], nrow = 4, ncol = 1)
-          if(bSaveOnDiskImages)
-          {
-            dev.copy2pdf(file = paste(dirPlots, "/Title_", iDesign, ".pdf", sep = ""))
-            dev.off()
-            Sys.sleep(5)
-          }
+          hAnalysisTitles <- getAnalysisTitles(dirPlots, iDesign, data.domain, stats.function, stats.bCorrection, stats.correctionFunction, sigthreshold, bSaveOnDiskImages)
           
           if(bTempDisableSubAnalysis) {bSubDataAnalysis = TRUE}
           if(bSubDataAnalysis && length(STATS_SUB_DESIGNS[[iDesign]]) == 0)
@@ -352,46 +337,7 @@ curAnalysis = 2
             bShowPlot = TRUE
             if(bShowPlot)
             {
-              ###  --- Full Analysis ---
-              if(bFullStatsAnalysis)
-              {
-                for(i in 1:length(stats.fullAnalysis.pVals))
-                {
-                  plot(unlist(stats.fullAnalysis.pVals[[i]]), type="l", log="y", ylim = c(0.001, 1))
-                  title(main = stats.fullAnalysis.pTitles[[i]])
-                  abline(h = sigthreshold)
-                  
-                  if(bSaveOnDiskImages)
-                  {
-                    dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
-                    dev.off()
-                    Sys.sleep(8)
-                  }
-                }
-              }
-  
-              if(bSubDataAnalysis)
-              {
-                for(curDim in 1:length(stats.subAnalysis.pVals))
-                {
-                  for(i in 1:length(stats.subAnalysis.pVals[[curDim]]))
-                  {
-                    for(j in 1:length(stats.subAnalysis.pVals[[curDim]][[i]]))
-                    {
-                      plot(unlist(stats.subAnalysis.pVals[[curDim]][[i]][[j]]), type="l", log="y", ylim = c(0.001, 1))
-                      title(main = stats.subAnalysis.pTitles[[curDim]][[i]][[j]])
-                      abline(h = sigthreshold)
-                      
-                      if(bSaveOnDiskImages)
-                      {
-                        dev.copy2pdf(file = paste(dirPlots, "/PVals_D", iDesign, "_", i, ".pdf", sep = ""))
-                        dev.off()
-                        Sys.sleep(8)
-                      }
-                    }
-                  }
-                }
-              }
+              doRawPlots(bFullStatsAnalysis, stats.fullAnalysis.pVals, stats.fullAnalysis.pTitles, bSubDataAnalysis, stats.subAnalysis.pVals, stats.subAnalysis.pTitles, sigthreshold, bSaveOnDiskImages, iDesign, dirPlots)
             }
             
             #save() # Save on disk.
@@ -648,3 +594,5 @@ curAnalysis = 2
     }
   }
 }
+
+print(" -- Done! Have a good day! --")

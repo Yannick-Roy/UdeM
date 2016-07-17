@@ -101,6 +101,7 @@ STATS_DESIGNS_MM[[38]] = values ~ (groups * sessions * orders) + (1|subjects)
 STATS_DESIGNS_MM[[39]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
 
 STATS_SUB_DESIGNS_MM <- list()
+STATS_SUB_DESIGNS_MM[[1]] = list(values ~ (conditions))
 #STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|subjects), values ~ (groups) + (1|subjects))
 STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|sessions), values ~ (groups) + (1|sessions))
 STATS_SUB_DESIGNS_MM[[12]] = list(values ~ (sessions) + (1|subjects), values ~ (groups) + (1|subjects))
