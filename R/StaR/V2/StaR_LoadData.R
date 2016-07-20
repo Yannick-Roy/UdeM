@@ -1,4 +1,4 @@
-library(R.matlab)
+require(R.matlab)
 require(tictoc)
 
 ###########################################################################
@@ -387,6 +387,26 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[2]][[2]][[2]] <- lapply(fullData, subset, motions == "F" & sessions == 2 & groups == 4)
     subDataset[[2]][[1]][[3]] <- lapply(fullData, subset, motions == "M" & sessions == 3 & groups == 4)
     subDataset[[2]][[2]][[3]] <- lapply(fullData, subset, motions == "F" & sessions == 3 & groups == 4)
+    
+    subDatasetVarVals[[2]] <- list()
+    subDatasetVarVals[[2]][[1]] <- list()
+    subDatasetVarVals[[2]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]] <- list()
+    subDatasetVarVals[[1]][[2]] <- list()
+    
+    subDatasetVarVals[[1]][[1]][[1]] <- "motions=M;sessions=1;groups=3"
+    subDatasetVarVals[[1]][[2]][[1]] <- "motions=F;sessions=1;groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "motions=M;sessions=2;groups=3"
+    subDatasetVarVals[[1]][[2]][[2]] <- "motions=F;sessions=2;groups=3"
+    subDatasetVarVals[[1]][[1]][[3]] <- "motions=M;sessions=3;groups=3"
+    subDatasetVarVals[[1]][[2]][[3]] <- "motions=F;sessions=3;groups=3"
+    
+    subDatasetVarVals[[2]][[1]][[1]] <- "motions=M;sessions=1;groups=4"
+    subDatasetVarVals[[2]][[2]][[1]] <- "motions=F;sessions=1;groups=4"
+    subDatasetVarVals[[2]][[1]][[2]] <- "motions=M;sessions=2;groups=4"
+    subDatasetVarVals[[2]][[2]][[2]] <- "motions=F;sessions=2;groups=4"
+    subDatasetVarVals[[2]][[1]][[3]] <- "motions=M;sessions=3;groups=4"
+    subDatasetVarVals[[2]][[2]][[3]] <- "motions=F;sessions=3;groups=4"
   }
   
   if(iDesign == 18)
@@ -410,6 +430,26 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[2]][[2]][[2]] <- lapply(fullData, subset, orders == "SO" & sessions == 2 & groups == 4)
     subDataset[[2]][[1]][[3]] <- lapply(fullData, subset, orders == "FO" & sessions == 3 & groups == 4)
     subDataset[[2]][[2]][[3]] <- lapply(fullData, subset, orders == "SO" & sessions == 3 & groups == 4)
+    
+    subDatasetVarVals[[2]] <- list()
+    subDatasetVarVals[[2]][[1]] <- list()
+    subDatasetVarVals[[2]][[2]] <- list()
+    subDatasetVarVals[[1]][[1]] <- list()
+    subDatasetVarVals[[1]][[2]] <- list()
+    
+    subDatasetVarVals[[1]][[1]][[1]] <- "orders=FO;sessions=1;groups=3"
+    subDatasetVarVals[[1]][[2]][[1]] <- "orders=SO;sessions=1;groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "orders=FO;sessions=2;groups=3"
+    subDatasetVarVals[[1]][[2]][[2]] <- "orders=SO;sessions=2;groups=3"
+    subDatasetVarVals[[1]][[1]][[3]] <- "orders=FO;sessions=3;groups=3"
+    subDatasetVarVals[[1]][[2]][[3]] <- "orders=SO;sessions=3;groups=3"
+    
+    subDatasetVarVals[[2]][[1]][[1]] <- "orders=FO;sessions=1;groups=4"
+    subDatasetVarVals[[2]][[2]][[1]] <- "orders=SO;sessions=1;groups=4"
+    subDatasetVarVals[[2]][[1]][[2]] <- "orders=FO;sessions=2;groups=4"
+    subDatasetVarVals[[2]][[2]][[2]] <- "orders=SO;sessions=2;groups=4"
+    subDatasetVarVals[[2]][[1]][[3]] <- "orders=FO;sessions=3;groups=4"
+    subDatasetVarVals[[2]][[2]][[3]] <- "orders=SO;sessions=3;groups=4"
   }
   
   # Clean & Easy way of putting the titles. But only supports 1 value for 1 variable. (uses the "unique" approach)
