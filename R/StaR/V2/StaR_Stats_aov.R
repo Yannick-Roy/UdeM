@@ -74,6 +74,8 @@ staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
   #===== Invert dimension to start with points, 
   #===== rather than having it in the last dimension.
   #=======================================#
+  #TODO : This formatting is exactly the same for lme & aov! Put it in tools or stats.
+  print("Formatting SubData for aov...")
   for(p in 1:nbPoints)  # Points
   {
     ## -----------------------
@@ -258,13 +260,21 @@ staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
                 }
               }
             }
+            if(curDim == 3) 
+            {
+              stats.subAnalysis.VarVals
+              for(vv in 1:length(stats.subAnalysis.VarVals))
+              {
+                if(is.null(titleCombined)) {
+                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[i]]
+                } else {
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[i]], sep=" | ")
+                }
+              }
+            }
             
             stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- titleCombined
             print(stats.subAnalysis.pTitles[[curDim]][[i]][[j]])
-            
-            ################
-            # TODO : DIM 3 #
-            ################
           }
         }
       }
