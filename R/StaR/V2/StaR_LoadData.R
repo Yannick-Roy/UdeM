@@ -307,10 +307,10 @@ staR_selectData <- function(fullData, iDesign)
     subDataset[[1]][[2]][[2]] <- lapply(fullData, subset, motions == "M" & groups == 4)   
     
     subDatasetVarVals[[1]][[2]] <- list()
-    subDatasetVarVals[[1]][[1]][[1]] <- "orders=F;groups=3"
-    subDatasetVarVals[[1]][[1]][[2]] <- "orders=M;groups=3"
-    subDatasetVarVals[[1]][[2]][[1]] <- "orders=F;groups=4"
-    subDatasetVarVals[[1]][[2]][[2]] <- "orders=M;groups=4"
+    subDatasetVarVals[[1]][[1]][[1]] <- "motions=F;groups=3"
+    subDatasetVarVals[[1]][[1]][[2]] <- "motions=M;groups=3"
+    subDatasetVarVals[[1]][[2]][[1]] <- "motions=F;groups=4"
+    subDatasetVarVals[[1]][[2]][[2]] <- "motions=M;groups=4"
   }
   
   if(iDesign == 14)

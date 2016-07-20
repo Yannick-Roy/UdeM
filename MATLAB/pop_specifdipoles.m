@@ -270,6 +270,10 @@ for d=uniqueDomains
     % Get Groups for Dipoles.
     groups = obj.object.groupNumber(dipoleId);
 
+    % Test who's missing...
+    disp('Whos missing? (in any)');
+    sort(unique([obj.object.datasetId(dipoleId)]))
+    
     % Check that you have a group and a session for each contributing dipole! (dipoleId)
     if length(dipoleId) ~= length(sessions)
         disp('## ERROR ## dipoleId and sessions length are different... This should not happen!');
@@ -350,3 +354,75 @@ for d=uniqueDomains
     end
     set(l, 'Box', 'off')
 end
+
+
+%% THIS SHOULD WORK FOR SUB DOMAIN!
+% It works to get it for each sessions...
+% Skip the session concept and pick your ICs
+
+% % % 
+% % % function [linearProjectedMeasure sessionConditionCell groupId uniqeDatasetId dipoleDensity] = getMeanProjectedMeasureForEachSession(obj, headGrid, regionOfInterestCube, projectionParameter, varargin)
+% % %     % [linearProjectedMeasure sessionConditionCell groupId uniqeDatasetId dipoleDensity] = getProjectedMeasureForEachSession(obj, headGrid, regionOfInterestCube, projectionParameter, (key, value pair options))
+% % %     %
+% % %     % projects each session (dataset) to provided position(s) and returns a NxS
+% % %     % matrix containing dipole-density-weghted- average measures for each session over the
+% % %     % region.
+% % %     %
+% % %     % N is the numbr of dimensions of the linearized measure.
+% % %     % S is the number of sessions (datasets)
+% % %     %
+% % %     % by setting 'calculateMeasure' to 'off' you can only get the total dipole density (much
+% % %     % faster and less memory).      
+% % %     %
+% % %     % sessionConditionCell is a cell array of number of sessions x number of conditions,
+% % %     % each containing a single condition with the original shape (e.g. 2-D for ERSP).
+% % % 
+% % % 
+% % %     inputOptions = finputcheck(varargin, ...
+% % %         { 'calculateMeasure'   'string'    {'on', 'off'}  'on';... % this option can be used to only get dipole denisty back and skip the projected measure when it is not used but takes a lot of memory and time to calculate.                                   
+% % %         });
+% % % 
+% % %     % go through all sessions and project session dipoles to the given location(s)
+% % %     uniqeDatasetId = unique(obj.datasetId);
+% % % 
+% % %     if strcmpi(inputOptions.calculateMeasure, 'on')
+% % %         linearProjectedMeasure = zeros(size(obj.linearizedMeasure), length(uniqeDatasetId));
+% % %     else
+% % %         linearProjectedMeasure = [];
+% % %     end;
+% % % 
+% % %     groupId = []; % hold group ids (numbers) for datasets
+% % %     dipoleDensity = []; % hold the density of dipole for each session, to be used in calculating averages for that session. It is an P x S matrix (as defined above).
+% % %     counter  = 1;
+% % %     for datasetId = uniqeDatasetId
+% % %         dipoleAndMeasureForDataset = obj.createSubsetForId(obj.datasetId == datasetId, false); % do not re-normalize scalpmap polarities.
+% % % 
+% % %         [projectionMatrix dipoleDensityFromTheDataset]= pr.meanProjection.getProjectionMatrix(dipoleAndMeasureForDataset, headGrid, projectionParameter, regionOfInterestCube);
+% % % 
+% % %         if strcmpi(inputOptions.calculateMeasure, 'on')
+% % %             projectionFromTheDataset = dipoleAndMeasureForDataset.linearizedMeasure * projectionMatrix;
+% % %             normalizedDipoleDenisty = bsxfun(@times, dipoleDensityFromTheDataset, 1 ./ sum(dipoleDensityFromTheDataset));
+% % %             linearProjectedMeasure(:,counter) = projectionFromTheDataset  * normalizedDipoleDenisty';
+% % %             counter = counter + 1;
+% % %         end;
+% % % 
+% % %         dipoleDensity = cat(2, dipoleDensity, dipoleDensityFromTheDataset');
+% % %         groupId = [groupId  dipoleAndMeasureForDataset.groupNumber(1)]; % get the group number of dataset                                
+% % %     end;
+% % % 
+% % %     numberOfSessions = size(linearProjectedMeasure, 2);
+% % % 
+% % %     % place each condition in a different cell for more convenience
+% % %     if nargout > 1
+% % %         sessionConditionCell = {};
+% % %         for i=1:numberOfSessions
+% % %             conditionCell = obj.getSeparatedConditionsForLinearizedMeasure(linearProjectedMeasure(:,i))';
+% % %             for j=1:length(conditionCell)
+% % %                 sessionConditionCell{i,j} = conditionCell{j};
+% % %             end;
+% % %         end;
+% % %     end;
+% % % 
+% % %     % get the total dipole density
+% % %     dipoleDensity  = sum(dipoleDensity);
+% % % end

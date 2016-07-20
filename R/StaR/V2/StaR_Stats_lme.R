@@ -80,7 +80,7 @@ staR_lme_pvals <- function(summary)
 ###################################################################################
 ######  SUB !
 ###################################################################################
-staR_lme_sub <- function(subData, iDesign)
+staR_lme_sub <- function(subData, iDesign, subTitles = NULL)
 {
   #stats.fullAnalysis.aov.retVal <- staR_aov(fullData, iDesign)
   hDataset <- list()
@@ -175,6 +175,8 @@ staR_lme_sub <- function(subData, iDesign)
   stats.subAnalysis.vData <- staR_InvertDimensions3D(vDataset)
   stats.subAnalysis.lData <- staR_InvertDimensions3D(lDataset)
   
+  stats.subAnalysis.VarVals <- staR_InvertDimensions3D(subTitles)
+  
   stats.subAnalysis.combinedData <- list()
   if(length(STATS_SUB_DESIGNS[[iDesign]]) > 0) {stats.subAnalysis.combinedData[[1]] <- stats.subAnalysis.hData} # Rows.
   if(length(STATS_SUB_DESIGNS[[iDesign]]) > 1) {stats.subAnalysis.combinedData[[2]] <- stats.subAnalysis.vData} # Cols.
@@ -238,6 +240,34 @@ staR_lme_sub <- function(subData, iDesign)
             
             stats.subAnalysis.pVals[[curDim]][[i]][[j]] <- unlist(stats.subAnalysis.lme.retVal[[1]])
             stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- unique(stats.subAnalysis.lme.retVal[[2]])
+            
+            # TEST
+            titleCombined <- NULL
+            if(curDim == 1) 
+            {
+              for(vv in 1:length(stats.subAnalysis.VarVals[[1]]))
+              {
+                if(is.null(titleCombined)) {
+                  titleCombined <- stats.subAnalysis.VarVals[[j]][[vv]][[1]]
+                } else {
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[1]], sep=" | ")
+                }
+              }
+            }
+            if(curDim == 2) 
+            {
+              for(vv in 1:length(stats.subAnalysis.VarVals))
+              {
+                if(is.null(titleCombined)) {
+                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[1]]
+                } else {
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[1]], sep=" | ")
+                }
+              }
+            }
+            
+            stats.subAnalysis.pTitles[[curDim]][[i]][[j]]  <- titleCombined
+            print(stats.subAnalysis.pTitles[[curDim]][[i]][[j]])
           }
         }
       }

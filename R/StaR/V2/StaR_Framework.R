@@ -23,7 +23,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = 1#c(1,2,3,4,5,11,12,13,14,15,16,17,18)
+designs = c(1,2,3,4,5)#,11,12,13,14,15,16,17,18)
 
 bReloadRData = FALSE
 
@@ -46,7 +46,7 @@ freqData = 0 # Need real value (runtime)
 
 data.domain = 1
 data.type = "N/A"
-stats.function = "aov"    #lme
+stats.function = "lme" #"aov"
 stats.bCompute = TRUE
 stats.bCorrection = TRUE
 stats.correctionFunction = "fdr"
@@ -63,16 +63,16 @@ dirPlotsPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/St
 #**************************************************************************
 #***** Main Loop (ERP & ERSP) !
 #**************************************************************************
-#for(curAnalysis in 1:2)
-curAnalysis = 2
+for(curAnalysis in 1:2)
+#curAnalysis = 2
 {
-  #for(domainNo in 1:3)
-  domainNo = 1
+  for(domainNo in 1:3)
+  #domainNo = 1
   {
     data.domain = domainNo
     
-    #for(analType in 1:2)
-    analType = 2
+    for(analType in 1:2)
+    #analType = 1
     {
       if(analType == 1){stats.function = "lme"}
       if(analType == 2){stats.function = "aov"}
@@ -216,7 +216,7 @@ curAnalysis = 2
               
               if(bSubDataAnalysis)
               {
-                stats.subAnalysis.lme.retVal <- staR_lme_sub(subDataset, iDesign)
+                stats.subAnalysis.lme.retVal <- staR_lme_sub(subDataset, iDesign, subData.Titles)
                 
                 stats.subAnalysis.pVals <- stats.subAnalysis.lme.retVal[[1]]
                 stats.subAnalysis.pTitles <- stats.subAnalysis.lme.retVal[[2]]
