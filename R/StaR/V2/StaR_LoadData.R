@@ -14,19 +14,43 @@ staR_prepData <- function()
   groups_vals = c(3,4)
   sessions_vals = c(1,2,3)
   
-  nbRecordings = length(groups_vals) * length(subjects_vals) * length(sessions_vals)
+  # There are 2 logics here.
+  # No 1 - You duplicate subject for each group.
+  #        Gr 1 Sub 1
+  #        Gr 1 Sub 2
+  #        Gr 2 Sub 1
+  #        Gr 2 Sub 2
+  # No 2 - You have different subject (not paired - kinda).
+  #        Gr 1 Sub 1
+  #        Gr 1 Sub 2
+  #        Gr 2 Sub 3
+  #        Gr 2 Sub 4
+  bDuplicateSubjects = TRUE
+  
+  if(bDuplicateSubjects){
+    nbSubjectsTotal = length(groups_vals) * length(subjects_vals);
+  }else {
+    nbSubjectsTotal = length(subjects_vals);
+  }
+  
+  nbRecordings = nbSubjectsTotal * length(sessions_vals)
   nbSets = nbRecordings * length(conditions_vals)
   
-  motions = rep(cond_motion_vals, times = length(groups_vals) * (length(subjects_vals)  / 2) * length(sessions_vals) * length(cond_orders_vals), each = 1)
-  orders = rep(cond_orders_vals, times = length(groups_vals) * (length(subjects_vals) / 2) * length(sessions_vals), each = length(cond_motion_vals))
+  motions = rep(cond_motion_vals, times = nbSubjectsTotal * length(sessions_vals) * length(cond_orders_vals), each = 1)
+  orders = rep(cond_orders_vals, times = nbSubjectsTotal * length(sessions_vals), each = length(cond_motion_vals)) # Needs to repeat twice. FO FO SO SO to combine with orders... F M F M... FOF FOM SOF SOM
 
   #conditions = rep(conditions_vals, times = length(groups_vals) * (length(subjects_vals) / 2) * length(sessions_vals))
   conditions <- paste(orders, motions, sep="")
   
   sessions = rep(sessions_vals, times = nbSets / (length(conditions_vals) * length(sessions_vals)) , each = length(conditions_vals))
-  subjects = rep(subjects_vals, times = length(groups_vals) / 2, each = length(conditions) / length(groups_vals) / (length(subjects_vals)/2))
   groups = rep(groups_vals, times = 1, each = length(conditions) / length(groups_vals))
   
+  if (bDuplicateSubjects) {
+    subjects = rep(subjects_vals, times = length(groups_vals), each = length(conditions_vals) * length(sessions_vals)) # Be careful, it takes "conditions_vals" length!
+  } else {
+    subjects = rep(subjects_vals, times = 1, each = length(sessions_vals) * length(conditions_vals))
+  }
+    
   values = seq(1,nbSets)
   
   fullData = data.frame(groups, subjects, sessions, orders, motions, conditions, values) #, row.names = c("No", Group", "Subject", "Session", "Condition"))

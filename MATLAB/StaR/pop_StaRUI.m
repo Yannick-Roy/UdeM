@@ -402,19 +402,9 @@ else
             end
             
         case 'btn_generatesub'
-            var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
-            var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
-            
-            disp(designs{var_designID}.Name);
-
-            designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID) '/Stats_' stats{var_statsID}.function '/Design_' obj.object.measureLabel '_' num2str(designs{var_designID}.No)];
-            designFilePath = [designFolderPath '/Workspace_Fullx.mat'];
-                
-            generateStaRPlots(obj.object, domainID, designFilePath);
-            
+            disp('Generating Sub...');
         case 'btn_generatefull'
-            disp('Work in Progress!'); 
-            
+            disp('Generating Full...');
         case 'check_compute'
             checkcompute = get(findobj('parent', hdl, 'tag', 'compute'), 'value')
             
@@ -433,6 +423,26 @@ else
             %disp('Fix Var 2 Val');
     end             
     
+    if strcmp(varargin{1}, 'btn_generatesub') || strcmp(varargin{1}, 'btn_generatefull')
+        var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
+        var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
+
+        disp(designs{var_designID}.Name);
+
+        designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID) '/Stats_' stats{var_statsID}.function '/Design_' obj.object.measureLabel '_' num2str(designs{var_designID}.No)];
+        designFilePath = [designFolderPath '/Workspace_Fullx.mat'];
+
+        % They both use the function, bu the Full only display the full
+        % pVals, not the sub data.
+        if strcmp(varargin{1}, 'btn_generatefull')
+            bFull = true;
+        else
+            bFull = false;
+        end
+        
+        generateStaRPlots(obj.object, domainID, designFilePath, bFull);
+    end
+    
     for i = updateVals
         var_selID = get(findobj('parent', hdl, 'tag', ['var' num2str(i)]), 'value');
         valString = getValString(variables{var_selID}.values);
@@ -440,9 +450,26 @@ else
     end
 end
 
-function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO: Replace with Params{:}
+%% generateStaRPlots()
+%
+% Inputs:
+%   - obj:
+%   - domainID:
+%   - designFileName:
+%
+% Outputs:
+%   - figureHandle:
+%
+% Description:
+%
+%
+function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) % TODO: Replace with Params{:}
     
     bSanityCheck = 1;
+    
+    if nargin < 4
+        bFull = false;
+    end
     
     %if statsCompute
     bCompStats = get(findobj('parent', hdl, 'tag', 'compute'), 'value');
@@ -527,8 +554,8 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
     disp('----------------');
 
     % Plot Based on Selection.
-    vars_test = {{'conditions'}, {'groups'}, {'groups'}};
-    vals_test = {{'FOM'}, {'3'}, {'4'}};
+    %vars_test = {{'conditions'}, {'groups'}, {'groups'}};
+    %vals_test = {{'FOM'}, {'3'}, {'4'}};
 
     [Var1, Val1] = cleanVarVals(Var1, Val1);
     [Var2, Val2] = cleanVarVals(Var2, Val2);
@@ -661,6 +688,8 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
     
     % ------------------------------------
     % Plot Sub Data + pVals from Sub Data.
+    % ONLY if pFull == false
+    % The same function is being used!
     % ------------------------------------
     if length(mixPlots) == 0
         disp('There is nothing to plot... Please select something else.');
@@ -668,9 +697,12 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
     else
         if (strcmp(obj.measureLabel, 'ERSP'))
             disp(['Plotting ERSP Domain #' num2str(domainID)]);
-            std_plottf(df.timeData, df.freqData, mixPlots,  'titles', mixTitles);%, varargin{:});
             
-            std_plottf(df.timeData, df.freqData, pValsFullPlots,  'titles', pValsFullTitles);
+            if bFull == false
+                std_plottf(df.timeData, df.freqData, mixPlots,  'titles', mixTitles);%, varargin{:});
+            else
+                std_plottf(df.timeData, df.freqData, pValsFullPlots,  'titles', pValsFullTitles);
+            end
         end
 
         if (strcmp(obj.measureLabel, 'ERP'))
@@ -699,6 +731,20 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName) % TODO:
     % ------------------------------------
 end
 
+%% getVarString()
+%
+% Inputs:
+%   - variables:
+%   - strDesign:
+%   - bAll:
+%
+% Outputs:
+%   - nbVars:
+%   - varString:
+%
+% Description:
+%
+%
 function [nbVars varString] = getVarString(variables, strDesign, bAll)
     variablesString = '';
     nbVars = 0;
@@ -723,6 +769,17 @@ function [nbVars varString] = getVarString(variables, strDesign, bAll)
     varString = variablesString;
 end
 
+%% getValString()
+%
+% Inputs:
+%   - vals:
+%
+% Outputs:
+%   - valString:
+%
+% Description:
+%
+%
 function valString = getValString(vals)
     variablesValString = '';
     if length(vals)>1
@@ -740,6 +797,19 @@ function valString = getValString(vals)
     valString = variablesValString;
 end
 
+%% cleanVarVals()
+%
+% Inputs:
+%   - vars:
+%   - vals:
+%
+% Outputs:
+%   - vars:
+%   - vals:
+%
+% Description:
+%
+%
 function [vars, vals] = cleanVarVals(vars, vals)
     for i = 1:length(vars)
         if (strcmp(vars{i}, 'N/A') == 1) || (strcmp(vals{i}, 'N/A') == 1)
@@ -749,7 +819,16 @@ function [vars, vals] = cleanVarVals(vars, vals)
     end
 end
 
-%% ShortTitles
+
+%% getShortTitles()
+%
+% --- Inputs ---
+%   - titles:
+%
+% --- Outputs ---
+%   - shortTitles:
+%
+% --- Description ---
 % Shitty Code to Shorten the Titles with only the First 2 Letters. (e.g. Groups=3 -> Gr=3)
 % TODO : Handle the potential problems to avoid crashes.
 function shortTitles = getShortTitles(titles)
@@ -764,7 +843,7 @@ function shortTitles = getShortTitles(titles)
                  comb2 = strsplit(comb1{k}, ';');
                  shortTitle2 = '';
                  for l = 1:length(comb2)
-                     tmpComb = strsplit(comb2{l}, '=')
+                     tmpComb = strsplit(comb2{l}, '=');
                      if length(tmpComb) == 2
                          comb2{l} = [tmpComb{1}(1:2) '=' tmpComb{2}];
                          if isempty(shortTitle2)
@@ -777,9 +856,9 @@ function shortTitles = getShortTitles(titles)
                      end
                  end
                  if isempty(shortTitle1)
-                     shortTitle1 = shortTitle2
+                     shortTitle1 = shortTitle2;
                  else
-                     shortTitle1 = [shortTitle1 '|' shortTitle2]
+                     shortTitle1 = [shortTitle1 '|' shortTitle2];
                  end
              end
              shortTitles{i,j} = shortTitle1;
@@ -787,122 +866,122 @@ function shortTitles = getShortTitles(titles)
     end
 end
 
-function plotStaR(obj, linearProjectedMeasureForCombinedCondition, headGrid, regionOfInterestCube, projectionParameter, twoConditionLabelsForComparison, significanceLevelForConditionDifference, usePositionProjections, statisticsParameter, plottingParameter)
-    % plotConditionDifference(linearProjectedMeasureForCombinedCondition, headGrid, regionOfInterestCube, projectionParameter, twoConditionLabelsForComparison, significanceLevelForConditionDifference, statisticsParameter, plottingParameter)
-    %
-    % plot condition difference between first and second specified conditions (A-B) and
-    % mask areas with non-significent differences.
-
-    % if no condition label is provided, use the first two (if they exist)
-    if nargin < 5 || isempty(twoConditionLabelsForComparison)
-        if length(obj.conditionLabel) > 1
-            twoConditionIdsForComparison = [1 2];
-            twoConditionLabelsForComparison = obj.conditionLabel;
-
-            % when there are more than two conditions present, give a warning
-            if length(obj.conditionLabel) > 2
-                fprintf('Warning: there are more than two conditons present, by default only the difference between the first two is displayed. You can assign another condition pair in the input.\n');
-            end;
-        else
-            error('There is only one condition present, at least two conditions are needed for a comparison\n');
-        end;
-    else % if condition labels for comparison are provided, then find condition ids in obj.conditionLabel that are associated with them.                
-        if length(twoConditionLabelsForComparison) < 2
-            error('Number of provided condition labels is less than required two (2).\n');
-        end;
-
-        % find condition ids in obj.conditionLabel that are associated with provided conditon labels.
-        for i=1:2
-            twoConditionIdsForComparison(i) = find(strcmp(obj.conditionLabel, twoConditionLabelsForComparison{i}));
-        end;
-    end
-
-    if nargin < 6
-        significanceLevelForConditionDifference = 0.03;                
-    end;
-
-    if nargin < 7
-        usePositionProjections = 'mean'; % default is mean since we currently do not have a good way to incorporate session dipole denisties when 'each' statistics is used.
-    end;
-
-    %if nargin < 8               
-        statisticsParameter = {};
-    %end;
-
-    %if nargin < 9               
-        plottingParameter = {};
-    %end;
-
-    % ================================================
-    % YR : Load R Stats.
-    loadRStats = 'N';
-    %loadRStats = input('Do you want to load R Values? Y/N [N]:','s');
-    if loadRStats == 'Y' || loadRStats == 'y'
-        disp('YR : Loading R Values...');
-        load('RVals.mat');
-        size(R_Pvals)
-        R_Pvals = reshape(R_Pvals, 100, 200)';
-
-        R_Pvals(R_Pvals > 0.5) = 0.5;
-
-        Pvals = {R_Pvals};  
-        title = {'R P Values'};
-        obj.plotMeasureAsArrayInCell(Pvals, title, plottingParameter{:}); 
-    end
-    % !!! DEBUG !!!
-    % ================================================
-
-    % separate conditions from linearized form
-    projectedMeasure = obj.getSeparatedConditionsForLinearizedMeasure(linearProjectedMeasureForCombinedCondition);
-
-    % only keep the two conditions to be compared
-    projectedMeasure = projectedMeasure(twoConditionIdsForComparison);
-
-    % calculate difference statistics for two conditions
-    [differenceBetweenConditions significanceValue] = obj.getMeasureDifferenceAcrossConditions(headGrid, regionOfInterestCube, projectionParameter, twoConditionIdsForComparison, usePositionProjections,statisticsParameter{:});
-
-    % calculate difference between the two conditions and add as the third measure for
-    % plotting
-    projectedMeasure{3} = projectedMeasure{1} - projectedMeasure{2};
-
-    % mask insignificent differences
-    % -- YR added --
-    if loadRStats == 'Y' || loadRStats == 'y'
-        disp('YR : Masking with P Values...');
-        projectedMeasure{4} = projectedMeasure{3};
-        projectedMeasure{4}(R_Pvals > significanceLevelForConditionDifference) = 0;
-    end
-    % -- /YR added --
-    projectedMeasure{3}(significanceValue > significanceLevelForConditionDifference) = 0;
-
-    % since when plotting, the mean spectra is automatically added for spectra, we should
-    % add the negative of it so it is canccled out.
-    if strcmp(obj.measureLabel, 'Spec')
-        projectedMeasure{3} = projectedMeasure{3} - obj.specMeanOverAllIcAndCondition;
-    end;
-
-    % set the titles
-    conditionTitle = [obj.conditionLabel{twoConditionIdsForComparison(1)} ' - ' obj.conditionLabel{twoConditionIdsForComparison(2)} ' (p<' num2str(significanceLevelForConditionDifference) ')'];
-
-    title = [obj.conditionLabel(twoConditionIdsForComparison), conditionTitle];
-    % -- YR added --
-    if loadRStats == 'Y' || loadRStats == 'y'
-        title = [title, 'R Stats'];
-    end
-    % -- /YR added --
-
-    % plot
-    obj.plotMeasureAsArrayInCell(projectedMeasure, title, plottingParameter{:});
-
-    % -- YR added --
-    % !!! DEBUG !!!
-    if loadRStats == 'Y' || loadRStats == 'y'
-        Pvals = {significanceValue significanceValue};  
-        title = {'MPT P Values', 'MPT P Values'};
-        obj.plotMeasureAsArrayInCell(Pvals, title, plottingParameter{:});               
-    end
-    % !!! DEBUG !!!
-    % -- /YR added --
-end
+% % function plotStaR(obj, linearProjectedMeasureForCombinedCondition, headGrid, regionOfInterestCube, projectionParameter, twoConditionLabelsForComparison, significanceLevelForConditionDifference, usePositionProjections, statisticsParameter, plottingParameter)
+% %     % plotConditionDifference(linearProjectedMeasureForCombinedCondition, headGrid, regionOfInterestCube, projectionParameter, twoConditionLabelsForComparison, significanceLevelForConditionDifference, statisticsParameter, plottingParameter)
+% %     %
+% %     % plot condition difference between first and second specified conditions (A-B) and
+% %     % mask areas with non-significent differences.
+% % 
+% %     % if no condition label is provided, use the first two (if they exist)
+% %     if nargin < 5 || isempty(twoConditionLabelsForComparison)
+% %         if length(obj.conditionLabel) > 1
+% %             twoConditionIdsForComparison = [1 2];
+% %             twoConditionLabelsForComparison = obj.conditionLabel;
+% % 
+% %             % when there are more than two conditions present, give a warning
+% %             if length(obj.conditionLabel) > 2
+% %                 fprintf('Warning: there are more than two conditons present, by default only the difference between the first two is displayed. You can assign another condition pair in the input.\n');
+% %             end;
+% %         else
+% %             error('There is only one condition present, at least two conditions are needed for a comparison\n');
+% %         end;
+% %     else % if condition labels for comparison are provided, then find condition ids in obj.conditionLabel that are associated with them.                
+% %         if length(twoConditionLabelsForComparison) < 2
+% %             error('Number of provided condition labels is less than required two (2).\n');
+% %         end;
+% % 
+% %         % find condition ids in obj.conditionLabel that are associated with provided conditon labels.
+% %         for i=1:2
+% %             twoConditionIdsForComparison(i) = find(strcmp(obj.conditionLabel, twoConditionLabelsForComparison{i}));
+% %         end;
+% %     end
+% % 
+% %     if nargin < 6
+% %         significanceLevelForConditionDifference = 0.03;                
+% %     end;
+% % 
+% %     if nargin < 7
+% %         usePositionProjections = 'mean'; % default is mean since we currently do not have a good way to incorporate session dipole denisties when 'each' statistics is used.
+% %     end;
+% % 
+% %     %if nargin < 8               
+% %         statisticsParameter = {};
+% %     %end;
+% % 
+% %     %if nargin < 9               
+% %         plottingParameter = {};
+% %     %end;
+% % 
+% %     % ================================================
+% %     % YR : Load R Stats.
+% %     loadRStats = 'N';
+% %     %loadRStats = input('Do you want to load R Values? Y/N [N]:','s');
+% %     if loadRStats == 'Y' || loadRStats == 'y'
+% %         disp('YR : Loading R Values...');
+% %         load('RVals.mat');
+% %         size(R_Pvals)
+% %         R_Pvals = reshape(R_Pvals, 100, 200)';
+% % 
+% %         R_Pvals(R_Pvals > 0.5) = 0.5;
+% % 
+% %         Pvals = {R_Pvals};  
+% %         title = {'R P Values'};
+% %         obj.plotMeasureAsArrayInCell(Pvals, title, plottingParameter{:}); 
+% %     end
+% %     % !!! DEBUG !!!
+% %     % ================================================
+% % 
+% %     % separate conditions from linearized form
+% %     projectedMeasure = obj.getSeparatedConditionsForLinearizedMeasure(linearProjectedMeasureForCombinedCondition);
+% % 
+% %     % only keep the two conditions to be compared
+% %     projectedMeasure = projectedMeasure(twoConditionIdsForComparison);
+% % 
+% %     % calculate difference statistics for two conditions
+% %     [differenceBetweenConditions significanceValue] = obj.getMeasureDifferenceAcrossConditions(headGrid, regionOfInterestCube, projectionParameter, twoConditionIdsForComparison, usePositionProjections,statisticsParameter{:});
+% % 
+% %     % calculate difference between the two conditions and add as the third measure for
+% %     % plotting
+% %     projectedMeasure{3} = projectedMeasure{1} - projectedMeasure{2};
+% % 
+% %     % mask insignificent differences
+% %     % -- YR added --
+% %     if loadRStats == 'Y' || loadRStats == 'y'
+% %         disp('YR : Masking with P Values...');
+% %         projectedMeasure{4} = projectedMeasure{3};
+% %         projectedMeasure{4}(R_Pvals > significanceLevelForConditionDifference) = 0;
+% %     end
+% %     % -- /YR added --
+% %     projectedMeasure{3}(significanceValue > significanceLevelForConditionDifference) = 0;
+% % 
+% %     % since when plotting, the mean spectra is automatically added for spectra, we should
+% %     % add the negative of it so it is canccled out.
+% %     if strcmp(obj.measureLabel, 'Spec')
+% %         projectedMeasure{3} = projectedMeasure{3} - obj.specMeanOverAllIcAndCondition;
+% %     end;
+% % 
+% %     % set the titles
+% %     conditionTitle = [obj.conditionLabel{twoConditionIdsForComparison(1)} ' - ' obj.conditionLabel{twoConditionIdsForComparison(2)} ' (p<' num2str(significanceLevelForConditionDifference) ')'];
+% % 
+% %     title = [obj.conditionLabel(twoConditionIdsForComparison), conditionTitle];
+% %     % -- YR added --
+% %     if loadRStats == 'Y' || loadRStats == 'y'
+% %         title = [title, 'R Stats'];
+% %     end
+% %     % -- /YR added --
+% % 
+% %     % plot
+% %     obj.plotMeasureAsArrayInCell(projectedMeasure, title, plottingParameter{:});
+% % 
+% %     % -- YR added --
+% %     % !!! DEBUG !!!
+% %     if loadRStats == 'Y' || loadRStats == 'y'
+% %         Pvals = {significanceValue significanceValue};  
+% %         title = {'MPT P Values', 'MPT P Values'};
+% %         obj.plotMeasureAsArrayInCell(Pvals, title, plottingParameter{:});               
+% %     end
+% %     % !!! DEBUG !!!
+% %     % -- /YR added --
+% % end
 end
 % Show Stats! ---- The Good Stuff Happens Here! ---- 

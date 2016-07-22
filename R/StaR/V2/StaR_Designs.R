@@ -62,60 +62,64 @@ STATS_SUB_DESIGNS[[37]] = list(values ~ (sessions) + Error(subjects/sessions), v
 STATS_SUB_DESIGNS[[38]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (orders) + Error(subjects/orders), values ~ (groups) + Error(subjects/groups))
 STATS_SUB_DESIGNS[[40]] = list(values ~ (sessions) + Error(subjects/sessions), values ~ (conditions) + Error(subjects/conditions), values ~ (groups) + Error(subjects/groups))
 
+STATS_DESIGNS_RND = ~1|subjects
 
 #STATS_SUB_DESIGNS_ez[[11]] = ezANOVA(data = x, dv = values, wid = subjects, within = .(subjects), between = .(groups, conditions)) #, within = .(sessions)
 #================================================================================================================================
 ################################  ==================== MIXED MODELS  ==================== #######################################
 #================================================================================================================================
-STATS_DESIGNS_MM <- list()
-STATS_DESIGNS_MM[[1]] = values ~ (conditions) + (1|subjects)
-STATS_DESIGNS_MM[[2]] = values ~ (sessions) + (1|subjects)
-STATS_DESIGNS_MM[[3]] = values ~ (motions) + (1|subjects)
-STATS_DESIGNS_MM[[4]] = values ~ (orders) + (1|subjects)
-STATS_DESIGNS_MM[[5]] = values ~ (groups) + (1|subjects)
+#----------------------------------
+# %%%%%%%% FOR LMER ONLY %%%%%%%%%%
+# For lme use STATS_SUB_DESIGNS with the STATS_DESIGN_RND
+#----------------------------------
+#STATS_DESIGNS_MM <- list()
+#STATS_DESIGNS_MM[[1]] = values ~ (conditions) + (1|subjects)
+#STATS_DESIGNS_MM[[2]] = values ~ (sessions) + (1|subjects)
+#STATS_DESIGNS_MM[[3]] = values ~ (motions) + (1|subjects)
+#STATS_DESIGNS_MM[[4]] = values ~ (orders) + (1|subjects)
+#STATS_DESIGNS_MM[[5]] = values ~ (groups) + (1|subjects)
 
-STATS_DESIGNS_MM[[11]] = values ~ (groups * conditions) + (1|subjects)
-STATS_DESIGNS_MM[[12]] = values ~ (groups * sessions) + (1|subjects)
-STATS_DESIGNS_MM[[13]] = values ~ (groups * motions) + (1|subjects)
-STATS_DESIGNS_MM[[14]] = values ~ (groups * orders)  + (1|subjects)
-STATS_DESIGNS_MM[[15]] = values ~ (sessions * motions) + (1|subjects)
-STATS_DESIGNS_MM[[16]] = values ~ (sessions * orders) + (1|subjects)
-STATS_DESIGNS_MM[[17]] = values ~ (groups * sessions * motions) + (1|subjects)
-STATS_DESIGNS_MM[[18]] = values ~ (groups * sessions * orders) + (1|subjects)
-STATS_DESIGNS_MM[[19]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
+#STATS_DESIGNS_MM[[11]] = values ~ (groups * conditions) + (1|subjects)
+#STATS_DESIGNS_MM[[12]] = values ~ (groups * sessions) + (1|subjects)
+#STATS_DESIGNS_MM[[13]] = values ~ (groups * motions) + (1|subjects)
+#STATS_DESIGNS_MM[[14]] = values ~ (groups * orders)  + (1|subjects)
+#STATS_DESIGNS_MM[[15]] = values ~ (sessions * motions) + (1|subjects)
+#STATS_DESIGNS_MM[[16]] = values ~ (sessions * orders) + (1|subjects)
+#STATS_DESIGNS_MM[[17]] = values ~ (groups * sessions * motions) + (1|subjects)
+#STATS_DESIGNS_MM[[18]] = values ~ (groups * sessions * orders) + (1|subjects)
+#STATS_DESIGNS_MM[[19]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
 
-STATS_DESIGNS_MM[[21]] = values ~ (conditions) + (1|subjects)
-STATS_DESIGNS_MM[[22]] = values ~ (sessions) + (1|subjects)
-STATS_DESIGNS_MM[[23]] = values ~ (motions) + (1|subjects)
-STATS_DESIGNS_MM[[24]] = values ~ (orders) + (1|subjects)
-STATS_DESIGNS_MM[[25]] = values ~ (groups) + (1|subjects)
+#STATS_DESIGNS_MM[[21]] = values ~ (conditions) + (1|subjects)
+#STATS_DESIGNS_MM[[22]] = values ~ (sessions) + (1|subjects)
+#STATS_DESIGNS_MM[[23]] = values ~ (motions) + (1|subjects)
+#STATS_DESIGNS_MM[[24]] = values ~ (orders) + (1|subjects)
+#STATS_DESIGNS_MM[[25]] = values ~ (groups) + (1|subjects)
 
-STATS_DESIGNS_MM[[31]] = values ~ (groups * conditions) + (1|subjects)
-STATS_DESIGNS_MM[[32]] = values ~ (groups * sessions) + (1|subjects)
-STATS_DESIGNS_MM[[33]] = values ~ (groups * motions) + (1|subjects)
-STATS_DESIGNS_MM[[34]] = values ~ (groups * orders) + (1|subjects)
-STATS_DESIGNS_MM[[35]] = values ~ (sessions * motions) + (1|subjects)
-STATS_DESIGNS_MM[[36]] = values ~ (sessions * orders) + (1|subjects)
-STATS_DESIGNS_MM[[37]] = values ~ (groups * sessions * motions) + (1|subjects)
-STATS_DESIGNS_MM[[38]] = values ~ (groups * sessions * orders) + (1|subjects)
-STATS_DESIGNS_MM[[39]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
+#STATS_DESIGNS_MM[[31]] = values ~ (groups * conditions) + (1|subjects)
+#STATS_DESIGNS_MM[[32]] = values ~ (groups * sessions) + (1|subjects)
+#STATS_DESIGNS_MM[[33]] = values ~ (groups * motions) + (1|subjects)
+#STATS_DESIGNS_MM[[34]] = values ~ (groups * orders) + (1|subjects)
+#STATS_DESIGNS_MM[[35]] = values ~ (sessions * motions) + (1|subjects)
+#STATS_DESIGNS_MM[[36]] = values ~ (sessions * orders) + (1|subjects)
+#STATS_DESIGNS_MM[[37]] = values ~ (groups * sessions * motions) + (1|subjects)
+#STATS_DESIGNS_MM[[38]] = values ~ (groups * sessions * orders) + (1|subjects)
+#STATS_DESIGNS_MM[[39]] = values ~ (groups * sessions * motions * orders) + (1|subjects)
 
-STATS_SUB_DESIGNS_MM <- list()
-STATS_SUB_DESIGNS_MM[[1]] = list(values ~ (conditions))
-#STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|subjects), values ~ (groups) + (1|subjects))
-STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|sessions), values ~ (groups) + (1|sessions))
-STATS_SUB_DESIGNS_MM[[12]] = list(values ~ (sessions) + (1|subjects), values ~ (groups) + (1|subjects))
-STATS_SUB_DESIGNS_MM[[13]] = list(values ~ (motions) + (1|subjects), values ~ (groups) + (1|subjects))
-STATS_SUB_DESIGNS_MM[[14]] = list(values ~ (orders) + (1|subjects), values ~ (groups) + (1|subjects))
-STATS_SUB_DESIGNS_MM[[15]] = list(values ~ (motions) + (1|subjects), values ~ (sessions) + (1|subjects))
-STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (orders) + (1|subjects), values ~ (sessions) + (1|subjects))
-#STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (sessions) + (1|subjects), values ~ (orders) + (1|subjects))
+#STATS_SUB_DESIGNS_MM <- list()
+#STATS_SUB_DESIGNS_MM[[1]] = list(values ~ (conditions))
+#STATS_SUB_DESIGNS_MM[[11]] = list(values ~ (conditions) + (1|sessions), values ~ (groups) + (1|sessions))
+#STATS_SUB_DESIGNS_MM[[12]] = list(values ~ (sessions) + (1|subjects), values ~ (groups) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[13]] = list(values ~ (motions) + (1|subjects), values ~ (groups) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[14]] = list(values ~ (orders) + (1|subjects), values ~ (groups) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[15]] = list(values ~ (motions) + (1|subjects), values ~ (sessions) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[16]] = list(values ~ (orders) + (1|subjects), values ~ (sessions) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[17]] = list(values ~ (sessions) + (1|subjects), values ~ (motions) + (1|subjects), values ~ (groups) + (1|subjects))
+#STATS_SUB_DESIGNS_MM[[18]] = list(values ~ (sessions) + (1|subjects), values ~ (orders) + (1|subjects), values ~ (groups) + (1|subjects))
 
-STATS_DESIGNS_MM_RESTRICTED = values ~ 1 * (1 | subjects)
-STATS_DESIGNS_MM[[99]] = values ~ 1 * (1 | subjects) #Bug...
+#STATS_DESIGNS_MM_RESTRICTED = values ~ 1 * (1 | subjects)
+#STATS_DESIGNS_MM[[99]] = values ~ 1 * (1 | subjects) #Bug...
 
 #STATS_DESIGNS_RND = ~1|sessions
-STATS_DESIGNS_RND = ~1|subjects
 
 #==================================================================
 
@@ -156,8 +160,8 @@ staR_getDesignMatrix <- function(iDesign)
   if(iDesign == 15) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 3)} # Sessions * Motions
   if(iDesign == 16) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 2, "nbCol" = 3)} # Sessions * Orders
   
-  if(iDesign == 17) {designMatrix = data.frame("nbLayer" = 2, "nbRow" = 2, "nbCol" = 3)} # Groups * Motions * Sessions   //YR: modified the order of the 2 last - please confirm.
-  if(iDesign == 18) {designMatrix = data.frame("nbLayer" = 2, "nbRow" = 2, "nbCol" = 3)} # Groups * Orders * Sessions    //YR: modified the order of the 2 last - please confirm.
+  if(iDesign == 17) {designMatrix = data.frame("nbLayer" = 2, "nbRow" = 2, "nbCol" = 3)} # Sessions * Motions * Groups
+  if(iDesign == 18) {designMatrix = data.frame("nbLayer" = 2, "nbRow" = 2, "nbCol" = 3)} # Sessions * Orders * Groups
   if(iDesign == 19) {designMatrix = data.frame("nbLayer" = 1, "nbRow" = 1, "nbCol" = 1)} # Groups * Sessions * Motions * Orders
   
   designMatrix

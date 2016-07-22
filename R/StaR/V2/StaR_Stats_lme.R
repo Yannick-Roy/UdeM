@@ -162,13 +162,13 @@ staR_lme_sub <- function(subData, iDesign, subTitles = NULL)
             {
               #print(paste(p, " (v) - ", i, j, k))
               # -- Vertical --
-              if(j == 1) {lDataset[[p]][[j]][[k]] <- subData[[i]][[j]][[k]][[p]]}
+              if(i == 1) {lDataset[[p]][[j]][[k]] <- subData[[i]][[j]][[k]][[p]]}
               else {lDataset[[p]][[j]][[k]] <- rbind(lDataset[[p]][[j]][[k]], subData[[i]][[j]][[k]][[p]])}
             }
           }
         }
       }
-    }   
+    }
   }
   
   stats.subAnalysis.hData <- staR_InvertDimensions3D(hDataset)
@@ -262,6 +262,18 @@ staR_lme_sub <- function(subData, iDesign, subTitles = NULL)
                   titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[1]]
                 } else {
                   titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[1]], sep=" | ")
+                }
+              }
+            }
+            if(curDim == 3) 
+            {
+              stats.subAnalysis.VarVals
+              for(vv in 1:length(stats.subAnalysis.VarVals))
+              {
+                if(is.null(titleCombined)) {
+                  titleCombined <- stats.subAnalysis.VarVals[[i]][[j]][[vv]]
+                } else {
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[i]][[j]][[vv]], sep=" | ")
                 }
               }
             }

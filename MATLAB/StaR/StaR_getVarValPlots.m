@@ -9,17 +9,19 @@
 
 function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
 
+    verbose = 0;
+    
     if strcmp(plotType, 'data')
-        plotsFromDF = starDF.data
+        plotsFromDF = starDF.data;
     elseif strcmp(plotType, 'pValsSub')
         if length(starDF.pValsSub) > 0
-            plotsFromDF = starDF.pValsSub
+            plotsFromDF = starDF.pValsSub;
         else
             plotsFromDF = [];
         end
     else
         if length(starDF.pValsSub) > 0
-            plotsFromDF = starDF.pValsFull
+            plotsFromDF = starDF.pValsFull;
         else
             plotsFromDF = [];
         end
@@ -33,7 +35,7 @@ function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
         same_var = union(var_wanted, var_plot);
         diff_var = union(setdiff(var_wanted, var_plot), setdiff(var_plot, var_wanted));
         for i = 1:length(var_wanted)
-            same_val{i} = union([val_wanted{:,i}], val_plot{:,1});
+            same_val{i} = union([val_wanted{:,i}], val_plot{:,i});
             diff_val{i} = union(setdiff(val_wanted{:,i}, val_plot{:,i}), setdiff(val_plot{:,i}, val_wanted{:,i}));
         end
 
@@ -48,7 +50,10 @@ function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
         end
 
         if diff == 0
-            disp(['GOOD PLOT! #' num2str(p)]);
+            if verbose > 0
+                disp(['GOOD PLOT! #' num2str(p)]);
+            end
+            
             goodPlotIDs = [goodPlotIDs p];
         end
     end

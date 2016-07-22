@@ -152,7 +152,7 @@ staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
             {
               #print(paste(p, " (v) - ", i, j, k))
               # -- Vertical --
-              if(j == 1) {lDataset[[p]][[j]][[k]] <- subData[[i]][[j]][[k]][[p]]}
+              if(i == 1) {lDataset[[p]][[j]][[k]] <- subData[[i]][[j]][[k]][[p]]}
               else {lDataset[[p]][[j]][[k]] <- rbind(lDataset[[p]][[j]][[k]], subData[[i]][[j]][[k]][[p]])}
             }
           }
@@ -183,7 +183,7 @@ staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
   stats.subAnalysis.pTitles <- list()
   if(length(stats.subAnalysis.combinedData) > 0)
   {
-    for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols & Layers (1 - Horizontal | 2 - Vertical)
+    for(curDim in 1:length(stats.subAnalysis.combinedData)) # Row & Cols & Layers (1 - Horizontal | 2 - Vertical | 3 - Layers)
     {
       if(length(stats.subAnalysis.combinedData[[curDim]]) > 0)
       {
@@ -243,9 +243,9 @@ staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
               for(vv in 1:length(stats.subAnalysis.VarVals[[1]]))
               {
                 if(is.null(titleCombined)) {
-                  titleCombined <- stats.subAnalysis.VarVals[[j]][[vv]][[1]]
+                  titleCombined <- stats.subAnalysis.VarVals[[j]][[vv]][[i]]
                 } else {
-                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[1]], sep=" | ")
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[i]], sep=" | ")
                 }
               }
             }
@@ -254,9 +254,9 @@ staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
               for(vv in 1:length(stats.subAnalysis.VarVals))
               {
                 if(is.null(titleCombined)) {
-                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[1]]
+                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[i]]
                 } else {
-                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[1]], sep=" | ")
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[i]], sep=" | ")
                 }
               }
             }
@@ -266,9 +266,9 @@ staR_aov_sub <- function(subData, iDesign, subTitles = NULL)
               for(vv in 1:length(stats.subAnalysis.VarVals))
               {
                 if(is.null(titleCombined)) {
-                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[i]]
+                  titleCombined <- stats.subAnalysis.VarVals[[i]][[j]][[vv]]
                 } else {
-                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[i]], sep=" | ")
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[i]][[j]][[vv]], sep=" | ")
                 }
               }
             }
