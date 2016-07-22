@@ -23,7 +23,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = c(1,2,3,4,5)#,11,12,13,14,15,16,17,18)
+designs = c(17)#,11,12,13,14,15,16,17,18)
 
 bReloadRData = FALSE
 
@@ -63,16 +63,16 @@ dirPlotsPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/St
 #**************************************************************************
 #***** Main Loop (ERP & ERSP) !
 #**************************************************************************
-for(curAnalysis in 1:2)
-#curAnalysis = 2
+#for(curAnalysis in 1:2)
+curAnalysis = 2
 {
-  for(domainNo in 1:3)
-  #domainNo = 1
+  #for(domainNo in 1:3)
+  domainNo = 1
   {
     data.domain = domainNo
     
-    for(analType in 1:2)
-    #analType = 1
+    #for(analType in 1:2)
+    analType = 1
     {
       if(analType == 1){stats.function = "lme"}
       if(analType == 2){stats.function = "aov"}
@@ -122,6 +122,9 @@ for(curAnalysis in 1:2)
         # Formatting the "Wide structure" for stats.
         # TODO : Allow to design study parameters here. (rather than to modify source code!)
         if(bPrepMatlabData) { fullDataStructure <- staR_prepData() }
+        
+        # Test Structure!
+        write.csv(fullDataStructure, file = "StaR_WideStructure.csv")
         
         # Fill "Wide structure" with real data.
         if(bLoadMatlabFile)
