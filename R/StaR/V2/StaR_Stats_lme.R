@@ -86,6 +86,9 @@ staR_lme_sub <- function(subData, iDesign, subTitles = NULL)
   hDataset <- list()
   vDataset <- list()
   lDataset <- list()
+  
+  #TODO : This formatting is exactly the same for lme & aov! Put it in tools or stats.
+  print("Formatting SubData for lme...")
   for(p in 1:nbPoints)  # Points
   {
     ## -----------------------

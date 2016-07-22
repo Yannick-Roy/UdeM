@@ -2,10 +2,16 @@
 staR_InvertDimensions3D <- function(array3D)
 { 
   b <- list()
+  if(length(array3D) > 0)
+  {
   for(p in 1:length(array3D))
   {
+      if(length(array3D[[p]]) > 0)
+      {
     for(i in 1:length(array3D[[p]]))
     {
+          if(length(array3D[[p]][[i]]) > 0)
+          {
       for(j in 1:length(array3D[[p]][[i]]))
       {
         #print(paste(p,i,j))
@@ -16,6 +22,9 @@ staR_InvertDimensions3D <- function(array3D)
       }
     }
   }  
+      }
+    }
+  }
   return (b)
 }
 
