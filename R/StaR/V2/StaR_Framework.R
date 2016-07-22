@@ -130,7 +130,8 @@ curAnalysis = 2
         if(bLoadMatlabFile)
         {
           # Read Matlab file !
-          data.file = paste("~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/MPT_exp_", tolower(data.type), "_d", data.domain, ".mat", sep="")
+            data.file = paste("/media/user/BrainData/Study_mTBI_x/MPT_Export/MPT_exp_", tolower(data.type), "_D", data.domain, ".mat", sep="")
+            #data.file = paste("~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/MPT_exp_", tolower(data.type), "_D", data.domain, ".mat", sep="")
           
           print("Matlab Data - Loading...")
           matlabData <- staR_fillFromMatlab(data.file, "MPT", fullDataStructure, bSmallSamples = bSmallSamples, dataType = data.type)

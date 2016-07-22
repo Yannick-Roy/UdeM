@@ -353,7 +353,8 @@ else
     
     updateVals = [];
 	
-    defaultFolder = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/Latest/';
+    %defaultFolder = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/StaR Images/Latest/';
+    defaultFolder = '/media/user/BrainData/Study_mTBI_x/MPT_Export/StaR Images/Latest/';
     
     switch  varargin{1}
         case 'cbo_design'
