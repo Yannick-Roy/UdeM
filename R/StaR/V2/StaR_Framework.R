@@ -23,7 +23,7 @@ source("StaR_Plot.R")
 source("StaR_Stats_aov.R")
 source("StaR_Stats_lme.R")
 
-designs = c(17)#,11,12,13,14,15,16,17,18)
+designs = c(1)#,11,12,13,14,15,16,17,18)
 
 bReloadRData = FALSE
 
@@ -56,9 +56,24 @@ bTempDisableSubAnalysis = FALSE
 sigthreshold = 0.05
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
-#dirPlotsPath <- "~/Documents/Playground/UdeM/RMatlab_Data/StaR_Images/"
-#dirPlotsPath <- "/media/user/Data/Playground/UdeM/RMatlab_Data/StaR_Images/"
-dirPlotsPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/"
+
+OS = 3   # 1 - Mac / 2 - Linux / 3 - Windows
+
+dirPlotsPath <- ""
+dirMatlabExportPath <- ""
+if(OS == 1) { 
+  # --- MAC Paths ---
+  dirMatlabExportPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/"
+  dirPlotsPath <- "~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/"
+} else if(OS == 2) {
+  # --- Linux Paths ---
+  dirMatlabExportPath <- "/media/user/BrainData/Study_mTBI_x/MPT_Export/"
+  dirPlotsPath <- "/media/user/BrainData/Study_mTBI_x/MPT_Export/Star Images/"
+} else if(OS == 3) {
+  # --- Windows Paths ---
+  dirMatlabExportPath <- "E:/Study_mTBI_x/MPT_Export/"
+  dirPlotsPath <- "E:/Study_mTBI_x/MPT_Export/Star Images/"
+}
 
 #**************************************************************************
 #***** Main Loop (ERP & ERSP) !
@@ -130,8 +145,7 @@ curAnalysis = 2
         if(bLoadMatlabFile)
         {
           # Read Matlab file !
-            data.file = paste("/media/user/BrainData/Study_mTBI_x/MPT_Export/MPT_exp_", tolower(data.type), "_D", data.domain, ".mat", sep="")
-            #data.file = paste("~/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/MPT_exp_", tolower(data.type), "_D", data.domain, ".mat", sep="")
+          data.file = paste(dirMatlabExportPath, "MPT_exp_", tolower(data.type), "_D", data.domain, ".mat", sep="")
           
           print("Matlab Data - Loading...")
           matlabData <- staR_fillFromMatlab(data.file, "MPT", fullDataStructure, bSmallSamples = bSmallSamples, dataType = data.type)
