@@ -16,7 +16,7 @@ staR_lme <- function(fullData, iDesign, bSubAnalysis = FALSE)
   
   stopCluster(cl)
   
-  #mixedmodels.full <- lapply(fullData, FUN = function(x) {lme(STATS_DESIGNS[[iDesign]], random=STATS_DESIGNS_RND, x)})
+  #mixedmodels.full <- lapply(fullData, FUN = function(x) {lme(fixed=STATS_DESIGNS[[iDesign]], random=STATS_DESIGNS_RND, x)})
   
   return (staR_lme_pvals(mixedmodels.full))
 }
@@ -251,9 +251,9 @@ staR_lme_sub <- function(subData, iDesign, subTitles = NULL)
               for(vv in 1:length(stats.subAnalysis.VarVals[[1]]))
               {
                 if(is.null(titleCombined)) {
-                  titleCombined <- stats.subAnalysis.VarVals[[j]][[vv]][[1]]
+                  titleCombined <- stats.subAnalysis.VarVals[[j]][[vv]][[i]]
                 } else {
-                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[1]], sep=" | ")
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[j]][[vv]][[i]], sep=" | ")
                 }
               }
             }
@@ -262,9 +262,9 @@ staR_lme_sub <- function(subData, iDesign, subTitles = NULL)
               for(vv in 1:length(stats.subAnalysis.VarVals))
               {
                 if(is.null(titleCombined)) {
-                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[1]]
+                  titleCombined <- stats.subAnalysis.VarVals[[vv]][[j]][[i]]
                 } else {
-                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[1]], sep=" | ")
+                  titleCombined <- paste(titleCombined, stats.subAnalysis.VarVals[[vv]][[j]][[i]], sep=" | ")
                 }
               }
             }
