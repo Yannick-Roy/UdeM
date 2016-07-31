@@ -611,6 +611,11 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
                 curDataVals = cat(2, Val1{:}, Val2{j}, Val3, Val4);
                 pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
                 
+                % TODO: Check the implication!
+                if length(pValsPlotIDs.cols{j}) > 1
+                    pValsPlotIDs.cols{j} = pValsPlotIDs.cols{j}(1)
+                end
+        
                 if ~isempty(pValsPlotIDs.cols{j})
                     if bPCorrected
                         mixPlots{length(Val1) + 1, j} =  df.pValsSub{pValsPlotIDs.cols{j}}.plotValCorrected;
@@ -643,6 +648,11 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
         curPValsVars = cat(2, Var1{i}, Var2{:}, Var3, Var4);
         curDataVals = cat(2, Val1{i}, Val2{:}, Val3, Val4);
         pValsPlotIDs.rows{i} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
+        
+        % TODO: Check the implication!
+        if length(pValsPlotIDs.rows{i}) > 1
+            pValsPlotIDs.rows{i} = pValsPlotIDs.rows{i}(1)
+        end
         
         if ~isempty(pValsPlotIDs.rows{i})
             if bPCorrected
