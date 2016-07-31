@@ -327,7 +327,7 @@ if ~isstr(varargin{1}) %intial settings
 
 
     % Show Stats! ---- The Good Stuff Happens Here! ---- 
-    strStatsPath = ['/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/Star Images/Latest/' obj.object.measureLabel '/Domain_' num2str(curDomain) '/Stats_' stats{StaRParams.stats}.function '/Design_' obj.object.measureLabel '_' num2str(designs{StaRParams.design}.No)];
+    strStatsPath = ['/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_ShortMeasures/MPT_Export/Star Images/Latest/' obj.object.measureLabel '/Domain_' num2str(curDomain) '/Stats_' stats{StaRParams.stats}.function '/Design_' obj.object.measureLabel '_' num2str(designs{StaRParams.design}.No)];
     disp(strStatsPath);
     if exist(strStatsPath, 'dir')
         disp('Valid Path!');
@@ -353,8 +353,8 @@ else
     
     updateVals = [];
 	
-    %defaultFolder = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_Measures/MPT_Export/StaR Images/Latest/';
-    defaultFolder = '/media/user/BrainData/Study_mTBI_x/MPT_Export/StaR Images/Latest/';
+    defaultFolder = '/Users/yannick/Documents/PhD/Stats Test/mTBI_SubClean_ShortMeasures/MPT_Export/StaR Images/Latest/';
+    %defaultFolder = '/media/user/BrainData/Study_mTBI_x/MPT_Export/StaR Images/Latest/';
     
     switch  varargin{1}
         case 'cbo_design'
