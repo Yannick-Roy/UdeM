@@ -872,7 +872,11 @@ function shortTitles = getShortTitles(titles)
                      shortTitle1 = [shortTitle1 '|' shortTitle2];
                  end
              end
-             shortTitles{i,j} = shortTitle1;
+             if isempty(shortTitle1)
+                 shortTitles{i,j} = titles{i,j} % put back the title if you could find separation!
+             else
+                shortTitles{i,j} = shortTitle1; % put the new 'short' title.
+             end
         end    
     end
 end

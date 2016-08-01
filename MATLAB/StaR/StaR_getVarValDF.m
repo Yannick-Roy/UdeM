@@ -58,8 +58,8 @@ function starDF = StaR_getVarValDF(filename)
         starDF.pValsSub{i}.plotValCorrected = pValsSubCorrected_reshaped(:, i);
 
         if strcmp(starDF.typeData, 'ERSP')
-            starDF.pValsSub{i}.plotVal = reshape(starDF.pValsSub{i}.plotVal, length(starDF.freqData), length(starDF.timeData));
-            starDF.pValsSub{i}.plotValCorrected = reshape(starDF.pValsSub{i}.plotValCorrected, length(starDF.freqData), length(starDF.timeData));
+            starDF.pValsSub{i}.plotVal = reshape(starDF.pValsSub{i}.plotVal, length(starDF.freqData), length(starDF.timeData))';
+            starDF.pValsSub{i}.plotValCorrected = reshape(starDF.pValsSub{i}.plotValCorrected, length(starDF.freqData), length(starDF.timeData))';
         end
         
         for j=1:length(pTitlesSub_s{i}) % For each 'sub data' that contributed...
@@ -93,8 +93,8 @@ function starDF = StaR_getVarValDF(filename)
         starDF.pValsFull{i}.plotValCorrected = pValsFullCorrected_reshaped(:, i);
 
         if strcmp(starDF.typeData, 'ERSP')
-            starDF.pValsFull{i}.plotVal = reshape(starDF.pValsFull{i}.plotVal, length(starDF.freqData), length(starDF.timeData));
-            starDF.pValsFull{i}.plotValCorrected = reshape(starDF.pValsFull{i}.plotValCorrected, length(starDF.freqData), length(starDF.timeData));
+            starDF.pValsFull{i}.plotVal = reshape(starDF.pValsFull{i}.plotVal, length(starDF.freqData), length(starDF.timeData))';
+            starDF.pValsFull{i}.plotValCorrected = reshape(starDF.pValsFull{i}.plotValCorrected, length(starDF.freqData), length(starDF.timeData))';
         end
         
         for j=1:length(pTitlesFull_s{i}) % For each 'sub data' that contributed...
