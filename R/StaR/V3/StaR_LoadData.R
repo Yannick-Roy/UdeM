@@ -51,11 +51,13 @@ staR_prepData <- function()
     subjects = rep(subjects_vals, times = 1, each = length(sessions_vals) * length(conditions_vals))
   }
     
-  values = seq(1,nbSets)
+  values = seq(1, nbSets)
+  domains = rep("X", times = nbSets, each = 1)
   
-  fullData = data.frame(groups, subjects, sessions, orders, motions, conditions, values) #, row.names = c("No", Group", "Subject", "Session", "Condition"))
+  fullData = data.frame(domains, groups, subjects, sessions, orders, motions, conditions, values) #, row.names = c("No", Group", "Subject", "Session", "Condition"))
   #fullData = data.frame(groups, subjects, sessions, conditions, values) #, row.names = c("No", Group", "Subject", "Session", "Condition"))
   
+  fullData$domains <- factor(fullData$domains)
   fullData$subjects <- factor(fullData$subjects)
   fullData$groups <- factor(fullData$groups)
   fullData$orders <- factor(fullData$orders)
@@ -68,7 +70,7 @@ staR_prepData <- function()
 ###########################################################################
 ###################       Fill Structure from Matlab File !     ###########
 ###########################################################################
-staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, bSmallSamples = FALSE, dataType = "ERP")
+staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, bSmallSamples = FALSE, dataType = "ERP", domain = "X")
 {
   print(paste("Opening Matlab File: ", fileName))
   mlData.d <- readMat(fileName)
@@ -103,6 +105,7 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, bSmallSamples 
     for(j in 1:nbPoints)
     {
       fullData[[j]] = dataStructure
+      fullData[[j]]$domains = domain
       
       for (i in 0:(nbSets - 1)) 
       {
@@ -120,6 +123,7 @@ staR_fillFromMatlab <- function(fileName, toolBox, dataStructure, bSmallSamples 
   # Factor them !
   for(i in 1:nbPoints)
   {
+    fullData[[i]]$domains <- factor(fullData[[i]]$domains)
     fullData[[i]]$subjects <- factor(fullData[[i]]$subjects)
     fullData[[i]]$groups <- factor(fullData[[i]]$groups)
     fullData[[i]]$sessions <- factor(fullData[[i]]$sessions)
