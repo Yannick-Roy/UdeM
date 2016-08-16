@@ -63,7 +63,9 @@ if ~isstr(varargin{1}) %intial settings
     cbo_design_cb = ['pop_StaRUI(''cbo_design'',gcf);']; 
     generatesub_plot_cb = ['pop_StaRUI(''btn_generatesub'',gcf);'];
     generatefull_plot_cb = ['pop_StaRUI(''btn_generatefull'',gcf);'];
-    check_compute_cb = ['pop_StaRUI(''check_compute'',gcf);']; 
+    btn_custom_cb = ['pop_StaRUI(''btn_custom'',gcf);'];
+    btn_export_cb = ['pop_StaRUI(''btn_export'',gcf);'];
+    check_thisdomain_cb = ['pop_StaRUI(''check_thisdomain'',gcf);']; 
     cbo_var1_cb = ['pop_StaRUI(''cbo_var1'',gcf);']; 
     cbo_var2_cb = ['pop_StaRUI(''cbo_var2'',gcf);']; 
     cbo_var3_cb = ['pop_StaRUI(''cbo_var3'',gcf);']; 
@@ -76,41 +78,17 @@ if ~isstr(varargin{1}) %intial settings
     % Design Names...
     designs = {};
     designs{1}.No = 1;
-    designs{1}.Name  = ['Design #' num2str(designs{1}.No) ': (conditions)'];
+    designs{1}.Name  = ['Design #' num2str(designs{1}.No) ': (values ~ groups * sessions * orders * motions)'];
     designs{2}.No = 2;
-    designs{2}.Name  = ['Design #' num2str(designs{2}.No) ': (sessions)'];
-    designs{3}.No = 3;
-    designs{3}.Name  = ['Design #' num2str(designs{3}.No) ': (motions)'];
-    designs{4}.No = 4;
-    designs{4}.Name  = ['Design #' num2str(designs{4}.No) ': (orders)'];
-    designs{5}.No = 5;
-    designs{5}.Name  = ['Design #' num2str(designs{5}.No) ': (groups)'];
-    designs{6}.No = 11;
-    designs{6}.Name  = ['Design #' num2str(designs{6}.No) ': (groups * conditions)'];
-    designs{7}.No = 12;
-    designs{7}.Name  = ['Design #' num2str(designs{7}.No) ': (groups * sessions)'];
-    designs{8}.No = 13;
-    designs{8}.Name  = ['Design #' num2str(designs{8}.No) ': (groups * motions)'];
-    designs{9}.No = 14;
-    designs{9}.Name  = ['Design #' num2str(designs{9}.No) ': (groups * orders)'];
-    designs{10}.No = 15;
-    designs{10}.Name  = ['Design #' num2str(designs{10}.No) ': (sessions * motions)'];
-    designs{11}.No = 16;
-    designs{11}.Name  = ['Design #' num2str(designs{11}.No) ': (sessions * orders)'];
-    designs{12}.No = 17;
-    designs{12}.Name  = ['Design #' num2str(designs{12}.No) ': (groups * sessions * motions)'];
-    designs{13}.No = 18;
-    designs{13}.Name  = ['Design #' num2str(designs{13}.No) ': (groups * sessions * orders)'];
-    designs{14}.No = 19;
-    designs{14}.Name  = ['Design #' num2str(designs{14}.No) ': (groups * sessions * motions * orders)'];
+    designs{2}.Name  = ['Design #' num2str(designs{2}.No) ': (values ~ domains * groups * sessions * orders * motions)'];
 
     % Stats Type.
     stats = {};
-    stats{1}.function = 'aov';
-    stats{1}.details = '(anova)';
-    stats{2}.function = 'lme';
-    stats{2}.details = '(mixed models)';
-
+    stats{1}.function = 'lme';
+    stats{1}.details = '(mixed models)';
+    stats{2}.function = 'custom';
+    stats{2}.details = '(custom)';
+    
     % Correction Type.
     corrections = {};
     corrections{1} = 'N/A';
@@ -191,7 +169,9 @@ if ~isstr(varargin{1}) %intial settings
         correctionString = 'N/A';
     end
     
-    variablesString = 'N/A';
+    [nbVars, varString] = getVarString(variables, designs{1}.Name, true);
+    
+    variablesString = varString; %'N/A';
     variablesValString = 'N/A';
     
     nbPlots = 6;
@@ -200,17 +180,16 @@ if ~isstr(varargin{1}) %intial settings
     nbGroups = length(STUDY.group);
 
     statsThreshold = 0.05;
-    statsCompute = false;
+    checkThisDomain = false;
     
-    uDataVariables = {obj domainID variables designs stats}
+    uDataVariables = {obj domainID variables designs stats STUDY}
     
     % collect user input
     try
-        nRows = 15;
+        nRows = 17;
         nCols = 5;
        userInput = inputgui('title', 'pop_StaRUI()', 'geom', ...
            {{nCols nRows [0 0] [1 1]} {nCols nRows [1 0] [4 1]} ...
-            {nCols nRows [0 1] [1 1]} ... % Empty Line
             {nCols nRows [0 2] [1 1]} ... % Title Line
             {nCols nRows [0 3] [1 1]} {nCols nRows [1 3] [2 1]} {nCols nRows [3 3] [1 1]} {nCols nRows [4 3] [1 1]} ...
             {nCols nRows [0 4] [1 1]} {nCols nRows [1 4] [1 1]} ...
@@ -225,14 +204,14 @@ if ~isstr(varargin{1}) %intial settings
             {nCols nRows [0 13] [1 1]} ... % Empty Line
             {nCols nRows [2 14] [1 2]} {nCols nRows [3 14] [1 2]} ... % Generate button
             {nCols nRows [0 15] [1 1]} ... % Empty Line
+            {nCols nRows [0 17] [1 1]} {nCols nRows [1 17] [1 1]} {nCols nRows [2 17] [1 1]} ... % Export & Custom
             }, ... 
         'uilist',...
-           {{'style' 'text' 'string' ' Design : '}  {'style' 'popupmenu' 'string' designString 'tag' 'design' 'value' 1 'callback' cbo_design_cb} ...
-            {} ... 
+           {{'style' 'text' 'string' ' Design : '}  {'style' 'popupmenu' 'string' designString 'tag' 'design' 'value' 1 'callback' cbo_design_cb} ...            
             {'style' 'text' 'string' ' Stats' 'FontWeight' 'Bold'} ...
             {'style' 'text' 'string' ' Stats : '}  {'style' 'popupmenu' 'string' statsString 'tag' 'stats' 'value' 1} {'style' 'text' 'string' ' Signif. Threshold : '}  {'style' 'edit' 'string' statsThreshold 'tag' 'threshold' 'userdata' 'eeglab' } ...
-            {'style' 'text' 'string' ' Correction : '}  {'style' 'popupmenu' 'string' correctionString 'tag' 'correction' 'value' 1} ...
-            {'style' 'text' 'string' ' Compute Stats : '} {'style' 'checkbox' 'string' '' 'tag' 'compute' 'value' statsCompute 'callback' check_compute_cb} , ... ...
+            {'style' 'text' 'string' ' Correction : '}  {'style' 'popupmenu' 'string' correctionString 'tag' 'correction' 'value' 2} ...
+            {'style' 'text' 'string' ' This Domain Only : '} {'style' 'checkbox' 'string' '' 'tag' 'check_thisdomain' 'value' checkThisDomain 'callback' check_thisdomain_cb} , ... ...
             {} ...
             {'style' 'text' 'string' ' Plot & Variables' 'FontWeight' 'Bold'} {'style' 'text' 'string' ' Name'} {'style' 'text' 'string' ' Value'} ...
             {'style' 'text' 'string' ' Variable 1 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var1' 'value' 1 'callback' cbo_var1_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var1val' 'value' 1 'callback' cbo_var1val_cb} ...
@@ -241,8 +220,9 @@ if ~isstr(varargin{1}) %intial settings
             {'style' 'text' 'string' ' Variable 4* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var4' 'value' 1 'callback' cbo_var4_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var4val' 'value' 1 'callback' cbo_var4val_cb} ...
             {'style' 'text' 'string' ' Use Corrected pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_correction' 'value' true} , ... 
             {} ...
-            {'style' 'pushbutton' 'string' 'Generate Sub' 'tag' 'generatesub' 'callback' generatesub_plot_cb} {'style' 'pushbutton' 'string' 'Generate Full' 'tag' 'generatefull' 'callback' generatefull_plot_cb} ...
+            {'style' 'pushbutton' 'string' 'Post Hoc' 'tag' 'generatesub' 'callback' generatesub_plot_cb} {'style' 'pushbutton' 'string' 'Effects' 'tag' 'generatefull' 'callback' generatefull_plot_cb} ...
             {} ...
+            {'style' 'text' 'string' ' Other Tools : ' 'FontWeight' 'Bold'} {'style' 'pushbutton' 'string' 'Export MPT' 'tag' 'btn_export' 'callback' btn_export_cb} {'style' 'pushbutton' 'string' 'Custom StaR' 'tag' 'btn_custom' 'callback' btn_custom_cb}...
             }, 'userdata', uDataVariables);
     catch
         disp('## ERROR ## pop_StaRUI() cant load...');
@@ -350,6 +330,7 @@ else
     variables = userdat{3};
     designs = userdat{4};
     stats = userdat{5};
+    STUDY = userdat{6};
     
     updateVals = [];
 	
@@ -406,8 +387,23 @@ else
             disp('Generating Sub...');
         case 'btn_generatefull'
             disp('Generating Full...');
-        case 'check_compute'
-            checkcompute = get(findobj('parent', hdl, 'tag', 'compute'), 'value')
+        case 'btn_custom'
+            % pop up window
+            % -------------
+            [inputname, inputpath] = uigetfile2('*.mat', 'Load Custom StaR Plot(s) -- pop_StaRUI()', 'multiselect', 'off');
+            drawnow;
+            if isequal(inputname, 0) return; end;
+            options = { 'filename' inputname 'filepath' inputpath };
+            
+            StaR_getCustomPlots([inputpath '/' inputname]);
+            
+        case 'btn_export'
+            exportMPT(STUDY);
+            
+        case 'check_thisdomain'
+            checkThisDomain = get(findobj('parent', hdl, 'tag', 'checkThisDomain'), 'value')
+            
+            disp(['This Domain Only: ' num2str(checkThisDomain)]);
             
         case 'cbo_var1'
             updateVals = 1;
@@ -430,8 +426,9 @@ else
 
         disp(designs{var_designID}.Name);
 
-        designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID) '/Stats_' stats{var_statsID}.function '/Design_' obj.object.measureLabel '_' num2str(designs{var_designID}.No)];
+        designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID)];
         designFilePath = [designFolderPath '/Workspace_Fullx.mat'];
+        %designFilePath = [designFolderPath '/Effects2_groups_sessions.mat'];
 
         % They both use the function, bu the Full only display the full
         % pVals, not the sub data.
@@ -608,8 +605,8 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
                 end
                 
                 curPValsVars = cat(2, Var1{:}, Var2{j}, Var3, Var4);
-                curDataVals = cat(2, Val1{:}, Val2{j}, Val3, Val4);
-                pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
+                curPValsVals = cat(2, Val1{:}, Val2{j}, Val3, Val4);
+                pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curPValsVals, df, 'pValsSub');
                 
                 % TODO: Check the implication!
                 if length(pValsPlotIDs.cols{j}) > 1
@@ -676,18 +673,22 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
     
     % pValsFull 
     for p = 1:length(df.pValsFull)
+        
+        nbEffects = length(find(char(df.pValsFull{p}.lbl) == ':'))
+        nbEffects = nbEffects + 1;
+        
+        pValsFullTitles{nbEffects}{p} = df.pValsFull{p}.lbl;
+        
         if bPCorrected
-            pValsFullPlots{p} = df.pValsFull{p}.plotValCorrected;
+            pValsFullPlots{nbEffects}{p} = df.pValsFull{p}.plotValCorrected;
         else
-            pValsFullPlots{p} = df.pValsFull{p}.plotVal;
+            pValsFullPlots{nbEffects}{p} = df.pValsFull{p}.plotVal;
         end
         
         if bPSignificants
-            pValsFullPlots{p}(pValsFullPlots{p} < pSignifThreshold) = 2;
-            pValsFullPlots{p}(pValsFullPlots{p} ~= 2) = 0;
-        end
-        
-        pValsFullTitles{p} = df.pValsFull{p}.lbl;
+            pValsFullPlots{nbEffects}{p}(pValsFullPlots{nbEffects}{p} < pSignifThreshold) = 2;
+            pValsFullPlots{nbEffects}{p}(pValsFullPlots{nbEffects}{p} ~= 2) = 0;
+        end       
     end
     
     
@@ -712,7 +713,9 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
             if bFull == false
                 std_plottf(df.timeData, df.freqData, mixPlots,  'titles', mixTitles);%, varargin{:});
             else
-                std_plottf(df.timeData, df.freqData, pValsFullPlots,  'titles', pValsFullTitles);
+                for nbEffects = 1:length(pValsFullPlots)
+                    std_plottf(df.timeData, df.freqData, pValsFullPlots{nbEffects},  'titles', pValsFullTitles{nbEffects});
+                end
             end
         end
 
@@ -881,6 +884,46 @@ function shortTitles = getShortTitles(titles)
     end
 end
 
+function exportMPT(STUDY)
+    %% Automatic Export
+    measures = {'erp', 'ersp'};
+
+    for m = measures
+        curMeasure = m{1};
+
+        disp(curMeasure);
+        if strcmp(curMeasure, 'ersp')
+            % ERSPs Time/Freq Axes.
+            times = STUDY.measureProjection.ersp.object.time;
+            freqs = STUDY.measureProjection.ersp.object.frequency;
+        end
+
+        for curDomain = 1:length(STUDY.measureProjection.(curMeasure).projection.domain)
+            disp(curDomain);
+
+            %=============================
+            % Nima's Code to export Data.
+            %=============================
+            domainNumber = curDomain;
+            dipoleAndMeasure = STUDY.measureProjection.(curMeasure).object; % get the ERSP and dipole data (dataAndMeasure object) from the STUDY structure.
+            domain = STUDY.measureProjection.(curMeasure).projection.domain(domainNumber); % get the domain in a separate variable
+            projection  = STUDY.measureProjection.(curMeasure).projection;
+            headGrid = STUDY.measureProjection.(curMeasure).headGrid;
+            [linearProjectedMeasure sessionConditionCell groupId uniqeDatasetId dipoleDensity] = dipoleAndMeasure.getMeanProjectedMeasureForEachSession(headGrid, domain.membershipCube, projection.projectionParameter);
+            %=============================
+            % Nima's Code to export Data.
+            %=============================
+
+            % Export data.
+            if strcmp(curMeasure, 'ersp')
+                save(['MPT_exp_' curMeasure '_D' num2str(curDomain)], 'linearProjectedMeasure', 'sessionConditionCell', 'groupId', 'uniqeDatasetId', 'dipoleDensity', 'times', 'freqs');
+            else
+                save(['MPT_exp_' curMeasure '_D' num2str(curDomain)], 'linearProjectedMeasure', 'sessionConditionCell', 'groupId', 'uniqeDatasetId', 'dipoleDensity');
+            end   
+        end
+    end
+end
+
 % % function plotStaR(obj, linearProjectedMeasureForCombinedCondition, headGrid, regionOfInterestCube, projectionParameter, twoConditionLabelsForComparison, significanceLevelForConditionDifference, usePositionProjections, statisticsParameter, plottingParameter)
 % %     % plotConditionDifference(linearProjectedMeasureForCombinedCondition, headGrid, regionOfInterestCube, projectionParameter, twoConditionLabelsForComparison, significanceLevelForConditionDifference, statisticsParameter, plottingParameter)
 % %     %
@@ -1000,3 +1043,4 @@ end
 % % end
 end
 % Show Stats! ---- The Good Stuff Happens Here! ---- 
+

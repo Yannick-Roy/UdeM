@@ -35,8 +35,13 @@ function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
         same_var = union(var_wanted, var_plot);
         diff_var = union(setdiff(var_wanted, var_plot), setdiff(var_plot, var_wanted));
         for i = 1:length(var_wanted)
-            same_val{i} = union([val_wanted{:,i}], val_plot{:,i});
-            diff_val{i} = union(setdiff(val_wanted{:,i}, val_plot{:,i}), setdiff(val_plot{:,i}, val_wanted{:,i}));
+            if(size(val_wanted,2) >= i && size(val_plot,2) >= i)
+                same_val{i} = union([val_wanted{:,i}], val_plot{:,i});
+                diff_val{i} = union(setdiff(val_wanted{:,i}, val_plot{:,i}), setdiff(val_plot{:,i}, val_wanted{:,i}));
+            else
+                same_val{i} = {};
+                diff_val{i} = {};
+            end            
         end
 
         diff = 0;
