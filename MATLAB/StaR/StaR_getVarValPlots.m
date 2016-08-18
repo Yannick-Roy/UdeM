@@ -32,11 +32,11 @@ function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
         [var_wanted, val_wanted] = StaR_getVarVals(vars, vals);
         [var_plot, val_plot] = StaR_getVarVals(plotsFromDF{p}.var, plotsFromDF{p}.val);
 
-        same_var = union(var_wanted, var_plot);
+        same_var = intersect(var_wanted, var_plot);
         diff_var = union(setdiff(var_wanted, var_plot), setdiff(var_plot, var_wanted));
         for i = 1:length(var_wanted)
             if(size(val_wanted,2) >= i && size(val_plot,2) >= i)
-                same_val{i} = union([val_wanted{:,i}], val_plot{:,i});
+                same_val{i} = intersect(val_wanted{:,i}, val_plot{:,i});
                 diff_val{i} = union(setdiff(val_wanted{:,i}, val_plot{:,i}), setdiff(val_plot{:,i}, val_wanted{:,i}));
             else
                 same_val{i} = {};
@@ -48,9 +48,11 @@ function plotIDs = StaR_getVarValPlots(vars, vals, starDF, plotType)
         if(~isempty(diff_var)) 
             diff = 1; 
         end
-        for i = 1:length(diff_val)
-            if(~isempty(diff_val{i})) 
-                diff = diff + 1; 
+        if(length(diff_val) >= 1)
+            for i = 1:length(diff_val)
+                if(~isempty(diff_val{i})) 
+                    diff = diff + 1; 
+                end
             end
         end
 

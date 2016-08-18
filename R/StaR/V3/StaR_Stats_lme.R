@@ -132,7 +132,7 @@ staR_lsmeans_pValsAndTitles <- function(lmssum)
   for (p in 1:length(lmssum)){
     tmp <- staR_lsmeans_pvals(lmssum[p])
     for (v in 1:length(tmp)){
-      pVals[[v]][[p]] <- tmp[[v]][[2]]
+      pVals[[v]][[p]] <- as.numeric(tmp[[v]][[2]])
     }
   }
   

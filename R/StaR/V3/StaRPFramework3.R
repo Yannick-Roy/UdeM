@@ -42,8 +42,8 @@ bSaveOnDiskData_R = TRUE
 bSaveOnDiskData_Matlab = TRUE
 
 # Get Design String, from Vars.
-#vars <- c("groups", "sessions", "orders", "motions")
-vars <- c("groups")
+vars <- c("domains", "groups", "sessions", "orders", "motions")
+#vars <- c("groups")
 fixedVars <- paste("values ~ ", paste(vars, collapse=" * "))
 
 # Correction Functions
@@ -52,7 +52,7 @@ stats.correctionFunction.PostHoc = "bon"
 
 dirPlotsName <- format(Sys.time(), "%b%d_%Hh%M")
 
-OS = 1   # 1 - Mac / 2 - Linux / 3 - Windows
+OS = 3   # 1 - Mac / 2 - Linux / 3 - Windows
 
 dirPlotsPath <- ""
 dirMatlabExportPath <- ""
@@ -133,7 +133,7 @@ curAnalysis = 2
          if(bLoadMatlabFile)
          {
             fullDomain <- list()
-            for(dom in 1:3)
+            for(dom in 1:4)
             {
                data.domain = dom
                
@@ -170,6 +170,9 @@ curAnalysis = 2
             for(p in 1:length(fullDomain[[1]]))
             {
                fullDomains[[p]] = rbind(fullDomain[[1]][[p]], fullDomain[[2]][[p]], fullDomain[[3]][[p]])
+               
+               if(p %% 100 == 0)
+                 print(p)
             }
             
             fullData = fullDomains
