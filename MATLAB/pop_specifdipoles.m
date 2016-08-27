@@ -312,7 +312,7 @@ for d=uniqueDomains
     figure;
     plot_dipplot_with_cortex(obj.object.location(dipoleId,:), true, 'coordformat', 'MNI', 'gui', 'off', 'spheres', 'on', 'color', dipolesColorAsCell);
     %domain.plot_head_surface(domain.headGrid, domain.membershipCube, 'surfaceColor', inputOptions.surfaceColor, 'surfaceOptions', {'facealpha', 0.9});%inputOptions.surfaceAlpha});
-    pr.plot_head_surface(domain.headGrid, domain.membershipCube, 'surfaceColor', [0.15 0.8 0.15], 'surfaceOptions', {'facealpha', 0.3});%inputOptions.surfaceAlpha}); 
+    pr.plot_head_surface(domain.headGrid, domain.membershipCube, 'surfaceColor', domain.color, 'surfaceOptions', {'facealpha', 0.3});%inputOptions.surfaceAlpha}); 
     
     labels = {};
     for i=1:nbPlots 
@@ -323,36 +323,54 @@ for d=uniqueDomains
             tempLabel = strcat(tempDomains(plotParams{1,i}.domain), ' G', tempGroups(plotParams{1,i}.group), ' S', tempSessions(plotParams{1,i}.session));
             labels{i} = char(tempLabel);
         else
-            labels{i} = 'N/A';
+            labels{i} = [];
         end
     end
         
-    % Legend with Colored Background + Face Marker.
-    % l -> legend handle. Useful to "set" params.
-    % o -> object handle. Useful to modify text and icons.
-    % p -> plot handle. Not used.
-    % t -> labels. Not used.
-    [l,o,p,t] = legend(labels);
-    for i=1:length(o)
-        %length(o)/2
-        %i
-        %get(o(i))
-        if(i <= length(o)/2)
-            if( plotParams{1,i}.color ~= -1 )
-                set(o(i),'BackgroundColor', plotParams{1,i}.color)
-            else
-                set(o(i),'BackgroundColor', [0 0 0]);
-            end
-        else
-            i - (length(o)/2)
-            if( plotParams{1, i - (length(o)/2)}.color ~= -1 )
-                set(o(i),'FaceColor', plotParams{1, i - (length(o)/2)}.color)
-            else
-                set(o(i),'FaceColor', [0 0 0]);
-            end
-        end
-    end
-    set(l, 'Box', 'off')
+    pr.remove_all_legends_from_figure;
+    
+    % Remove empty labels...
+    cleanLabels = labels(~cellfun('isempty',labels)); 
+    
+    % adding legends by adding dummy patches and assigning them legen colors and text.
+    for i=1:length(cleanLabels)
+        %if ~strcmp(plotParams{1,i}.colorName, 'N/A')
+            domainHgGroup(i) = hggroup('DisplayName', ['Domain ' num2str(i)]);
+            set(get(get(domainHgGroup(i), 'annotation'), 'LegendInformation'),'IconDisplayStyle', 'on');
+            t = zeros(3,3);
+            patch(t,t,t,  plotParams{1,i}.color, 'parent', domainHgGroup(i))
+        %end
+    end;
+                
+    legendHandle = legend(cleanLabels, 'show');
+    set(legendHandle,  'textcolor', [1 1 1]);
+% %     
+% %     % Legend with Colored Background + Face Marker.
+% %     % l -> legend handle. Useful to "set" params.
+% %     % o -> object handle. Useful to modify text and icons.
+% %     % p -> plot handle. Not used.
+% %     % t -> labels. Not used.
+% %     [l,o,p,t] = legend(labels);
+% %     for i=1:length(o)
+% %         %length(o)/2
+% %         %i
+% %         %get(o(i))
+% %         if(i <= length(o)/2)
+% %             if( plotParams{1,i}.color ~= -1 )
+% %                 set(o(i),'BackgroundColor', plotParams{1,i}.color)
+% %             else
+% %                 set(o(i),'BackgroundColor', [0 0 0]);
+% %             end
+% %         else
+% %             i - (length(o)/2)
+% %             if( plotParams{1, i - (length(o)/2)}.color ~= -1 )
+% %                 set(o(i),'FaceColor', plotParams{1, i - (length(o)/2)}.color)
+% %             else
+% %                 set(o(i),'FaceColor', [0 0 0]);
+% %             end
+% %         end
+% %     end
+% %     set(l, 'Box', 'off')
 end
 
 

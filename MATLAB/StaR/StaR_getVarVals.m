@@ -22,18 +22,18 @@ function [uniqueVars, uniqueVals] = StaR_getVarVals(vars, vals)
     uniqueVals = {};
 
     if ~isempty(vars) && ~isempty(vals)
-        if ~iscell(vars{1})
-            for i = 1:length(vars)
-                if ~isempty(vars{i})
-                    vars{i} = {vars{i}};
+        for i = 1:size(vars,1)
+            for j = 1:size(vars,2)
+                if (~iscell(vars{i,j}) && ~isempty(vars{i,j}))
+                    vars{i,j} = {vars{i,j}};
                 end
             end
         end
-
-        if ~iscell(vals{1})
-            for i = 1:length(vals)
-                if ~isempty(vals{i})
-                    vals{i} = {vals{i}};
+        
+        for i = 1:size(vals,1)
+            for j = 1:size(vals,2)
+                if (~iscell(vals{i,j}) && ~isempty(vals{i,j}))
+                    vals{i,j} = {vals{i,j}};
                 end
             end
         end
