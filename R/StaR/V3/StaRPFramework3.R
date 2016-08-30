@@ -42,9 +42,7 @@ bSaveOnDiskData_R = TRUE
 bSaveOnDiskData_Matlab = TRUE
 
 # Get Design String, from Vars.
-vars <- c("domains", "groups", "sessions", "orders", "motions")
-#vars <- c("groups")
-fixedVars <- paste("values ~ ", paste(vars, collapse=" * "))
+vars<- c("domains", "groups", "sessions", "orders", "motions")
 
 # NbDomains
 nbDomains = 3
@@ -79,7 +77,7 @@ if(OS == 1) {
 #***** Main Loop (ERP & ERSP) !
 #**************************************************************************
 #for(curAnalysis in 1:2)
-curAnalysis = 2
+curAnalysis = 1
 {
    for(domainNo in 1:(nbDomains + 1))
    {
@@ -134,7 +132,7 @@ curAnalysis = 2
          write.csv(fullDataStructure, file = "StaR_WideStructure.csv")
          
          # Fill "Wide structure" with real data.
-         if(bLoadMatlabFile && domainNo <= nbDomains)
+         if(bLoadMatlabFile && data.domain <= nbDomains)
          {
             # Read Matlab file !
             data.file = paste(dirMatlabExportPath, "MPT_exp_", tolower(data.type), "_D", data.domain, ".mat", sep="")
@@ -159,21 +157,21 @@ curAnalysis = 2
             {freqData = matlabData[[3]]}}
             print("Matlab Data - Done!")
             
-            fullDomains[[dom]] = fullData
+            fullDomains[[data.domain]] = fullData
          } 
          
          if(bFullDomains && domainNo > nbDomains)
          {
-            fullDomains <- list()
-            for(p in 1:length(fullDomain[[1]]))
+            fullDomains.tmp <- list()
+            for(p in 1:length(fullDomains[[1]]))
             {
-               fullDomains[[p]] = rbind(fullDomain[[1]][[p]], fullDomain[[2]][[p]], fullDomain[[3]][[p]])
+               fullDomains.tmp [[p]] = rbind(fullDomains[[1]][[p]], fullDomains[[2]][[p]], fullDomains[[3]][[p]])
                
                if(p %% 100 == 0)
                  print(p)
             }
             
-            fullData = fullDomains
+            fullData = fullDomains.tmp
             
             data.domain = "X"
          }
@@ -188,14 +186,28 @@ curAnalysis = 2
          
          #************************************************************
          ###### Stats !
-         #************************************************************          
-         stats.fullAnalysis.lme.retVal <- staR_lme2(fullData, vars, fixedVars)
+         #************************************************************      
+         # Remove "domains" from the list for single domain, one by one.
+         if(data.domain < nbDomains){
+            tmpVars = vars[vars != "domains"]
+         }else{
+            tmpVars = vars  
+         }
          
+         # Create "formula" for lme design.
+         fixedVars <- paste("values ~ ", paste(tmpVars, collapse=" * "))
+         
+         # lme()
+         stats.fullAnalysis.lme.retVal <- staR_lme2(fullData, tmpVars, fixedVars)
+         
+         # Split retVal - lme report.
          stats.fullAnalysis.lme.report <- stats.fullAnalysis.lme.retVal[[1]][[1]]
          
+         # Split retVal - Full Analysis (effects / interactions).
          stats.fullAnalysis.pVals <- stats.fullAnalysis.lme.retVal[[1]][[2]][[1]]
          stats.fullAnalysis.pTitles <- stats.fullAnalysis.lme.retVal[[1]][[2]][[2]]
          
+         # Split retVal - Sub Analysis (single Post Hoc).
          stats.subAnalysis.pVals <- stats.fullAnalysis.lme.retVal[[2]][[1]]
          stats.subAnalysis.pTitles <- stats.fullAnalysis.lme.retVal[[2]][[2]]
          #stats.subAnalysis.pVals <- pVals
@@ -259,8 +271,10 @@ curAnalysis = 2
          ##### POST HOC #####
          
          varList <- list()
-         varList[[1]] = list("groups", "orders", "motions", "sessions")
-         varList[[1]] = list(c("groups", "orders"), c("groups", "motions"), c("groups", "sessions"))
+         #varList[[1]] = list("groups", "orders", "motions", "sessions")
+         #varList[[1]] = list(c("groups", "orders"), c("groups", "motions"))#, c("groups", "sessions"))
+         #varList[[1]] = list(c("groups", "orders", "sessions"), c("groups", "motions", "sessions"))
+         varList[[1]] = list(c("groups", "orders", "motions", "sessions"))
          varSortedBy <- "domains"
          
          for (l in 1:length(varList))
@@ -274,7 +288,7 @@ curAnalysis = 2
                pTitles = retVal[[2]]
                
                fileVarString <- paste(varList[[l]][[v]], collapse = "_")
-               writeMat(paste(dirPlots, "/Workspace_D", data.domain, "_", fileVarString, ".mat", sep=""), domainData = data.domain, typeData = data.type, timeData = timeData, freqData = freqData, designName = 'designName', pValsFull = unlist(stats.fullAnalysis.pVals.Original), pValsFullCorrected = unlist(stats.fullAnalysis.pVals), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pValsSub = unlist(pVals), pValsSubCorrected = unlist(pVals), pTitlesSub = unlist(pTitles), 'dataSub' = unlist(subDistrib), 'titlesSub' = unlist(stats.subAnalysis.pTitles))
+               writeMat(paste(dirPlots, "/Workspace_PH_", fileVarString, ".mat", sep=""), domainData = data.domain, typeData = data.type, timeData = timeData, freqData = freqData, designName = 'designName', pValsFull = unlist(stats.fullAnalysis.pVals.Original), pValsFullCorrected = unlist(stats.fullAnalysis.pVals), pTitlesFull = unlist(stats.fullAnalysis.pTitles), pValsSub = unlist(pVals), pValsSubCorrected = unlist(pVals), pTitlesSub = unlist(pTitles), 'dataSub' = unlist(subDistrib), 'titlesSub' = unlist(stats.subAnalysis.pTitles))
             }
          }
       }, error = function(e) {

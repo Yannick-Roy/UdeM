@@ -5,6 +5,7 @@ library(multcomp)
 library("lsmeans")
 
 source("StaR_Tools.R")
+source("StaR_Stats_PostHoc.R")
 
 STATS_DESIGNS_RND = ~1|subjects
 

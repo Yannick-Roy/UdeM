@@ -4,7 +4,9 @@ StaR_PostHoc_do <- function(vars, varSortBy = "domains")
    design = paste(varSortedBy, design, sep =":")
    design = paste("~", design, sep="")
    
+   print(paste("Performing lsmeans() with ", design, "...", sep=""))
    stats.fullAnalysis.lme.lsmeans <- lapply(stats.fullAnalysis.lme.report, FUN = function(x) {lsmeans(x, formula(design))})
+   print(paste("Performing pairs() sorted by ", varSortBy, "...", sep=""))
    stats.fullAnalysis.lme.lsmeans.pairs <- lapply(stats.fullAnalysis.lme.lsmeans, FUN = function(x) {pairs(x, by=varSortBy)})
    stats.fullAnalysis.lme.lsmeans.pairs[[1]]
    
