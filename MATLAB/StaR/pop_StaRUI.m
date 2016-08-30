@@ -61,10 +61,12 @@ if ~isstr(varargin{1}) %intial settings
 
     % Callbacks
     cbo_design_cb = ['pop_StaRUI(''cbo_design'',gcf);']; 
-    generatesub_plot_cb = ['pop_StaRUI(''btn_generatesub'',gcf);'];
-    generatefull_plot_cb = ['pop_StaRUI(''btn_generatefull'',gcf);'];
+    btn_generatesub_cb = ['pop_StaRUI(''btn_generatesub'',gcf);'];
+    btn_generatefull_cb = ['pop_StaRUI(''btn_generatefull'',gcf);'];
+    btn_generatedata_cb = ['pop_StaRUI(''btn_generatedata'',gcf);'];
     btn_custom_cb = ['pop_StaRUI(''btn_custom'',gcf);'];
     btn_export_cb = ['pop_StaRUI(''btn_export'',gcf);'];
+    btn_runRstats_cb = ['pop_StaRUI(''btn_runRstats'',gcf);'];
     check_thisdomain_cb = ['pop_StaRUI(''check_thisdomain'',gcf);']; 
     cbo_var1_cb = ['pop_StaRUI(''cbo_var1'',gcf);']; 
     cbo_var2_cb = ['pop_StaRUI(''cbo_var2'',gcf);']; 
@@ -78,9 +80,10 @@ if ~isstr(varargin{1}) %intial settings
     % Design Names...
     designs = {};
     designs{1}.No = 1;
-    designs{1}.Name  = ['Design #' num2str(designs{1}.No) ': (values ~ groups * sessions * orders * motions)'];
+    designs{1}.Name  = ['Design #' num2str(designs{1}.No) ': (values ~ domains * groups * sessions * orders * motions)'];
     designs{2}.No = 2;
-    designs{2}.Name  = ['Design #' num2str(designs{2}.No) ': (values ~ domains * groups * sessions * orders * motions)'];
+    designs{2}.Name  = ['Design #' num2str(designs{2}.No) ': (values ~ groups * sessions * orders * motions)'];
+    
 
     % Stats Type.
     stats = {};
@@ -200,13 +203,13 @@ if ~isstr(varargin{1}) %intial settings
             {nCols nRows [1 8] [1 1]} {nCols nRows [2 8] [1 1]} {nCols nRows [3 8] [1 1]} ... % Var 2
             {nCols nRows [1 9] [1 1]} {nCols nRows [2 9] [1 1]} {nCols nRows [3 9] [1 1]} ... % Var 3
             {nCols nRows [1 10] [1 1]} {nCols nRows [2 10] [1 1]} {nCols nRows [3 10] [1 1]} ... % Var 4
-            {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]} {nCols nRows [3 11] [1 1]} {nCols nRows [4 11] [1 1]} ... % Plot Correction | Plot Only pVals
-            {nCols nRows [1 12] [1 1]} {nCols nRows [2 12] [1 1]} ... % Plot Data Only Check Box
+            {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]}  ... % Plot Correction Checl Box
+            {nCols nRows [1 12] [1 1]} {nCols nRows [2 12] [1 1]} ... % Plot Only pVals Chec Box
             {nCols nRows [1 13] [1 1]} {nCols nRows [2 13] [1 1]} ... % This Domain Only Check Box
             {nCols nRows [0 14] [1 1]} ... % Empty Line
-            {nCols nRows [2 15] [1 2]} {nCols nRows [3 15] [1 2]} ... % Generate button
+            {nCols nRows [1 15] [1 2]} {nCols nRows [2 15] [1 2]} {nCols nRows [3 15] [1 2]} ... % Generate button
             {nCols nRows [0 17] [1 1]} ... % Empty Line
-            {nCols nRows [0 18] [1 1]} {nCols nRows [1 18] [1 1]} {nCols nRows [2 18] [1 1]} ... % Export & Custom
+            {nCols nRows [0 18] [1 1]} {nCols nRows [1 18] [1 1]} {nCols nRows [2 18] [1 1]} {nCols nRows [3 18] [1 1]}... % Export & Run R Stats & Custom
             }, ... 
         'uilist',...
            {{'style' 'text' 'string' ' Design : '}  {'style' 'popupmenu' 'string' designString 'tag' 'design' 'value' 1 'callback' cbo_design_cb} ...            
@@ -219,13 +222,13 @@ if ~isstr(varargin{1}) %intial settings
             {'style' 'text' 'string' ' Variable 2 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var2' 'value' 1 'callback' cbo_var2_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var2val' 'value' 1 'callback' cbo_var2val_cb} ...
             {'style' 'text' 'string' ' Variable 3* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var3' 'value' 1 'callback' cbo_var3_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var3val' 'value' 1 'callback' cbo_var3val_cb} ...
             {'style' 'text' 'string' ' Variable 4* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var4' 'value' 1 'callback' cbo_var4_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var4val' 'value' 1 'callback' cbo_var4val_cb} ...
-            {'style' 'text' 'string' ' Use Corrected pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_correction' 'value' true} {'style' 'text' 'string' ' Plot Diff Mask : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_diffmask' 'value' true} ... 
-            {'style' 'text' 'string' ' Plot Data Only : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_dataonly' 'value' true} ... 
+            {'style' 'text' 'string' ' Use Corrected pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_correction' 'value' true} ... 
+            {'style' 'text' 'string' ' Plot Diff Mask : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_diffmask' 'value' true} ...
             {'style' 'text' 'string' ' This Domain Only : '} {'style' 'checkbox' 'string' '' 'tag' 'check_thisdomain' 'value' checkThisDomain 'callback' check_thisdomain_cb} ...
             {} ...
-            {'style' 'pushbutton' 'string' 'Post Hoc' 'tag' 'generatesub' 'callback' generatesub_plot_cb} {'style' 'pushbutton' 'string' 'Effects' 'tag' 'generatefull' 'callback' generatefull_plot_cb} ...
+            {'style' 'pushbutton' 'string' 'Data Only' 'tag' 'generatedata' 'callback' btn_generatedata_cb} {'style' 'pushbutton' 'string' 'Post Hoc' 'tag' 'generatesub' 'callback' btn_generatesub_cb} {'style' 'pushbutton' 'string' 'Effects' 'tag' 'generatefull' 'callback' btn_generatefull_cb} ...
             {} ...
-            {'style' 'text' 'string' ' Other Tools : ' 'FontWeight' 'Bold'} {'style' 'pushbutton' 'string' 'Export MPT' 'tag' 'btn_export' 'callback' btn_export_cb} {'style' 'pushbutton' 'string' 'Custom StaR' 'tag' 'btn_custom' 'callback' btn_custom_cb}...
+            {'style' 'text' 'string' ' Other Tools : ' 'FontWeight' 'Bold'} {'style' 'pushbutton' 'string' 'Export MPT' 'tag' 'btn_export' 'callback' btn_export_cb} {'style' 'pushbutton' 'string' 'Run R Stats' 'tag' 'btn_runRstats' 'callback' btn_runRstats_cb} {'style' 'pushbutton' 'string' 'Custom StaR' 'tag' 'btn_custom' 'callback' btn_custom_cb}...
             }, 'userdata', uDataVariables);
     catch
         disp('## ERROR ## pop_StaRUI() cant load...');
@@ -346,46 +349,8 @@ else
             var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
             var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
             
-            %---------------------------------------------------
-            % Update the Var Combobox Based on Design Variables.
-            %---------------------------------------------------
-            [nbVars, varString] = getVarString(variables, designs{var_designID}.Name, true);
-            if nbVars > 0 
-                set(findobj('parent', hdl,'tag', 'var1'), 'string', varString, 'value', 1);
-            else
-                set(findobj('parent', hdl,'tag', 'var1'), 'string', 'N/A', 'value', 1);
-            end
-            if nbVars > 1
-                set(findobj('parent', hdl,'tag', 'var2'), 'string', varString, 'value', 1);
-            else
-                set(findobj('parent', hdl,'tag', 'var2'), 'string', 'N/A', 'value', 1);
-            end
-            if nbVars > 2                
-                set(findobj('parent', hdl,'tag', 'var3'), 'string', varString, 'value', 1);
-            else
-                set(findobj('parent', hdl,'tag', 'var3'), 'string', 'N/A', 'value', 1);
-            end
-            if nbVars > 3
-                set(findobj('parent', hdl,'tag', 'var4'), 'string', varString, 'value', 1);
-            else
-                set(findobj('parent', hdl,'tag', 'var4'), 'string', 'N/A', 'value', 1);
-            end
-            
-            updateVals = [1,2,3,4];
-            % Don't forget to update their Values! (putting the string and
-            % value in the UI, doesn't trigger the callback.
-            %---------------------------------------------------
-            
-            disp(designs{var_designID}.Name);
-            %designFolderPath = [defaultFolder obj.object.measureLabel '/Domain_' num2str(domainID) '/Stats_' stats{var_statsID}.function '/Design_' obj.object.measureLabel '_' num2str(designs{var_designID}.No)];
-            designFolderPath = [defaultFolder obj.object.measureLabel];
-            
-            disp(['Checking for files in: ' designFolderPath]);
-            if exist(designFolderPath, 'dir')
-                disp(['Design found in ' designFolderPath]);
-            else
-                disp(['Design NOT found in ' designFolderPath]);
-                disp('Disabling Controls...'); % TODO ...
+            if var_designID == 2
+                disp('## DESIGN NOT SUPPORTED YET ##');
             end
             
         case 'btn_generatesub'
@@ -404,6 +369,9 @@ else
             
         case 'btn_export'
             exportMPT(STUDY);
+            
+        case 'btn_runRstats'
+            system('/Library/Frameworks/R.framework/Resources/bin/R --version');
             
         case 'check_thisdomain'
             checkThisDomain = get(findobj('parent', hdl, 'tag', 'checkThisDomain'), 'value')
@@ -425,15 +393,11 @@ else
             %disp('Fix Var 2 Val');
     end             
     
-    if strcmp(varargin{1}, 'btn_generatesub') || strcmp(varargin{1}, 'btn_generatefull')
+    if strcmp(varargin{1}, 'btn_generatesub') || strcmp(varargin{1}, 'btn_generatefull') || strcmp(varargin{1}, 'btn_generatedata')
         var_designID = get(findobj('parent', hdl, 'tag', 'design'), 'value');
         var_statsID = get(findobj('parent', hdl, 'tag', 'stats'), 'value');
 
         disp(designs{var_designID}.Name);
-
-        designFolderPath = [defaultFolder obj.object.measureLabel];
-        designFilePath = [designFolderPath '/Workspace_Fullx.mat'];
-        %designFilePath = [designFolderPath '/Effects2_groups_sessions.mat'];
 
         % They both use the function, bu the Full only display the full
         % pVals, not the sub data.
@@ -442,8 +406,16 @@ else
         else
             bFull = false;
         end
+        if strcmp(varargin{1}, 'btn_generatedata')
+            bPlotDataOnly = true;
+        else
+            bPlotDataOnly = false;
+        end
         
-        generateStaRPlots(obj.object, domainID, designFilePath, bFull);
+        % Folder Path. Then Filename will be "constructed" in the function.
+        designFolderPath = [defaultFolder obj.object.measureLabel];
+        
+        generateStaRPlots(obj.object, domainID, designFolderPath, bFull, bPlotDataOnly);
     end
     
     for i = updateVals
@@ -466,16 +438,19 @@ end
 % Description:
 %
 %
-function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) % TODO: Replace with Params{:}
+function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull, bPlotDataOnly) % TODO: Replace with Params{:}
     
     bSanityCheck = 1;
     
     if nargin < 4
         bFull = false;
     end
+    if nargin < 5
+        bPlotDataOnly = true;
+    end
     
-    if ~exist(designFileName, 'file')
-        disp(['## Invalid file: ' designFileName]);
+    if ~exist(designFolderName, 'dir')
+        disp(['## Invalid Folder: ' designFolderName]);
         return;
     end
     
@@ -484,7 +459,6 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
     
     pSignifThreshold = str2num(get(findobj('parent', hdl, 'tag', 'threshold'), 'string'));
     bPCorrected = get(findobj('parent', hdl, 'tag', 'plot_correction'), 'value');
-    bPlotDataOnly = get(findobj('parent', hdl, 'tag', 'plot_dataonly'), 'value');
     bThisDomainOnly = get(findobj('parent', hdl, 'tag', 'check_thisdomain'), 'value');
     bPlotDiffMask = get(findobj('parent', hdl, 'tag', 'plot_diffmask'), 'value');
     
@@ -569,6 +543,70 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
     vals = vals_UI;
 
     cleanVarVals(vars, vals)
+    
+    if bFull
+        designFileName = [designFolderPath '/Workspace_Fullx.mat'];
+    else    
+        curVarString = '';
+        if ~isempty(Var1{1})
+            if isempty(curVarString)
+                curVarString = Var1{1};
+            else
+                curVarString = strcat(curVarString, '_', Var1{1});
+            end
+        end
+        if ~isempty(Var2{1})
+            if isempty(curVarString)
+                curVarString = Var2{1};
+            else
+                curVarString = strcat(curVarString, '_', Var2{1});
+            end
+        end
+        if ~isempty(Var3{1})
+            if isempty(curVarString)
+                curVarString = Var3{1};
+            else
+                curVarString = strcat(curVarString, '_', Var3{1});
+            end
+        end
+        if ~isempty(Var4{1})
+            if isempty(curVarString)
+                curVarString = Var4{1};
+            else
+                curVarString = strcat(curVarString, '_', Var4{1});
+            end
+        end
+        
+        fileNameValid = '';
+        curVars = {Var1{1}, Var2{1}, Var3{1}, Var4{1}};
+        curVars = curVars(~cellfun('isempty',curVars))
+        curVarsCombs = perms(curVars);
+        for c = 1:size(curVarsCombs, 1)
+            curVarString = '';
+            for cs = 1:size(curVarsCombs, 2)
+                if(isempty(curVarString))
+                    curVarString = char(curVarsCombs{c, cs});
+                else
+                    curVarString = strcat(curVarString, '_', char(curVarsCombs{c, cs}));
+                end
+            end
+            tmpDesignFileName = [designFolderPath '/Workspace_PH_' curVarString '.mat']
+            if exist(tmpDesignFileName, 'file')
+                fileNameValid = tmpDesignFileName;
+            end
+        end
+        
+        if ~isempty(fileNameValid)
+            designFileName = fileNameValid;
+        else
+            designFileName = [designFolderPath '/Workspace_PH_X.mat'];
+        end
+    end
+       
+    if ~exist(designFileName, 'file')
+        disp(['## Invalid File: ' designFileName]);
+        return;
+    end
     
     % Get DF & VarVals. (only once)
     df = StaR_getVarValDF(designFileName);
@@ -793,7 +831,8 @@ function figureHandle = generateStaRPlots(obj, domainID, designFileName, bFull) 
 
 
                 %pr.std_plotcurve(df.timeData, {df.pVals{plotIDs(i)}.plotVal}, 'titles', {df.pVals{plotIDs(i)}.lbl}, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'apart', 'figure', 'off');%, varargin{:});
-                pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'apart', 'figure', 'off');%, varargin{:});
+                pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'together', 'figure', 'on');%, varargin{:});
+                %pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'figure', 'on', 'plotstderr', 'on');%, varargin{:});
 
                 % put legend for conditions
             %    legend(title);
