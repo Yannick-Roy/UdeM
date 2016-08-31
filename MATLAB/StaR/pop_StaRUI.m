@@ -829,11 +829,42 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
             %if length(measureAsArrayInCell) <= numberOfConditionsInEachFigure
                 % put ERP traces together inone plot;
 
+                %pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'together', 'figure', 'on');%, varargin{:});
+                pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype', 'erp', 'figure', 'on');%, varargin{:});
 
-                %pr.std_plotcurve(df.timeData, {df.pVals{plotIDs(i)}.plotVal}, 'titles', {df.pVals{plotIDs(i)}.lbl}, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'apart', 'figure', 'off');%, varargin{:});
-                pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'together', 'figure', 'on');%, varargin{:});
-                %pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'figure', 'on', 'plotstderr', 'on');%, varargin{:});
-
+                var1pVals = {};
+                var2pVals = {};
+                
+                if(~bPlotDataOnly)
+                    for curPlotV1 = 1:length(Val1)                    
+                        var1pVals{curPlotV1} = mixPlots{curPlotV1, size(mixPlots,2)};
+                        var1Titles{curPlotV1} = mixTitles{curPlotV1, size(mixTitles,2)};
+                        
+                        mixPlots{curPlotV1, size(mixPlots, 2)} = {};
+                        mixTitles{curPlotV1, size(mixTitles, 2)} = {};
+                    end
+                    
+                    for curPlotV2 = 1:length(Val2)                    
+                        var2pVals{curPlotV2} = mixPlots{size(mixPlots,1), curPlotV2};
+                        var2Titles{curPlotV2} = mixTitles{size(mixTitles,1), curPlotV2};
+                        
+                        mixPlots{size(mixPlots, 1), curPlotV2} = {};
+                        mixTitles{size(mixTitles, 1), curPlotV2} = {};
+                    end
+                    
+                    for d1 = 1:length(Val1)
+                        for d2 = 1:length(Val2)
+                            dataPlots{d1,d2} = mixPlots{d1,d2};
+                            dataTitles{d1,d2} = mixTitles{d1,d2};
+                        end
+                    end
+                    mixPlots = dataPlots;
+                    mixTitles = dataTitles;
+                end
+                
+                %pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'groupstats', var1pVals, 'condstats', var2pVals, 'plotconditions', 'apart','plotgroups', 'apart', 'figure', 'on');%, varargin{:});
+                
+                
                 % put legend for conditions
             %    legend(title);
 
