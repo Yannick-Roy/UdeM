@@ -185,6 +185,7 @@ if ~isstr(varargin{1}) %intial settings
     statsThreshold = 0.05;
     checkThisDomain = true;
     plot_diffmask = true;
+    pSignificant = true;
     
     uDataVariables = {obj domainID variables designs stats STUDY}
     
@@ -203,7 +204,7 @@ if ~isstr(varargin{1}) %intial settings
             {nCols nRows [1 8] [1 1]} {nCols nRows [2 8] [1 1]} {nCols nRows [3 8] [1 1]} ... % Var 2
             {nCols nRows [1 9] [1 1]} {nCols nRows [2 9] [1 1]} {nCols nRows [3 9] [1 1]} ... % Var 3
             {nCols nRows [1 10] [1 1]} {nCols nRows [2 10] [1 1]} {nCols nRows [3 10] [1 1]} ... % Var 4
-            {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]}  ... % Plot Correction Checl Box
+            {nCols nRows [1 11] [1 1]} {nCols nRows [2 11] [1 1]} {nCols nRows [3 11] [1 1]} {nCols nRows [4 11] [1 1]} ... % Plot Correction Check Box
             {nCols nRows [1 12] [1 1]} {nCols nRows [2 12] [1 1]} ... % Plot Only pVals Chec Box
             {nCols nRows [1 13] [1 1]} {nCols nRows [2 13] [1 1]} ... % This Domain Only Check Box
             {nCols nRows [0 14] [1 1]} ... % Empty Line
@@ -216,13 +217,13 @@ if ~isstr(varargin{1}) %intial settings
             {'style' 'text' 'string' ' Stats' 'FontWeight' 'Bold'} ...
             {'style' 'text' 'string' ' Stats : '}  {'style' 'popupmenu' 'string' statsString 'tag' 'stats' 'value' 1} {'style' 'text' 'string' ' Signif. Threshold : '}  {'style' 'edit' 'string' statsThreshold 'tag' 'threshold' 'userdata' 'eeglab' } ...
             {'style' 'text' 'string' ' Correction : '}  {'style' 'popupmenu' 'string' correctionString 'tag' 'correction' 'value' 2} ...           
-            {} ...
+            {} ... 
             {'style' 'text' 'string' ' Plot & Variables' 'FontWeight' 'Bold'} {'style' 'text' 'string' ' Name'} {'style' 'text' 'string' ' Value'} ...
             {'style' 'text' 'string' ' Variable 1 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var1' 'value' 1 'callback' cbo_var1_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var1val' 'value' 1 'callback' cbo_var1val_cb} ...
             {'style' 'text' 'string' ' Variable 2 : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var2' 'value' 1 'callback' cbo_var2_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var2val' 'value' 1 'callback' cbo_var2val_cb} ...
             {'style' 'text' 'string' ' Variable 3* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var3' 'value' 1 'callback' cbo_var3_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var3val' 'value' 1 'callback' cbo_var3val_cb} ...
             {'style' 'text' 'string' ' Variable 4* : '}  {'style' 'popupmenu' 'string' variablesString 'tag' 'var4' 'value' 1 'callback' cbo_var4_cb} {'style' 'popupmenu' 'string' variablesValString 'tag' 'var4val' 'value' 1 'callback' cbo_var4val_cb} ...
-            {'style' 'text' 'string' ' Use Corrected pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_correction' 'value' true} ... 
+            {'style' 'text' 'string' ' Use Corrected pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_correction' 'value' true} {'style' 'text' 'string' ' Use Significant pVals : '} {'style' 'checkbox' 'string' '' 'tag' 'pSignificant' 'value' true} ...
             {'style' 'text' 'string' ' Plot Diff Mask : '} {'style' 'checkbox' 'string' '' 'tag' 'plot_diffmask' 'value' true} ...
             {'style' 'text' 'string' ' This Domain Only : '} {'style' 'checkbox' 'string' '' 'tag' 'check_thisdomain' 'value' checkThisDomain 'callback' check_thisdomain_cb} ...
             {} ...
@@ -454,9 +455,7 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
         return;
     end
     
-    % TODO: Add CheckBox to be able to plot regular pValues.
-    bPSignificants = 1;
-    
+    bPSignificants = get(findobj('parent', hdl, 'tag', 'pSignificant'), 'value');
     pSignifThreshold = str2num(get(findobj('parent', hdl, 'tag', 'threshold'), 'string'));
     bPCorrected = get(findobj('parent', hdl, 'tag', 'plot_correction'), 'value');
     bThisDomainOnly = get(findobj('parent', hdl, 'tag', 'check_thisdomain'), 'value');
@@ -617,6 +616,10 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
     
     mixPlots = {};
     mixTitles = {};
+    dataPlots = {};
+    dataTitles = {};
+    pValsPlots = {};
+    pValsTitles = {};
     
     if(bThisDomainOnly)
         VarD = {'domains'};
@@ -628,45 +631,33 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
     
     if(~bFull)
         %===================================================
-        % Rows (i, Var1) | Cols (j, Var2) - with other vars.
+        % Cols (c, Var1) | Rows (r, Var2) - with other vars.
         %===================================================
-        
+        c = 1; r = 1;
         %-------------------------
         %-- Plot Data
         %-------------------------
         if(~bPlotpValOnly)
-            for i = 1:length(Val1)
-                if ~isempty(Val2)
-                    for j = 1:length(Val2)                    
-                        curDataVars = cat(2, VarD, Var1{i}, Var2{j}, Var3, Var4);
-                        curDataVals = cat(2, ValD, Val1{i}, Val2{j}, Val3, Val4);
-                        dataPlotIDs{i,j} = StaR_getVarValPlots(curDataVars, curDataVals, df, 'data');
-                        if(~isempty(dataPlotIDs{i,j}))
-                            mixPlots{i,j} =  df.data{dataPlotIDs{i,j}}.plotVal;
-                            mixTitles{i,j} = df.data{dataPlotIDs{i,j}}.lbl;
+            for c = 1:length(Val1)
+                if ~isempty(Val2) && length(Val2) > 1
+                    for r = 1:length(Val2)                    
+                        curDataVars = cat(2, VarD, Var1{c}, Var2{r}, Var3, Var4);
+                        curDataVals = cat(2, ValD, Val1{c}, Val2{r}, Val3, Val4);
+                        dataPlotIDs{r,c} = StaR_getVarValPlots(curDataVars, curDataVals, df, 'data');
+                        if(~isempty(dataPlotIDs{r,c}))
+                            dataPlots{r,c} =  df.data{dataPlotIDs{r,c}}.plotVal;
+                            dataTitles{r,c} = df.data{dataPlotIDs{r,c}}.lbl;
                         end
                     end
                 else
-                    dataPlotIDs{i, 1} = StaR_getVarValPlots(vars, vals, df, 'data');
+                    curDataVars = cat(2, VarD, Var1{c}, Var2{r}, Var3, Var4);
+                    curDataVals = cat(2, ValD, Val1{c}, Val2{r}, Val3, Val4);
+                    dataPlotIDs{r, c} = StaR_getVarValPlots(curDataVars, curDataVals, df, 'data');
 
-                    if ~isempty(dataPlotIDs{i, 1})
-                        mixPlots{i, 1} =  df.data{dataPlotIDs{i, 1}}.plotVal;
-                        mixTitles{i, 1} = df.data{dataPlotIDs{i, 1}}.lbl;
+                    if ~isempty(dataPlotIDs{1, c})
+                        dataPlots{1, c} =  df.data{dataPlotIDs{1, c}}.plotVal;
+                        dataTitles{1, c} = df.data{dataPlotIDs{1, c}}.lbl;
                     end     
-                end
-            end
-        end
-        
-        if(1)
-            for i = 1:size(mixPlots,1)
-                if(length(mixPlots(i,:)) == 2)
-                    diffPlots{i, 1} = mixPlots{i,1} - mixPlots{i,2};
-                end
-            end
-            
-            for j = 1:size(mixPlots,2)
-                if(length(mixPlots(:,j)) == 2)
-                    diffPlots{1, j} = mixPlots{1,j} - mixPlots{2,j};
                 end
             end
         end
@@ -675,29 +666,16 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
         %-- Plot pVals
         %-------------------------
         if(~bPlotDataOnly)
+            r = 1; c = 1;
             if ~isempty(Val1)
                 %--------------
                 % pVals - Cols
                 %--------------
-                if ~isempty(Val2) && ~isempty(Val2{1}) && length(Val2) > 1
-                    %--------------
-                    % 2 Vars...
-                    %--------------
-                    for i = 1:length(Val1)
-                        % Get pVals Plots Combining Vars / Vals.
-                        curPValsVars = cat(2, VarD, Var1{i}, Var2{:}, Var3, Var4);
-                        curDataVals = cat(2, ValD, Val1{i}, Val2{:}, Val3, Val4);
-                        pValsPlotIDs.rows{i} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
-
-                        % Prep Polts & Titles.
-                        if ~isempty(pValsPlotIDs.rows{i})
-                            [mixPlots, mixTitles] = prepMixedPlotWithPVals(mixPlots, mixTitles, i, length(Val2) + 1, df, pValsPlotIDs.rows{i}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
-                        end
-                    end
-                else
-                    %--------------
+                if (isempty(Val2) || isempty(Val2{1}) || length(Val2) <= 1)
+                    %==============
                     % 1 Var...
-                    %--------------
+                    %==============
+                    
                     if length(Val1) == 2                                                
                         %--------------
                         % 2 Factors...
@@ -707,11 +685,11 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
                         % Get pVals Plots Combining Vars / Vals.
                         curPValsVars = cat(2, VarD, {Var1{1} Var1{2}}, Var2, Var3, Var4);
                         curDataVals = cat(2, ValD, {Val1{1}, Val1{2}}, Val2, Val3, Val4);
-                        pValsPlotIDs.rows{1} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
+                        pValsPlotIDs{r, c} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
 
                         % Prep Polts & Titles.
-                        if ~isempty(pValsPlotIDs.rows{1})
-                            [mixPlots, mixTitles] = prepMixedPlotWithPVals(mixPlots, mixTitles, 3, 1, df, pValsPlotIDs.rows{1}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
+                        if ~isempty(pValsPlotIDs{r, c})
+                            [pValsPlots, pValsTitles] = prepPValsPlots(dataPlots, dataTitles, pValsPlots, pValsTitles, 1, 1, df, pValsPlotIDs{r, c}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
                         end
                     end
                     
@@ -721,34 +699,28 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
                         %--------------
                         disp('1 Variable, 3 Factors');
                         
+                        c = 1;
                         % Get pVals Plots Combining Vars / Vals.
-                        curPValsVars = cat(2, VarD, {Var1{1} Var1{2}}, Var2, Var3, Var4);
-                        curDataVals = cat(2, ValD, {Val1{1}, Val1{2}}, Val2, Val3, Val4);
-                        pValsPlotIDs.cols{1} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
-
-                        % Prep Polts & Titles.
-                        if ~isempty(pValsPlotIDs.cols{1})
-                            [mixPlots, mixTitles] = prepMixedPlotWithPVals(mixPlots, mixTitles, 1, 2, df, pValsPlotIDs.cols{1}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
-                        end
+                        curPValsVars{c} = cat(2, VarD, {Var1{1} Var1{2}}, Var2, Var3, Var4);
+                        curDataVals{c} = cat(2, ValD, {Val1{1}, Val1{2}}, Val2, Val3, Val4);
                         
+                        c = 2;
                         % Get pVals Plots Combining Vars / Vals.
-                        curPValsVars = cat(2, VarD, {Var1{2} Var1{3}}, Var2, Var3, Var4);
-                        curDataVals = cat(2, ValD, {Val1{2}, Val1{3}}, Val2, Val3, Val4);
-                        pValsPlotIDs.cols{2} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
-
-                        % Prep Polts & Titles.
-                        if ~isempty(pValsPlotIDs.cols{2})
-                            [mixPlots, mixTitles] = prepMixedPlotWithPVals(mixPlots, mixTitles, 2, 2, df, pValsPlotIDs.cols{2}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
-                        end
+                        curPValsVars{c} = cat(2, VarD, {Var1{2} Var1{3}}, Var2, Var3, Var4);
+                        curDataVals{c} = cat(2, ValD, {Val1{2}, Val1{3}}, Val2, Val3, Val4);
                         
+                        c = 3;
                         % Get pVals Plots Combining Vars / Vals.
-                        curPValsVars = cat(2, VarD, {Var1{1} Var1{3}}, Var2, Var3, Var4);
-                        curDataVals = cat(2, ValD, {Val1{1}, Val1{3}}, Val2, Val3, Val4);
-                        pValsPlotIDs.cols{3} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
+                        curPValsVars{c} = cat(2, VarD, {Var1{1} Var1{3}}, Var2, Var3, Var4);
+                        curDataVals{c} = cat(2, ValD, {Val1{1}, Val1{3}}, Val2, Val3, Val4);
+                        
+                        for c = 1:3
+                            pValsPlotIDs{r,c} = StaR_getVarValPlots(curPValsVars{c}, curDataVals{c}, df, 'pValsSub');
 
-                        % Prep Polts & Titles.
-                        if ~isempty(pValsPlotIDs.cols{3})
-                            [mixPlots, mixTitles] = prepMixedPlotWithPVals(mixPlots, mixTitles, 3, 2, df, pValsPlotIDs.cols{3}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
+                            % Prep Polts & Titles.
+                            if ~isempty(pValsPlotIDs{r,c})
+                                [pValsPlots, pValsTitles] = prepPValsPlots(dataPlots, dataTitles, pValsPlots, pValsTitles, 2, c, df, pValsPlotIDs{r,c}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
+                            end
                         end
                     end
                 end 
@@ -756,18 +728,30 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
             
             
             if ~isempty(Val2) && ~isempty(Val2{1}) && length(Val2) > 1
-                for j = 1:length(Val2) 
-                    %--------------
-                    % pVals - Cols
-                    %--------------
+                %==============
+                % 2 Vars...
+                %==============
+                for c = 1:length(Val1)
                     % Get pVals Plots Combining Vars / Vals.
-                    curPValsVars = cat(2, VarD, Var1{:}, Var2{j}, Var3, Var4);
-                    curPValsVals = cat(2, ValD, Val1{:}, Val2{j}, Val3, Val4);
-                    pValsPlotIDs.cols{j} = StaR_getVarValPlots(curPValsVars, curPValsVals, df, 'pValsSub');
+                    curPValsVars = cat(2, VarD, Var1{c}, Var2{:}, Var3, Var4);
+                    curDataVals = cat(2, ValD, Val1{c}, Val2{:}, Val3, Val4);
+                    pValsPlotIDs{2, c} = StaR_getVarValPlots(curPValsVars, curDataVals, df, 'pValsSub');
 
                     % Prep Polts & Titles.
-                    if ~isempty(pValsPlotIDs.cols{j})
-                        [mixPlots, mixTitles] = prepMixedPlotWithPVals(mixPlots, mixTitles, length(Val1) + 1, j, df, pValsPlotIDs.cols{j}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask); 
+                    if ~isempty(pValsPlotIDs{2, c})
+                        [pValsPlots, pValsTitles] = prepPValsPlots(dataPlots, dataTitles, pValsPlots, pValsTitles, 2, c, df, pValsPlotIDs{2, c}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask);     
+                    end
+                end
+                    
+                for r = 1:length(Val2) 
+                    % Get pVals Plots Combining Vars / Vals.
+                    curPValsVars = cat(2, VarD, Var1{:}, Var2{r}, Var3, Var4);
+                    curPValsVals = cat(2, ValD, Val1{:}, Val2{r}, Val3, Val4);
+                    pValsPlotIDs{1,r} = StaR_getVarValPlots(curPValsVars, curPValsVals, df, 'pValsSub');
+
+                    % Prep Polts & Titles.
+                    if ~isempty(pValsPlotIDs{1,r})
+                        [pValsPlots, pValsTitles] = prepPValsPlots(dataPlots, dataTitles, pValsPlots, pValsTitles, 1, r, df, pValsPlotIDs{1,r}, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, bPlotDiffMask); 
                     end
                 end
             end
@@ -797,18 +781,42 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
     end
     
     
-    % Titles can become quite long and difficult to read - you can shorten
-    % them, keeping only first 2 letters of the variable name.
-    if bShortTitles
-        mixTitles = getShortTitles(mixTitles);
+    if(~bFull)
+        % Titles can become quite long and difficult to read - you can shorten
+        % them, keeping only first 2 letters of the variable name.
+        if bShortTitles
+            dataTitles = getShortTitles(dataTitles);
+            pValsTitles = getShortTitles(pValsTitles);
+        end
     end
     
-    % ------------------------------------
-    % Plot Sub Data + pVals from Sub Data.
-    % ONLY if pFull == false
-    % The same function is being used!
-    % ------------------------------------
-    if (length(mixPlots) == 0 && ~bFull) || (bFull && length(pValsFullPlots) == 0)
+    mixPlots = dataPlots;
+    mixTitles = dataTitles;
+    if(size(mixTitles) ~= size(mixPlots))
+        disp('## ERROR ## Sizes Mismatch between plots and titles'); 
+    end
+        
+    if(~bFull && ~bPlotDataOnly)
+        % ------------------------------------
+        % Plot Sub Data + pVals from Sub Data.
+        % ONLY if pFull == false
+        % The same function is being used!
+        % ------------------------------------
+        % Combine plots.
+        for d1 = 1:length(pValsPlots(1,:))
+            mixPlots{d1, size(dataPlots, 2) + 1} = pValsPlots{1, d1};
+            mixTitles{d1, size(dataTitles, 2) + 1} = pValsTitles{1, d1};
+        end
+
+        if(size(pValsPlots, 1) > 1)
+            for d2 = 1:length(pValsPlots(2,:))
+                mixPlots{size(dataPlots, 1) + 1, d2} = pValsPlots{2, d2};
+                mixTitles{size(dataTitles, 1) + 1, d2} = pValsTitles{2, d2};
+            end
+        end
+    end
+
+    if (length(dataPlots) == 0 && ~bFull) || (bFull && length(pValsFullPlots) == 0)
         disp('There is nothing to plot... Please select something else.');
         return;
     else
@@ -816,10 +824,25 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
             disp(['Plotting ERSP Domain #' num2str(domainID)]);
             
             if bFull == false
-                std_plottf(df.timeData, df.freqData, mixPlots,  'titles', mixTitles);%, varargin{:});
+                std_plottf(df.timeData, df.freqData, mixPlots, 'titles', mixTitles);%, varargin{:});
             else
                 for nbEffects = 1:length(pValsFullPlots)
-                    std_plottf(df.timeData, df.freqData, pValsFullPlots{nbEffects},  'titles', pValsFullTitles{nbEffects});
+% TODO: Split the Effects when > 4
+%                     if(length(pValsFullPlots{nbEffects}) > 4)
+%                         nbPlotsPerRow = 4;
+%                         if (mod(length(pValsFullPlots{nbEffects}), 3) == 0), nbPlotsPerRow = 3; end
+%                         for r = 1:ceil(length(pValsFullPlots{nbEffects})/nbPlotsPerRow)
+%                             firstId = (r - 1) * nbPlotsPerRow + 1; lastId = min((r - 1) * nbPlotsPerRow + nbPlotsPerRow, length(pValsFullPlots{nbEffects}));
+%                             tmpEffectsPlots{r , :} = pValsFullPlots{nbEffects}{firstId:lastId}{:};
+%                             tmpEffectsTitles{r , :} = pValsFullTitles{nbEffects}{firstId:lastId}{:};
+%                         end
+%                         
+%                     else
+                    tmpEffectsPlots = pValsFullPlots{nbEffects};
+                    tmpEffectsTitles = pValsFullTitles{nbEffects};
+%                     end
+
+                    std_plottf(df.timeData, df.freqData, tmpEffectsPlots, 'titles', tmpEffectsTitles);
                 end
             end
         end
@@ -828,49 +851,50 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
             disp(['ERP! Domain #' num2str(domainID)]);
             %if length(measureAsArrayInCell) <= numberOfConditionsInEachFigure
                 % put ERP traces together inone plot;
-
-                %pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'together', 'figure', 'on');%, varargin{:});
-                pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype', 'erp', 'figure', 'on');%, varargin{:});
-
-                var1pVals = {};
-                var2pVals = {};
+                signifStyles = {'ok', 'sk', 'dk', '.k'};
+                 
+                % Find Min Value.
+                minValue = 0;
+                maxValue = 0;
+                for c = 1:size(dataPlots,1)
+                    for r = 1:size(dataPlots,2)
+                        minValue = min(minValue, min(min(dataPlots{c,r})));
+                        maxValue = max(maxValue, max(max(dataPlots{c,r})));
+                    end
+                end
+                spaceBetweenLines = (maxValue - minValue) / 20;
                 
-                if(~bPlotDataOnly)
-                    for curPlotV1 = 1:length(Val1)                    
-                        var1pVals{curPlotV1} = mixPlots{curPlotV1, size(mixPlots,2)};
-                        var1Titles{curPlotV1} = mixTitles{curPlotV1, size(mixTitles,2)};
+                nbPLinesTotal = size(pValsPlots,1) + size(pValsPlots,2);
+                
+                disp('ERP Style #1');
+                pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype', 'erp', 'figure', 'on');
+                
+                %disp('ERP Style #2');
+                %pr.std_plotcurve(df.timeData, dataPlots, 'titles', dataTitles, 'datatype','erp', 'plotconditions', 'apart','plotgroups', 'together', 'figure', 'on');%, varargin{:});
+                %disp('ERP Style #3');
+                %pr.std_plotcurve(df.timeData, dataPlots, 'titles', dataTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'apart', 'figure', 'on');%, varargin{:});
+                
+                disp('ERP Style #4');
+                pr.std_plotcurve(df.timeData, dataPlots, 'titles', dataTitles, 'datatype','erp', 'plotconditions', 'together','plotgroups', 'together', 'figure', 'on', 'ylim', [minValue - ((nbPLinesTotal + 2) * spaceBetweenLines), maxValue + (2 * spaceBetweenLines)]);%, varargin{:});                
+                
+                nbPLines = 1;
+                for i = 1:size(pValsPlots,1)
+                    for j = 1:size(pValsPlots,2)     
+                        tmpPVals = pValsPlots{i,j};
+                        tmpPVals(tmpPVals == 0) = NaN;
+                        tmpPVals(~isnan(tmpPVals)) = minValue - (nbPLines * spaceBetweenLines);
                         
-                        mixPlots{curPlotV1, size(mixPlots, 2)} = {};
-                        mixTitles{curPlotV1, size(mixTitles, 2)} = {};
-                    end
-                    
-                    for curPlotV2 = 1:length(Val2)                    
-                        var2pVals{curPlotV2} = mixPlots{size(mixPlots,1), curPlotV2};
-                        var2Titles{curPlotV2} = mixTitles{size(mixTitles,1), curPlotV2};
+                        plot(tmpPVals, signifStyles{nbPLines});
                         
-                        mixPlots{size(mixPlots, 1), curPlotV2} = {};
-                        mixTitles{size(mixTitles, 1), curPlotV2} = {};
+                        nbPLines = nbPLines + 1;
                     end
-                    
-                    for d1 = 1:length(Val1)
-                        for d2 = 1:length(Val2)
-                            dataPlots{d1,d2} = mixPlots{d1,d2};
-                            dataTitles{d1,d2} = mixTitles{d1,d2};
-                        end
-                    end
-                    mixPlots = dataPlots;
-                    mixTitles = dataTitles;
                 end
                 
-                %pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'groupstats', var1pVals, 'condstats', var2pVals, 'plotconditions', 'apart','plotgroups', 'apart', 'figure', 'on');%, varargin{:});
-                
-                
                 % put legend for conditions
-            %    legend(title);
+                legend({dataTitles{:}, pValsTitles{:}});
 
                 % make lines thicker.
-            %   set(findobj(gcf, 'type', 'Line'), 'linewidth', 2);
-            %end
+                set(findobj(gcf, 'type', 'Line'), 'linewidth', 2);
         end
         %plot(df{plotIDs(i)}.plotVal);
 
@@ -883,36 +907,58 @@ function figureHandle = generateStaRPlots(obj, domainID, designFolderName, bFull
 end
 
 
-function [mixPlots, mixTitles] = prepMixedPlotWithPVals(mixPlots, mixTitles, i, j, df, plotID, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, pDiffMask)
+function [pValsPlots, pValsTitles] = prepPValsPlots(dataPlots, dataTitles, pValsPlots, pValsTitles, row, col, df, plotID, bPCorrected, bPSignificants, bPValsTitles, pSignifThreshold, pDiffMask)
     if bPCorrected
-        mixPlots{i, j} =  df.pValsSub{plotID}.plotValCorrected;
+        pValsPlots{row, col} =  df.pValsSub{plotID}.plotValCorrected;
     else
-        mixPlots{i, j} =  df.pValsSub{plotID}.plotVal;
+        pValsPlots{row, col} =  df.pValsSub{plotID}.plotVal;
     end
 
-    if bPSignificants && ~isempty(mixPlots{i, j})
-        mixPlots{i, j}(mixPlots{i, j} < pSignifThreshold) = 2; % 2 for a better color contrast.
-        mixPlots{i, j}(mixPlots{i, j} ~= 2) = 0;
+    if bPSignificants && ~isempty(pValsPlots{row, col})
+        pValsPlots{row, col}(pValsPlots{row, col} < pSignifThreshold) = 1;
+        pValsPlots{row, col}(pValsPlots{row, col} ~= 1) = 0;
+    end
+    
+    if ~bPSignificants 
+        pValsPlots{row, col} = 1 - pValsPlots{row, col};            % Inverse for Significance to be colored.
+                
+        if ~isempty(dataPlots)
+            maxValue = 1;
+
+            % Find Max Value.
+            for c = 1:size(dataPlots,1)
+                for r = 1:size(dataPlots,2)
+                    maxValue = max(maxValue, max(max(dataPlots{c,r})))                
+                end
+            end
+
+            disp(['Adjusting Scaling : Multiplying pVals by ' num2str(maxValue)]);
+
+            % Adjust Values.
+            pValsPlots{row, col} = pValsPlots{row, col} .* maxValue;    % Adjust Scale According to other graph.
+        end
     end
     
     % Use the Diff Between Plot 1 & 2 and Mask it.
-    if pDiffMask && ~isempty(mixPlots{i, j})
-        if i == 3 && j ~= 3
-            diffPlot = mixPlots{1,j} - mixPlots{2,j};
-            diffPlot(mixPlots{i, j} == 0) = 0;
-            mixPlots{i, j} = diffPlot;
+    if pDiffMask && ~isempty(dataPlots) && row <= size(dataPlots, 1) && col <= size(dataPlots, 2) && ~isempty(dataPlots{row, col})
+        
+        if row == 1 % Rows
+            if size(dataPlots, 2) ~= 2, disp('### ERROR : Using Diff Mask for pVals, but with size > 2'); end
+            diffPlot = dataPlots{col, 1} - dataPlots{col, 2};
         end
-        if j == 3 && i ~= 3
-            diffPlot = mixPlots{i,1} - mixPlots{i,2};
-            diffPlot(mixPlots{i, j} == 0) = 0;
-            mixPlots{i, j} = diffPlot;
+        if row == 2 % Cols
+            if size(dataPlots, 1) ~= 2, disp('### ERROR : Using Diff Mask for pVals, but with size > 2'); end
+            diffPlot = dataPlots{1, col} - dataPlots{2, col};
         end
+        
+        diffPlot(pValsPlots{row, col} == 0) = 0;
+        pValsPlots{row, col} = diffPlot;
     end
 
     if bPValsTitles
-        mixTitles{i, j} = df.pValsSub{plotID}.lbl;
+        pValsTitles{row, col} = df.pValsSub{plotID}.lbl;
     else
-        mixTitles{i, j} = 'pVals';
+        pValsTitles{row, col} = 'pVals';
     end
 end
 
@@ -1057,7 +1103,7 @@ function shortTitles = getShortTitles(titles)
                  end
              end
              if isempty(shortTitle1)
-                 shortTitles{i,j} = titles{i,j} % put back the title if you could find separation!
+                 shortTitles{i,j} = titles{i,j}; % put back the title if you could find separation!
              else
                 shortTitles{i,j} = shortTitle1; % put the new 'short' title.
              end
@@ -1080,7 +1126,7 @@ function shortTitles = getShortTitles(titles)
                         if(strcmp(strtrim(strSubs{1}(k)), strtrim(strSubs{2}(k))))
                             strRem = strtrim(strSubs{1}(k));
                             
-                            disp(['Removing: ' strRem]);
+                            %disp(['Removing: ' strRem]);
                             
                             strSubs{1}(k) = strtrim(strSubs{1}(k));
                             strSubs{2}(k) = strtrim(strSubs{2}(k));
@@ -1103,7 +1149,7 @@ function shortTitles = getShortTitles(titles)
                     for curSubInd = 1:length(strSubs{s})
                         if ~isempty(char(strSubs{s}(curSubInd)))
                             if isempty(curStrSub{s})
-                                curStrSub{s} = char(strSubs{s}(curSubInd))
+                                curStrSub{s} = char(strSubs{s}(curSubInd));
                             else
                                 strcat(curStrSub{s}, char(strSubs{s}(curSubInd)));
                             end
@@ -1112,7 +1158,7 @@ function shortTitles = getShortTitles(titles)
                 end
 
                 if ~isempty(strRemovedVarVals)
-                    shortTitles{i,j} = strcat(curStrSub{1}, ' -  ', curStrSub{2}, ' (', strRemovedVarVals, ')')
+                    shortTitles{i,j} = strcat(curStrSub{1}, ' -  ', curStrSub{2}, ' (', strRemovedVarVals, ')');
                 end
             
             shortTitles{i,j} = char(shortTitles{i,j});
@@ -1278,6 +1324,40 @@ end
 % %     % !!! DEBUG !!!
 % %     % -- /YR added --
 % % end
+
+
+%                 var1pVals = {};
+%                 var2pVals = {};
+%                 
+%                 if(~bPlotDataOnly)
+%                     for curPlotV1 = 1:length(Val1)                    
+%                         var1pVals{curPlotV1} = mixPlots{curPlotV1, size(mixPlots,2)};
+%                         var1Titles{curPlotV1} = mixTitles{curPlotV1, size(mixTitles,2)};
+%                         
+%                         mixPlots{curPlotV1, size(mixPlots, 2)} = {};
+%                         mixTitles{curPlotV1, size(mixTitles, 2)} = {};
+%                     end
+%                     
+%                     for curPlotV2 = 1:length(Val2)                    
+%                         var2pVals{curPlotV2} = mixPlots{size(mixPlots,1), curPlotV2};
+%                         var2Titles{curPlotV2} = mixTitles{size(mixTitles,1), curPlotV2};
+%                         
+%                         mixPlots{size(mixPlots, 1), curPlotV2} = {};
+%                         mixTitles{size(mixTitles, 1), curPlotV2} = {};
+%                     end
+%                     
+%                     for d1 = 1:length(Val1)
+%                         for d2 = 1:length(Val2)
+%                             dataPlots{d1,d2} = mixPlots{d1,d2};
+%                             dataTitles{d1,d2} = mixTitles{d1,d2};
+%                         end
+%                     end
+%                     mixPlots = dataPlots;
+%                     mixTitles = dataTitles;
+%                 end
+                
+                %pr.std_plotcurve(df.timeData, mixPlots, 'titles', mixTitles, 'datatype','erp', 'groupstats', var1pVals, 'condstats', var2pVals, 'plotconditions', 'apart','plotgroups', 'apart', 'figure', 'on');%, varargin{:});
+                
 end
 % Show Stats! ---- The Good Stuff Happens Here! ---- 
 
